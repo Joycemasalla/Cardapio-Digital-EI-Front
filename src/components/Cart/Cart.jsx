@@ -138,7 +138,7 @@ const Cart = () => {
     }
     
     const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/5511999999999?text=${encodedMessage}`, '_blank');
+    window.open(`https://wa.me/5532988949994?text=${encodedMessage}`, '_blank');
     
     clearCart();
     toggleCart();
