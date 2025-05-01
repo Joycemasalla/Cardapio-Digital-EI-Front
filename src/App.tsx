@@ -2,7 +2,7 @@ import React from 'react';
 import { ReactNode } from 'react';
 import { ThemeProvider } from 'styled-components';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { GlobalStyle } from './styles/GlobalStyles';
+import { GlobalStyle } from './styles/GlobalStyles.js';
 import { theme } from './styles/theme';
 import Header from './components/Header/Header';
 import MenuPage from './pages/MenuPage';
@@ -15,19 +15,24 @@ import { ProductProvider } from './contexts/ProductContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+
 type ProtectedRouteProps = {
-  children: ReactNode; // Aqui está a correção
+  children: ReactNode;
 };
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuth();  // Verificando se o usuário está autenticado
 
+  // Se não houver usuário autenticado, redireciona para o login
   if (!currentUser) {
     return <Navigate to="/admin" replace />;
   }
 
+  // Caso contrário, renderiza os children (componente protegido)
   return <>{children}</>;
 };
+
+
 
 
 
