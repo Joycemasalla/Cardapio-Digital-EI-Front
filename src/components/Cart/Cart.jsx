@@ -447,7 +447,7 @@ const Cart = () => {
                     (activeStep === 0 && cartItems.length === 0) ||
                     (activeStep === 1 && (
                       !customerInfo.name ||
-                      !customerInfo.phone ||
+                     /* !customerInfo.phone ||*/
                       (deliveryOption === 'delivery' && !customerInfo.address)
                     ))
                   }
