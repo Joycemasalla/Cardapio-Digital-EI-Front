@@ -274,7 +274,6 @@ const Cart = () => {
                     name="phone"
                     value={customerInfo.phone}
                     onChange={handleInputChange}
-                    required
                     className="form-input"
                   >
                     {(inputProps) => <Input {...inputProps} />}

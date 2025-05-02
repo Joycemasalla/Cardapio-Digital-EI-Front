@@ -145,6 +145,7 @@ export const RemoveButton = styled.button`
 
 export const CartFooter = styled.div`
   padding: 1rem;
+  margin-bottom: 4rem;
   border-top: 1px solid ${({ theme }) => theme.colors.backgroundCard};
   background-color: ${({ theme }) => theme.colors.backgroundLight};
   
