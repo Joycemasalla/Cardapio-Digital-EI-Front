@@ -1,8 +1,6 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
-
-
 export const HeaderContainer = styled.header`
   display: flex;
   align-items: center;
@@ -66,11 +64,9 @@ export const Nav = styled.nav`
   display: flex;
   gap: 1.5rem;
   font-size: 1rem;
-  margin-right: auto; /* Garante que os links de navegação fiquem à esquerda */
-  padding-right: 20px; /* Adiciona algum espaçamento à direita */
+  margin-right: auto;
+  padding-right: 20px;
   transition: all 0.3s ease;
-
-  
 
   
   @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
@@ -81,8 +77,12 @@ export const Nav = styled.nav`
 export const NavLink = styled(Link)`
   color: ${({ theme }) => theme.colors.textSecondary};
   font-weight: 500;
+  padding: 0.5rem 0.2rem; /* Adicionado padding para aumentar a área de clique */
   transition: ${({ theme }) => theme.transition};
   position: relative;
+  text-transform: uppercase; /* Deixa o texto em maiúsculas */
+  letter-spacing: 0.5px; /* Pequeno espaçamento entre letras */
+  font-size: 0.95rem; /* Levemente menor para caber mais links */
   
   &:after {
     content: '';
@@ -92,7 +92,7 @@ export const NavLink = styled(Link)`
     bottom: -4px;
     left: 0;
     background-color: ${({ theme }) => theme.colors.primary};
-    transition: ${({ theme }) => theme.transition};
+    transition: width 0.3s ease; /* Transição apenas na largura */
   }
   
   &:hover {
@@ -102,14 +102,34 @@ export const NavLink = styled(Link)`
       width: 100%;
     }
   }
+
+  /* Estilos para o MobileNav (dentro do MobileNav) */
+  ${({ theme }) => `
+    ${MobileNav} & {
+      padding: 0.75rem 1rem; /* Mais padding no menu mobile */
+      font-size: 1rem;
+      color: ${theme.colors.text}; /* Cor diferente para destaque no menu mobile */
+      background-color: transparent;
+      border-radius: ${theme.borderRadius.small};
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.05); /* Efeito de hover no menu mobile */
+        color: ${theme.colors.primaryLight};
+      }
+
+      &:after {
+        display: none; /* Remove underline no mobile nav */
+      }
+    }
+  `}
 `;
 
 export const HeaderActions = styled.div`
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-left: auto; /* Garante que os itens da navegação e o carrinho fiquem à direita */
-  margin-right: 0.4em; /* Garante que os itens da navegação e o carrinho fiquem à direita */
+  margin-left: auto;
+  margin-right: 0.4em;
 
 
 `;
@@ -184,6 +204,8 @@ export const MobileNav = styled.div`
   z-index: 99;
   box-shadow: ${({ theme }) => theme.shadows.strong};
   animation: slideDown 0.3s ease;
+  height: calc(100vh - 72px);
+  overflow-y: auto;
   
   @keyframes slideDown {
     from {

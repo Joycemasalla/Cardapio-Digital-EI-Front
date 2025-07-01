@@ -1,11 +1,11 @@
-import React from 'react';
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 import { ThemeProvider } from 'styled-components';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { GlobalStyle } from './styles/GlobalStyles.js';
 import { theme } from './styles/theme';
 import Header from './components/Header/Header';
 import MenuPage from './pages/MenuPage';
+import CategoryPage from './pages/CategoryPage.js'; // Importar CategoryPage
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import Cart from './components/Cart/Cart';
@@ -15,26 +15,19 @@ import { ProductProvider } from './contexts/ProductContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-
 type ProtectedRouteProps = {
   children: ReactNode;
 };
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { currentUser } = useAuth();  // Verificando se o usuário está autenticado
+  const { currentUser } = useAuth();
 
-  // Se não houver usuário autenticado, redireciona para o login
   if (!currentUser) {
     return <Navigate to="/admin" replace />;
   }
 
-  // Caso contrário, renderiza os children (componente protegido)
   return <>{children}</>;
 };
-
-
-
-
 
 function App() {
   return (
@@ -48,6 +41,8 @@ function App() {
                 <Header />
                 <Routes>
                   <Route path="/" element={<MenuPage />} />
+                  {/* Adicionando a rota para CategoryPage de volta */}
+                  <Route path="/category/:category" element={<CategoryPage />} />
                   <Route path="/admin" element={<AdminLogin />} />
                   <Route
                     path="/admin/dashboard"

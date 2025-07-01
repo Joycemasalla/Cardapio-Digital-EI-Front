@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { ShoppingCart, User, Menu, X } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
+import logoespaco from '../../assets/logoespaco.png'; // Importar a imagem do logo
 import {
   HeaderContainer,
   Logo,
@@ -14,10 +15,11 @@ import {
   LogoContainer,
   ItemCount,
   HeaderActions,
-  AdminLink
-} from './HeaderStyles'; // Importando corretamente o arquivo de estilos em JS
+  AdminLink,
+  LogoImage
+} from './HeaderStyles';
 
-const Header = () => {
+const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { cartItems, toggleCart } = useCart();
@@ -40,24 +42,51 @@ const Header = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
-  const handleMobileNavClick = () => {
-    setMobileMenuOpen(false);
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCategoryClick = (categoryId: string) => {
+    const section = document.getElementById(categoryId);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+      setMobileMenuOpen(false);
+    }
   };
 
   return (
-    <HeaderContainer style={{ backgroundColor: scrolled ? 'rgba(0, 0, 0, 0.9)' : 'transparent' }}>
+    <HeaderContainer $scrolled={scrolled}> {/* Prop transient $scrolled */}
       <LogoContainer>
-        <Logo to="/">Espaço Imperial</Logo>
+        <Logo to="/" onClick={scrollToTop}>
+          <LogoImage src={logoespaco} alt="Espaço Imperial Logo" />
+        </Logo>
       </LogoContainer>
 
       <Nav>
-        <NavLink to="/#hamburgueres-tradicionais">Hambúrgueres Tradicionais</NavLink>
-        <NavLink to="/#hamburgueres-artesanais">Hambúrgueres Artesanais</NavLink>
-        <NavLink to="/#porcoes">Porções</NavLink>
-        <NavLink to="/#pizzas">Pizzas</NavLink>
-        <NavLink to="/#pizzas-doces">Pizzas Doces</NavLink>
-        <NavLink to="/#bebidas">Bebidas</NavLink>
-        <NavLink to="/#combos">Combos</NavLink>
+        <NavLink onClick={() => handleCategoryClick('hamburgueres-tradicionais')}>
+          Hambúrgueres Tradicionais
+        </NavLink>
+        <NavLink onClick={() => handleCategoryClick('hamburgueres-artesanais')}>
+          Hambúrgueres Artesanais
+        </NavLink>
+        <NavLink onClick={() => handleCategoryClick('porcoes')}>
+          Porções
+        </NavLink>
+        <NavLink onClick={() => handleCategoryClick('pizzas')}>
+          Pizzas
+        </NavLink>
+        <NavLink onClick={() => handleCategoryClick('pizzas-doces')}>
+          Pizzas Doces
+        </NavLink>
+        <NavLink onClick={() => handleCategoryClick('bebidas')}>
+          Bebidas
+        </NavLink>
+        <NavLink onClick={() => handleCategoryClick('churrasco')}>
+          Churrasco
+        </NavLink>
+        <NavLink onClick={() => handleCategoryClick('combos')}>
+          Combos
+        </NavLink>
       </Nav>
 
       <HeaderActions>
@@ -79,13 +108,30 @@ const Header = () => {
 
       {mobileMenuOpen && (
         <MobileNav>
-          <NavLink to="/#hamburgueres-tradicionais" onClick={handleMobileNavClick}>Hambúrgueres Tradicionais</NavLink>
-          <NavLink to="/#hamburgueres-artesanais" onClick={handleMobileNavClick}>Hambúrgueres Artesanais</NavLink>
-          <NavLink to="/#porcoes" onClick={handleMobileNavClick}>Porções</NavLink>
-          <NavLink to="/#pizzas" onClick={handleMobileNavClick}>Pizzas</NavLink>
-          <NavLink to="/#pizzas-doces" onClick={handleMobileNavClick}>Pizzas Doces</NavLink>
-          <NavLink to="/#bebidas" onClick={handleMobileNavClick}>Bebidas</NavLink>
-          <NavLink to="/#combos" onClick={handleMobileNavClick}>Combos</NavLink>
+          <NavLink onClick={() => handleCategoryClick('hamburgueres-tradicionais')}>
+            Hambúrgueres Tradicionais
+          </NavLink>
+          <NavLink onClick={() => handleCategoryClick('hamburgueres-artesanais')}>
+            Hambúrgueres Artesanais
+          </NavLink>
+          <NavLink onClick={() => handleCategoryClick('porcoes')}>
+            Porções
+          </NavLink>
+          <NavLink onClick={() => handleCategoryClick('pizzas')}>
+            Pizzas
+          </NavLink>
+          <NavLink onClick={() => handleCategoryClick('pizzas-doces')}>
+            Pizzas Doces
+          </NavLink>
+          <NavLink onClick={() => handleCategoryClick('bebidas')}>
+            Bebidas
+          </NavLink>
+          <NavLink onClick={() => handleCategoryClick('churrasco')}>
+            Churrasco
+          </NavLink>
+          <NavLink onClick={() => handleCategoryClick('combos')}>
+            Combos
+          </NavLink>
         </MobileNav>
       )}
     </HeaderContainer>

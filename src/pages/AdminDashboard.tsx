@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useProducts } from '../contexts/ProductContext';
-import { 
-  AdminDashboardContainer, 
-  AdminSidebar, 
+import {
+  AdminDashboardContainer,
+  AdminSidebar,
   AdminContent,
   AdminHeader,
   AdminTitle,
@@ -23,11 +24,32 @@ import { Plus, Edit, Trash2, X } from 'lucide-react';
 import { FormGroup, Label, Input, Textarea, SubmitButton } from './PageStyles';
 import { toast } from 'react-toastify';
 
-const AdminDashboard = () => {
+interface ProductFormState {
+  id: string;
+  name: string;
+  description: string;
+  price: string; // Manter como string para o input, converter ao salvar
+  image: string;
+  category: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  category: string;
+}
+
+const AdminDashboard: React.FC = () => {
   const { products, addProduct, updateProduct, deleteProduct, loading } = useProducts();
   const [showForm, setShowForm] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [formData, setFormData] = useState({
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [currentSection, setCurrentSection] = useState('products');
+  const navigate = useNavigate(); // Não está sendo usado diretamente, mas mantido caso haja planos futuros.
+
+  const [formData, setFormData] = useState<ProductFormState>({
     id: '',
     name: '',
     description: '',
@@ -35,7 +57,7 @@ const AdminDashboard = () => {
     image: '',
     category: '',
   });
-  
+
   const categories = [
     'Hambúrgueres Tradicionais',
     'Hambúrgueres Artesanais',
@@ -43,17 +65,18 @@ const AdminDashboard = () => {
     'Pizzas',
     'Pizzas Doces',
     'Bebidas',
-    'Combos'
+    'Combos',
+    'Churrasco' // Adicionando a nova categoria de churrasco
   ];
-  
-  const handleInputChange = (e) => {
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: name === 'price' ? value.replace(',', '.') : value,
     });
   };
-  
+
   const resetForm = () => {
     setFormData({
       id: '',
@@ -65,13 +88,31 @@ const AdminDashboard = () => {
     });
     setEditingProduct(null);
   };
-  
+
+  const handleSectionChange = (section: string) => {
+    setCurrentSection(section);
+    // Aqui você pode adicionar lógica para navegar ou carregar dados específicos da seção
+    switch(section) {
+      case 'categories':
+        toast.info('Gerenciamento de categorias em desenvolvimento');
+        break;
+      case 'orders':
+        toast.info('Sistema de pedidos em desenvolvimento');
+        break;
+      case 'settings':
+        toast.info('Configurações em desenvolvimento');
+        break;
+      default:
+        break;
+    }
+  };
+
   const handleAddNewClick = () => {
     resetForm();
     setShowForm(true);
   };
-  
-  const handleEditClick = (product) => {
+
+  const handleEditClick = (product: Product) => {
     setFormData({
       ...product,
       price: product.price.toString(),
@@ -79,8 +120,8 @@ const AdminDashboard = () => {
     setEditingProduct(product);
     setShowForm(true);
   };
-  
-  const handleDeleteClick = async (productId) => {
+
+  const handleDeleteClick = async (productId: string) => {
     if (window.confirm('Tem certeza que deseja excluir este produto?')) {
       try {
         await deleteProduct(productId);
@@ -90,45 +131,75 @@ const AdminDashboard = () => {
       }
     }
   };
-  
-  const handleSubmit = async (e) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const productData = {
         ...formData,
         price: parseFloat(formData.price),
-      };
-      
+      } as Product; // Cast para Product, pois 'id' será gerado ou já existe
+
       if (editingProduct) {
         await updateProduct(productData);
         toast.success('Produto atualizado com sucesso!');
       } else {
+        // Quando adicionando, o id é gerado pelo addProduct no contexto
         await addProduct(productData);
         toast.success('Produto adicionado com sucesso!');
       }
-      
+
       setShowForm(false);
       resetForm();
     } catch (error) {
       toast.error('Erro ao salvar produto. Verifique os dados e tente novamente.');
     }
   };
-  
+
+  // Filtrar produtos com base na seção atual, se necessário
+  const filteredProducts = products.filter(product => {
+    // Se estiver na seção de produtos, mostra todos.
+    // Se houver uma seção específica, você pode filtrar aqui.
+    // Por enquanto, como as outras seções são apenas toasts, mostramos todos em 'products'
+    return true; // Por padrão, mostra todos os produtos
+  });
+
+
   return (
     <AdminDashboardContainer>
       <AdminSidebar>
         <div className="sidebar-menu">
           <h3>Menu</h3>
           <ul>
-            <li className="active">Produtos</li>
-            <li>Categorias</li>
-            <li>Pedidos</li>
-            <li>Configurações</li>
+            <li
+              className={currentSection === 'products' ? 'active' : ''}
+              onClick={() => handleSectionChange('products')}
+            >
+              Produtos
+            </li>
+            <li
+              className={currentSection === 'categories' ? 'active' : ''}
+              onClick={() => handleSectionChange('categories')}
+            >
+              Categorias
+            </li>
+            <li
+              className={currentSection === 'orders' ? 'active' : ''}
+              onClick={() => handleSectionChange('orders')}
+            >
+              Pedidos
+            </li>
+            <li
+              className={currentSection === 'settings' ? 'active' : ''}
+              onClick={() => handleSectionChange('settings')}
+            >
+              Configurações
+            </li>
           </ul>
         </div>
       </AdminSidebar>
-      
+
       <AdminContent>
         <AdminHeader>
           <AdminTitle>Gerenciar Produtos</AdminTitle>
@@ -139,10 +210,10 @@ const AdminDashboard = () => {
             </AddButton>
           </AdminControls>
         </AdminHeader>
-        
+
         {loading ? (
           <div>Carregando...</div>
-        ) : products.length === 0 ? (
+        ) : products.length === 0 ? ( // Usar products.length para verificar se há produtos
           <NoProducts>
             <p>Nenhum produto cadastrado</p>
             <AddButton onClick={handleAddNewClick}>
@@ -162,7 +233,7 @@ const AdminDashboard = () => {
               </TableRow>
             </thead>
             <tbody>
-              {products.map((product) => (
+              {filteredProducts.map((product) => ( // Usar filteredProducts aqui
                 <TableRow key={product.id}>
                   <TableCell>
                     <TableImage src={product.image} alt={product.name} />
@@ -174,8 +245,8 @@ const AdminDashboard = () => {
                     <ActionButton onClick={() => handleEditClick(product)}>
                       <Edit size={16} />
                     </ActionButton>
-                    <ActionButton 
-                      className="delete" 
+                    <ActionButton
+                      className="delete"
                       onClick={() => handleDeleteClick(product.id)}
                     >
                       <Trash2 size={16} />
@@ -186,7 +257,7 @@ const AdminDashboard = () => {
             </tbody>
           </ProductsTable>
         )}
-        
+
         {showForm && (
           <ProductForm onSubmit={handleSubmit}>
             <div className="form-header">
@@ -197,7 +268,7 @@ const AdminDashboard = () => {
                 <X size={20} />
               </CloseFormButton>
             </div>
-            
+
             <FormGroup>
               <Label htmlFor="name">Nome do Produto</Label>
               <Input
@@ -209,7 +280,7 @@ const AdminDashboard = () => {
                 required
               />
             </FormGroup>
-            
+
             <FormGroup>
               <Label htmlFor="category">Categoria</Label>
               <select
@@ -228,7 +299,7 @@ const AdminDashboard = () => {
                 ))}
               </select>
             </FormGroup>
-            
+
             <FormGroup>
               <Label htmlFor="price">Preço (R$)</Label>
               <Input
@@ -241,7 +312,7 @@ const AdminDashboard = () => {
                 required
               />
             </FormGroup>
-            
+
             <FormGroup>
               <Label htmlFor="description">Descrição</Label>
               <Textarea
@@ -252,7 +323,7 @@ const AdminDashboard = () => {
                 required
               />
             </FormGroup>
-            
+
             <FormGroup>
               <Label htmlFor="image">URL da Imagem</Label>
               <Input
@@ -264,7 +335,7 @@ const AdminDashboard = () => {
                 required
               />
             </FormGroup>
-            
+
             <SubmitButton type="submit">
               {editingProduct ? 'Atualizar Produto' : 'Adicionar Produto'}
             </SubmitButton>
