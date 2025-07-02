@@ -1,21 +1,14 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { useProducts } from '../contexts/ProductContext';
+// IMPORTAÇÃO CORRIGIDA: Importa Product do ProductContext
+import { useProducts, Product } from '../contexts/ProductContext';
 import ProductCard from '../components/ProductCard/ProductCard';
 import styled from 'styled-components';
-import { PageContainer } from './PageStyles'; // Reutilizando PageContainer de PageStyles
+import { PageContainer } from './PageStyles';
 
-// Tipagem para os produtos, conforme definido em ProductContext
-type Product = {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-  image: string;
-  category: string;
-};
+// REMOVIDO: Tipagem local para os produtos
 
-const CategoryContainer = styled(PageContainer)` // Estendendo PageContainer
+const CategoryContainer = styled(PageContainer)`
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -43,17 +36,16 @@ const ProductsGrid = styled.div`
 `;
 
 const CategoryPage: React.FC = () => {
-  const { category } = useParams<{ category: string }>(); // Tipando useParams
+  const { category } = useParams<{ category: string }>();
   const { products } = useProducts();
 
-  // Função para normalizar a string da categoria para comparação
   const normalizeCategory = (cat: string): string => {
     return cat
       .toLowerCase()
-      .normalize('NFD')                   // Remove acentos
-      .replace(/[\u0300-\u036f]/g, '')   // Remove caracteres diacríticos
-      .replace(/\s+/g, '-')              // Espaço vira hífen
-      .replace(/[^\w-]/g, '');           // Remove caracteres especiais
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]/g, '');
   };
 
   const categoryProducts = products.filter(

@@ -1,6 +1,7 @@
-import React, { useState } from 'react'; // Importar useState
+import React, { useState } from 'react';
 import ProductCard from '../ProductCard/ProductCard';
-import { ChevronDown } from 'lucide-react'; // Importar ícone ChevronDown
+import { ChevronDown } from 'lucide-react';
+import { Product } from '../../contexts/ProductContext'; // Importa Product
 import {
   SectionContainer,
   SectionTitle,
@@ -8,27 +9,17 @@ import {
   Divider,
   CategoryAnchor,
   TitleContainer,
-  ToggleIcon // Importar ToggleIcon
-} from './CategorySectionStyles'; // Garantir que ToggleIcon está importado aqui
+  ToggleIcon
+} from './CategorySectionStyles';
 
-// Tipagem do CategorySectionProps, onde "products" pode ter description como undefined
 type CategorySectionProps = {
   id: string;
   title: string;
-  products: {
-    id: string;
-    name: string;
-    price: number;
-    description?: string;  // Deixe description opcional
-    image?: string;
-    category: string;
-  }[];
+  products: Product[];
+  isListView?: boolean; // NOVO: Prop para controlar a visualização
 };
 
-const CategorySection: React.FC<CategorySectionProps> = ({ title, id, products }) => {
-  // Estado para controlar se a categoria está expandida ou colapsada
-  // Começamos com 'true' (expandida) para que os produtos sejam visíveis ao carregar.
-  // Se preferir que todas as categorias comecem colapsadas, mude para 'false'.
+const CategorySection: React.FC<CategorySectionProps> = ({ title, id, products, isListView = false }) => { // isListView com valor padrão
   const [isExpanded, setIsExpanded] = useState(true); 
 
   const toggleExpanded = () => {
@@ -38,19 +29,21 @@ const CategorySection: React.FC<CategorySectionProps> = ({ title, id, products }
   return (
     <SectionContainer>
       <CategoryAnchor id={id} />
-      <TitleContainer onClick={toggleExpanded}> {/* Adicionado onClick para alternar */}
+      <TitleContainer onClick={toggleExpanded}>
         <SectionTitle>{title}</SectionTitle>
-        <ToggleIcon className={isExpanded ? '' : 'rotated'}> {/* Aplica classe 'rotated' quando colapsado */}
-          <ChevronDown size={24} /> {/* Ícone de seta */}
+        <ToggleIcon className={isExpanded ? '' : 'rotated'}>
+          <ChevronDown size={24} />
         </ToggleIcon>
       </TitleContainer>
-      <Divider /> {/* Mantém a linha divisória abaixo do título */}
+      <Divider />
       
-      <ProductsGrid className={isExpanded ? '' : 'collapsed'}> {/* Aplica classe 'collapsed' */}
+      {/* NOVO: Aplica classe condicionalmente para ajustar o grid */}
+      <ProductsGrid className={`${isExpanded ? '' : 'collapsed'} ${isListView ? 'list-view-grid' : ''}`}>
         {products.map(product => (
           <ProductCard 
             key={product.id} 
             product={product}
+            isListView={isListView} // NOVO: Passa a prop isListView
           />
         ))}
       </ProductsGrid>

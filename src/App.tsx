@@ -5,7 +5,7 @@ import { GlobalStyle } from './styles/GlobalStyles.js';
 import { theme } from './styles/theme';
 import Header from './components/Header/Header';
 import MenuPage from './pages/MenuPage';
-import CategoryPage from './pages/CategoryPage.js'; // Importar CategoryPage
+import CategoryPage from './pages/CategoryPage.js';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import Cart from './components/Cart/Cart';
@@ -14,6 +14,8 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ProductProvider } from './contexts/ProductContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import FloatingCartButton from './components/FloatingCartButton/FloatingCartButton';
+import BackToTopButton from './components/BackToTopButton/BackToTopButton'; // NOVO: Importação do BackToTopButton
 
 type ProtectedRouteProps = {
   children: ReactNode;
@@ -41,7 +43,6 @@ function App() {
                 <Header />
                 <Routes>
                   <Route path="/" element={<MenuPage />} />
-                  {/* Adicionando a rota para CategoryPage de volta */}
                   <Route path="/category/:category" element={<CategoryPage />} />
                   <Route path="/admin" element={<AdminLogin />} />
                   <Route
@@ -54,6 +55,8 @@ function App() {
                   />
                 </Routes>
                 <Cart />
+                <FloatingCartButton />
+                <BackToTopButton /> {/* NOVO: Componente BackToTopButton adicionado aqui */}
                 <ToastContainer position="bottom-right" theme="dark" />
               </div>
             </ThemeProvider>

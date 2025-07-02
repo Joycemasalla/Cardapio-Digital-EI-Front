@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, ShoppingCart, Send, Trash2, Copy } from 'lucide-react';
-import { useCart } from '../../contexts/CartContext';
+// IMPORTAÇÕES CORRIGIDAS: Importa CartItem do CartContext
+import { useCart, CartItem } from '../../contexts/CartContext';
 import InputMask from 'react-input-mask';
 import { toast } from 'react-toastify';
 
@@ -11,7 +12,7 @@ import {
   CloseButton,
   CartContent,
   CartItemsList,
-  CartItem,
+  CartItem as StyledCartItem, // Renomeado para evitar conflito com o tipo CartItem
   ItemInfo,
   ItemName,
   ItemPrice,
@@ -43,12 +44,7 @@ import {
   StyledInputMask
 } from './CartStyles';
 
-type CartItemType = {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-};
+// REMOVIDO: CartItemType não é mais necessário aqui, use o tipo CartItem importado
 
 const Cart: React.FC = () => {
   const {
@@ -72,8 +68,9 @@ const Cart: React.FC = () => {
     notes: ''
   });
 
+  // CORRIGIDO: Acessa o preço da variação se existir, caso contrário o preço base.
   const totalAmount = cartItems.reduce(
-    (sum: number, item: CartItemType) => sum + item.price * item.quantity,
+    (sum: number, item: CartItem) => sum + (item.selectedVariation?.price || item.price || 0) * item.quantity,
     0
   );
 
@@ -82,6 +79,7 @@ const Cart: React.FC = () => {
 
   const steps = ['Carrinho', 'Entrega', 'Pagamento'];
 
+  // CORRIGIDO: Tipagem do evento para garantir acesso a `name` e `value`
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setCustomerInfo({
@@ -91,6 +89,25 @@ const Cart: React.FC = () => {
   };
 
   const handleNextStep = () => {
+    // Validação para o passo 1 (Carrinho)
+    if (activeStep === 0 && cartItems.length === 0) {
+      toast.warn('Seu carrinho está vazio. Adicione itens antes de continuar.');
+      return;
+    }
+
+    // Validação para o passo 2 (Entrega)
+    if (activeStep === 1) {
+      if (!customerInfo.name.trim()) {
+        toast.warn('Por favor, informe seu nome.');
+        return;
+      }
+      if (deliveryOption === 'delivery' && !customerInfo.address.trim()) {
+        toast.warn('Por favor, informe o endereço de entrega.');
+        return;
+      }
+    }
+
+
     if (activeStep < steps.length - 1) {
       setActiveStep(activeStep + 1);
     } else {
@@ -108,8 +125,9 @@ const Cart: React.FC = () => {
     let message = `*Novo Pedido - Espaço Imperial*\n\n`;
     message += `*Itens do Pedido:*\n`;
 
-    cartItems.forEach((item: CartItemType) => {
-      message += `- ${item.quantity}x ${item.name} - R$ ${(item.price * item.quantity).toFixed(2).replace('.', ',')}\n`;
+    // CORRIGIDO: Acessa o nome e preço do item CartItem, que já inclui a variação
+    cartItems.forEach((item: CartItem) => {
+      message += `- ${item.quantity}x ${item.name} - R$ ${((item.selectedVariation?.price || item.price || 0) * item.quantity).toFixed(2).replace('.', ',')}\n`;
     });
 
     message += `\n*Subtotal:* R$ ${totalAmount.toFixed(2).replace('.', ',')}\n`;
@@ -126,7 +144,9 @@ const Cart: React.FC = () => {
 
     message += `*Dados do Cliente:*\n`;
     message += `Nome: ${customerInfo.name}\n`;
-    message += `Telefone: ${customerInfo.phone}\n`;
+    if (customerInfo.phone) {
+      message += `Telefone: ${customerInfo.phone}\n`;
+    }
 
     if (deliveryOption === 'delivery') {
       message += `Endereço: ${customerInfo.address}\n`;
@@ -155,7 +175,7 @@ const Cart: React.FC = () => {
     <>
       {isCartOpen && <CartOverlay onClick={toggleCart} />}
 
-      <CartContainer $isOpen={isCartOpen}> {/* Prop transient $isOpen */}
+      <CartContainer $isOpen={isCartOpen}>
         <CartHeader>
           <CartTitle>
             <ShoppingCart size={20} />
@@ -170,8 +190,8 @@ const Cart: React.FC = () => {
           {steps.map((step, index) => (
             <StepIndicator
               key={index}
-              $active={index === activeStep}    /* Prop transient $active */
-              $completed={index < activeStep} /* Prop transient $completed */
+              $active={index === activeStep}
+              $completed={index < activeStep}
               onClick={() => {
                 if (index < activeStep) {
                   setActiveStep(index);
@@ -188,26 +208,29 @@ const Cart: React.FC = () => {
             <>
               {cartItems.length > 0 ? (
                 <CartItemsList>
-                  {cartItems.map((item: CartItemType) => (
-                    <CartItem key={item.id}>
+                  {/* CORRIGIDO: Itera sobre CartItem importado */}
+                  {cartItems.map((item: CartItem) => (
+                    <StyledCartItem key={item.id + (item.selectedVariation?.name || '')}> {/* Adiciona key da variação */}
                       <ItemDetails>
                         <ItemInfo>
                           <ItemName>{item.name}</ItemName>
+                          {/* CORRIGIDO: Acessa o preço da variação ou preço base */}
                           <ItemPrice>
-                            R$ {(item.price * item.quantity).toFixed(2).replace('.', ',')}
+                            R$ {(item.selectedVariation?.price || item.price || 0).toFixed(2).replace('.', ',')}
                           </ItemPrice>
                         </ItemInfo>
 
                         <QuantityControl>
-                          <QuantityButton onClick={() => decrementQuantity(item.id)}>-</QuantityButton>
+                          {/* CORRIGIDO: Passa nome da variação para controle de quantidade */}
+                          <QuantityButton onClick={() => decrementQuantity(item.id, item.selectedVariation?.name)}>-</QuantityButton>
                           <QuantityDisplay>{item.quantity}</QuantityDisplay>
-                          <QuantityButton onClick={() => incrementQuantity(item.id)}>+</QuantityButton>
-                          <RemoveButton onClick={() => removeFromCart(item.id)}>
+                          <QuantityButton onClick={() => incrementQuantity(item.id, item.selectedVariation?.name)}>+</QuantityButton>
+                          <RemoveButton onClick={() => removeFromCart(item.id, item.selectedVariation?.name)}>
                             <Trash2 size={16} />
                           </RemoveButton>
                         </QuantityControl>
                       </ItemDetails>
-                    </CartItem>
+                    </StyledCartItem>
                   ))}
                 </CartItemsList>
               ) : (
@@ -425,6 +448,7 @@ const Cart: React.FC = () => {
                   )}
                 </TotalText>
                 <TotalAmount>
+                  {/* CORRIGIDO: Acessa o preço da variação ou preço base para o total */}
                   R$ {activeStep > 0 ? finalTotal.toFixed(2).replace('.', ',') : totalAmount.toFixed(2).replace('.', ',')}
                 </TotalAmount>
               </CartTotal>
@@ -448,9 +472,8 @@ const Cart: React.FC = () => {
                   disabled={
                     (activeStep === 0 && cartItems.length === 0) ||
                     (activeStep === 1 && (
-                      !customerInfo.name ||
-                      // !customerInfo.phone || // Telefone comentado como opcional
-                      (deliveryOption === 'delivery' && !customerInfo.address)
+                      !customerInfo.name.trim() ||
+                      (deliveryOption === 'delivery' && !customerInfo.address.trim())
                     ))
                   }
                 >

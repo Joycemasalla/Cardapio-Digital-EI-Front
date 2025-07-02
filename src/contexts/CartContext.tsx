@@ -1,29 +1,24 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { toast } from 'react-toastify';
 import { FunctionComponent } from 'react';
+// IMPORTAÇÃO CORRIGIDA: Importa Product e ProductVariation do ProductContext
+import { Product, ProductVariation } from './ProductContext';
 
 
-type Product = {
-  id: string;
-  name: string;
-  price: number;
-  description?: string;
-  image?: string;
-  category: string;
-};
-
-type CartItem = Product & {
+// CartItem agora pode incluir a variação selecionada
+export type CartItem = Product & { // Estende o tipo Product importado
   quantity: number;
+  selectedVariation?: ProductVariation; // Nova propriedade para armazenar a variação escolhida
 };
 
 type CartContextType = {
   cartItems: CartItem[];
   isCartOpen: boolean;
   toggleCart: () => void;
-  addToCart: (product: Product) => void;
-  removeFromCart: (productId: string) => void;
-  incrementQuantity: (productId: string) => void;
-  decrementQuantity: (productId: string) => void;
+  addToCart: (product: Product, selectedVariation?: ProductVariation) => void; // Aceita variação
+  removeFromCart: (productId: string, selectedVariationName?: string) => void; // Aceita nome da variação para remoção mais precisa
+  incrementQuantity: (productId: string, selectedVariationName?: string) => void; // Aceita nome da variação
+  decrementQuantity: (productId: string, selectedVariationName?: string) => void; // Aceita nome da variação
   clearCart: () => void;
 };
 
@@ -37,60 +32,78 @@ export const CartProvider: FunctionComponent<{ children: ReactNode }> = ({ child
     setIsCartOpen(!isCartOpen);
   };
 
-  const addToCart = (product: Product) => {
-  
+  // Adaptação de addToCart para lidar com variações
+  const addToCart = (product: Product, selectedVariation?: ProductVariation) => {
     setCartItems(prevItems => {
-      const existingItem = prevItems.find(item => item.id === product.id);
+      // Usamos uma "chave" para identificar itens no carrinho de forma única, incluindo a variação
+      const itemKey = selectedVariation ? `${product.id}-${selectedVariation.name}` : product.id;
+      
+      const existingItem = prevItems.find(item => {
+        const existingItemKey = item.selectedVariation ? `${item.id}-${item.selectedVariation.name}` : item.id;
+        return existingItemKey === itemKey;
+      });
   
       if (existingItem) {
-        // Se o item já existe, aumente a quantidade
         const updatedItems = prevItems.map(item =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          (item.selectedVariation ? `${item.id}-${item.selectedVariation.name}` : item.id) === itemKey
+            ? { ...item, quantity: item.quantity + 1 } : item
         );
-  
-        // Apenas exibir a mensagem uma vez, caso a quantidade tenha sido aumentada
-        if (existingItem.quantity === 1) {
-          console.log(`Adicionando mais um ${product.name} ao carrinho...`);
-          toast.success(`Adicionado mais um ${product.name} ao carrinho!`);
-        }
-  
+        toast.success(`Mais um ${product.name}${selectedVariation ? ` (${selectedVariation.name})` : ''} adicionado!`);
         return updatedItems;
       } else {
-        // Se o item não existe, adicione o item com quantidade 1
-        const updatedItems = [...prevItems, { ...product, quantity: 1 }];
-        
-        toast.success(`${product.name} adicionado ao carrinho!`);
-  
-        return updatedItems;
+        // Calcula o preço correto e o nome (com variação)
+        // Garante que price é um number, pois o CartItem agora espera price: number
+        const itemPrice = selectedVariation ? selectedVariation.price : (product.price ?? 0); 
+        const itemName = selectedVariation ? `${product.name} (${selectedVariation.name})` : product.name;
+
+        const newItem: CartItem = { 
+          ...product, 
+          id: product.id, // Mantém o ID original do produto
+          name: itemName,
+          price: itemPrice, // Usa o preço da variação ou o preço base do produto
+          quantity: 1, 
+          selectedVariation: selectedVariation 
+        };
+        toast.success(`${itemName} adicionado ao carrinho!`);
+        return [...prevItems, newItem];
       }
     });
-  
-    // Abrir o carrinho quando adicionar o item
-    setIsCartOpen(true);
   };
   
 
-  const removeFromCart = (productId: string) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
-    toast.info('Item removido do carrinho');
-  };
-
-  const incrementQuantity = (productId: string) => {
+  // Adaptação de incrementQuantity para lidar com variações
+  const incrementQuantity = (productId: string, selectedVariationName?: string) => {
     setCartItems(prevItems =>
-      prevItems.map(item =>
-        item.id === productId ? { ...item, quantity: item.quantity + 1 } : item
-      )
+      prevItems.map(item => {
+        const itemKey = item.selectedVariation ? `${item.id}-${item.selectedVariation.name}` : item.id;
+        const targetKey = selectedVariationName ? `${productId}-${selectedVariationName}` : productId;
+        return itemKey === targetKey ? { ...item, quantity: item.quantity + 1 } : item;
+      })
     );
   };
 
-  const decrementQuantity = (productId: string) => {
+  // Adaptação de decrementQuantity para lidar com variações
+  const decrementQuantity = (productId: string, selectedVariationName?: string) => {
     setCartItems(prevItems =>
-      prevItems.map(item =>
-        item.id === productId && item.quantity > 1
+      prevItems.map(item => {
+        const itemKey = item.selectedVariation ? `${item.id}-${item.selectedVariation.name}` : item.id;
+        const targetKey = selectedVariationName ? `${productId}-${selectedVariationName}` : productId;
+        
+        return (itemKey === targetKey && item.quantity > 1)
           ? { ...item, quantity: item.quantity - 1 }
-          : item
-      )
+          : item;
+      })
     );
+  };
+
+  // Adaptação de removeFromCart para lidar com variações
+  const removeFromCart = (productId: string, selectedVariationName?: string) => {
+    setCartItems(prevItems => prevItems.filter(item => {
+      const itemKey = item.selectedVariation ? `${item.id}-${item.selectedVariation.name}` : item.id;
+      const targetKey = selectedVariationName ? `${productId}-${selectedVariationName}` : productId;
+      return itemKey !== targetKey;
+    }));
+    toast.info('Item removido do carrinho');
   };
 
   const clearCart = () => {

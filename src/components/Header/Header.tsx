@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { ShoppingCart, User, Menu, X } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
-import logoespaco from '../../assets/logoespaco.png'; // Importar a imagem do logo
+import logoespaco from '../../assets/logoespaco.png'; // CORRIGIDO: A importação agora deve funcionar com o custom.d.ts
 import {
   HeaderContainer,
   Logo,
@@ -55,39 +55,41 @@ const Header: React.FC = () => {
   };
 
   return (
-    <HeaderContainer $scrolled={scrolled}> {/* Prop transient $scrolled */}
+    <HeaderContainer $scrolled={scrolled}>
       <LogoContainer>
         <Logo to="/" onClick={scrollToTop}>
           <LogoImage src={logoespaco} alt="Espaço Imperial Logo" />
         </Logo>
       </LogoContainer>
 
-      <Nav>
-        <NavLink onClick={() => handleCategoryClick('hamburgueres-tradicionais')}>
-          Hambúrgueres Tradicionais
-        </NavLink>
-        <NavLink onClick={() => handleCategoryClick('hamburgueres-artesanais')}>
-          Hambúrgueres Artesanais
-        </NavLink>
-        <NavLink onClick={() => handleCategoryClick('porcoes')}>
-          Porções
-        </NavLink>
-        <NavLink onClick={() => handleCategoryClick('pizzas')}>
-          Pizzas
-        </NavLink>
-        <NavLink onClick={() => handleCategoryClick('pizzas-doces')}>
-          Pizzas Doces
-        </NavLink>
-        <NavLink onClick={() => handleCategoryClick('bebidas')}>
-          Bebidas
-        </NavLink>
-        <NavLink onClick={() => handleCategoryClick('churrasco')}>
-          Churrasco
-        </NavLink>
-        <NavLink onClick={() => handleCategoryClick('combos')}>
-          Combos
-        </NavLink>
-      </Nav>
+      {!isAdminPage && (
+        <Nav>
+          <NavLink onClick={() => handleCategoryClick('hamburgueres-tradicionais')}>
+            Hambúrgueres Tradicionais
+          </NavLink>
+          <NavLink onClick={() => handleCategoryClick('hamburgueres-artesanais')}>
+            Hambúrgueres Artesanais
+          </NavLink>
+          <NavLink onClick={() => handleCategoryClick('porcoes')}>
+            Porções
+          </NavLink>
+          <NavLink onClick={() => handleCategoryClick('pizzas')}>
+            Pizzas
+          </NavLink>
+          <NavLink onClick={() => handleCategoryClick('pizzas-doces')}>
+            Pizzas Doces
+          </NavLink>
+          <NavLink onClick={() => handleCategoryClick('bebidas')}>
+            Bebidas
+          </NavLink>
+          <NavLink onClick={() => handleCategoryClick('churrasco')}>
+            Churrasco
+          </NavLink>
+          <NavLink onClick={() => handleCategoryClick('combos')}>
+            Combos
+          </NavLink>
+        </Nav>
+      )}
 
       <HeaderActions>
         {!isAdminPage && (
@@ -97,16 +99,21 @@ const Header: React.FC = () => {
           </CartButton>
         )}
 
-        <AdminLink to={currentUser ? "/admin/dashboard" : "/admin"}>
-          <User size={24} />
-        </AdminLink>
+        {(currentUser || location.pathname === "/admin") && (
+            <AdminLink to={currentUser ? "/admin/dashboard" : "/admin"}>
+            <User size={24} />
+          </AdminLink>
+        )}
 
-        <MobileMenuButton onClick={toggleMobileMenu}>
-          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </MobileMenuButton>
+
+        {!isAdminPage && (
+          <MobileMenuButton onClick={toggleMobileMenu}>
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </MobileMenuButton>
+        )}
       </HeaderActions>
 
-      {mobileMenuOpen && (
+      {mobileMenuOpen && !isAdminPage && (
         <MobileNav>
           <NavLink onClick={() => handleCategoryClick('hamburgueres-tradicionais')}>
             Hambúrgueres Tradicionais

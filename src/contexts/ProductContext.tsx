@@ -2,13 +2,22 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { v4 as uuidv4 } from 'uuid';
 import { FunctionComponent } from 'react';
 
-type Product = {
+// src/contexts/ProductContext.tsx
+// NOVO: Tipo para as variações do produto exportado
+export type ProductVariation = {
+  name: string; // Ex: 'P', 'M', 'G' ou 'Normal', 'Com Queijo'
+  price: number;
+};
+
+// NOVO: Tipo Product exportado com `price` e `image` opcionais e `variations`
+export type Product = {
   id: string;
   name: string;
   description: string;
-  price: number;
-  image: string;
+  price?: number; // Preço se não houver variações, agora opcional
+  image?: string; // Imagem agora opcional
   category: string;
+  variations?: ProductVariation[]; // Array de variações
 };
 
 type ProductContextType = {
@@ -21,7 +30,7 @@ type ProductContextType = {
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-// Lista de produtos iniciais
+// Lista de produtos iniciais com variações
 const initialProducts: Product[] = [
   // --- CHURRASCO ---
   {
@@ -415,168 +424,248 @@ const initialProducts: Product[] = [
     category: 'Porções'
   },
 
-  // --- PIZZAS ---
+  // --- PIZZAS --- (Refatorado com variações)
   {
     id: uuidv4(),
     name: 'Pizza Quatro Queijos',
-    description: 'Muçarela, Cheddar, catupiry, parmesão, azeitona e orégano. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Muçarela, Cheddar, catupiry, parmesão, azeitona e orégano.',
     image: 'https://images.pexels.com/photos/2762968/pexels-photo-2762968.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas'
+    category: 'Pizzas',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
   {
     id: uuidv4(),
     name: 'Pizza Bacon',
-    description: 'Bacon, muçarela, tomate azeitona e orégano. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Bacon, muçarela, tomate azeitona e orégano.',
     image: 'https://images.pexels.com/photos/2762968/pexels-photo-2762968.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas'
+    category: 'Pizzas',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
   {
     id: uuidv4(),
     name: 'Pizza Calabresa',
-    description: 'Calabresa, muçarela, cebola, azeitona e orégano. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Calabresa, muçarela, cebola, azeitona e orégano.',
     image: 'https://images.pexels.com/photos/2762968/pexels-photo-2762968.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas'
+    category: 'Pizzas',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
   {
     id: uuidv4(),
     name: 'Pizza Camarão',
-    description: 'Muçarela, camarão, catupiry alho frito, azeitona e orégano. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Muçarela, camarão, catupiry alho frito, azeitona e orégano.',
     image: 'https://images.pexels.com/photos/2762968/pexels-photo-2762968.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas'
+    category: 'Pizzas',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
   {
     id: uuidv4(),
     name: 'Pizza Carne Seca',
-    description: 'Muçarela, carne seca, catupiry cebola, azeitona e orégano. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Muçarela, carne seca, catupiry cebola, azeitona e orégano.',
     image: 'https://images.pexels.com/photos/2762968/pexels-photo-2762968.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas'
+    category: 'Pizzas',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
   {
     id: uuidv4(),
     name: 'Pizza Costela',
-    description: 'Muçarela, costela, catupiry cebola, azeitona e orégano. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Muçarela, costela, catupiry cebola, azeitona e orégano.',
     image: 'https://images.pexels.com/photos/2762968/pexels-photo-2762968.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas'
+    category: 'Pizzas',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
   {
     id: uuidv4(),
     name: 'Pizza Da Roça',
-    description: 'Muçarela, frango desfiado, milho Bacon, azeitona e orégano. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Muçarela, frango desfiado, milho Bacon, azeitona e orégano.',
     image: 'https://images.pexels.com/photos/2762968/pexels-photo-2762968.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas'
+    category: 'Pizzas',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
   {
     id: uuidv4(),
     name: 'Pizza Presunto',
-    description: 'Presunto, Muçarela, azeitona e orégano. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Presunto, Muçarela, azeitona e orégano.',
     image: 'https://images.pexels.com/photos/2762968/pexels-photo-2762968.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas'
+    category: 'Pizzas',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
   {
     id: uuidv4(),
     name: 'Pizza Frango com Catupiry',
-    description: 'Muçarela, frango desfiado, catupiry, azeitona e orégano. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Muçarela, frango desfiado, catupiry, azeitona e orégano.',
     image: 'https://images.pexels.com/photos/2762968/pexels-photo-2762968.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas'
+    category: 'Pizzas',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
   {
     id: uuidv4(),
     name: 'Pizza Lombo',
-    description: 'Muçarela, lombo canadense, catupiry azeitona e orégano. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Muçarela, lombo canadense, catupiry azeitona e orégano.',
     image: 'https://images.pexels.com/photos/2762968/pexels-photo-2762968.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas'
+    category: 'Pizzas',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
   {
     id: uuidv4(),
     name: 'Pizza Margherita',
-    description: 'Muçarela, tomate, parmesão, manjericão, azeitona e orégano. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Muçarela, tomate, parmesão, manjericão, azeitona e orégano.',
     image: 'https://images.pexels.com/photos/2762968/pexels-photo-2762968.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas'
+    category: 'Pizzas',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
   {
     id: uuidv4(),
     name: 'Pizza A Moda',
-    description: 'Muçarela, presunto, calabresa, palmito, azeitona, milho, cebola, catupiry e orégano. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Muçarela, presunto, calabresa, palmito, azeitona, milho, cebola, catupiry e orégano.',
     image: 'https://images.pexels.com/photos/2762968/pexels-photo-2762968.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas'
+    category: 'Pizzas',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
   {
     id: uuidv4(),
     name: 'Pizza Americana',
-    description: 'Muçarela, cheddar, tomate, pimentão, cream cheese, azeitona e orégano. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Muçarela, cheddar, tomate, pimentão, cream cheese, azeitona e orégano.',
     image: 'https://images.pexels.com/photos/2762968/pexels-photo-2762968.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas'
+    category: 'Pizzas',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
   {
     id: uuidv4(),
     name: 'Pizza Palmito',
-    description: 'Muçarela, palmito, catupiry azeitona e orégano. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Muçarela, palmito, catupiry azeitona e orégano.',
     image: 'https://images.pexels.com/photos/2762968/pexels-photo-2762968.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas'
+    category: 'Pizzas',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
   {
     id: uuidv4(),
     name: 'Pizza Portuguesa',
-    description: 'Muçarela, calabresa, tomate, pimentão, presunto, ovo, cebola, azeitona e orégano. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Muçarela, calabresa, tomate, pimentão, presunto, ovo, cebola, azeitona e orégano.',
     image: 'https://images.pexels.com/photos/2762968/pexels-photo-2762968.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas'
+    category: 'Pizzas',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
   {
     id: uuidv4(),
     name: 'Pizza Italiana',
-    description: 'Muçarela, salaminho, azeitona, cebola e orégano. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Muçarela, salaminho, azeitona, cebola e orégano.',
     image: 'https://images.pexels.com/photos/2762968/pexels-photo-2762968.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas'
+    category: 'Pizzas',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
 
-  // --- PIZZAS DOCES ---
+  // --- PIZZAS DOCES --- (Refatorado com variações)
   {
     id: uuidv4(),
     name: 'Pizza Prestígio',
-    description: 'Muçarela, brigadeiro e coco. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Muçarela, brigadeiro e coco.',
     image: 'https://images.pexels.com/photos/7142952/pexels-photo-7142952.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas Doces'
+    category: 'Pizzas Doces',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
   {
     id: uuidv4(),
     name: 'Pizza Banana com Doce de Leite',
-    description: 'Muçarela, banana, doce de leite e canela. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Muçarela, banana, doce de leite e canela.',
     image: 'https://images.pexels.com/photos/7142952/pexels-photo-7142952.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas Doces'
+    category: 'Pizzas Doces',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
   {
     id: uuidv4(),
     name: 'Pizza Creme de Avelã com Confete',
-    description: 'Muçarela, creme de avelã e confete. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Muçarela, creme de avelã e confete.',
     image: 'https://images.pexels.com/photos/7142952/pexels-photo-7142952.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas Doces'
+    category: 'Pizzas Doces',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
   {
     id: uuidv4(),
     name: 'Pizza Romeu e Julieta',
-    description: 'Muçarela, requeijão cremoso e goiabada. Tamanhos: P: R$ 30,00, M: R$ 35,00, G: R$ 40,00.',
-    price: 30.00,
+    description: 'Muçarela, requeijão cremoso e goiabada.',
     image: 'https://images.pexels.com/photos/7142952/pexels-photo-7142952.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    category: 'Pizzas Doces'
+    category: 'Pizzas Doces',
+    variations: [
+      { name: 'Pequena', price: 30.00 },
+      { name: 'Média', price: 35.00 },
+      { name: 'Grande', price: 40.00 },
+    ]
   },
 
   // --- BEBIDAS (Preços estimados para fins de demonstração) ---
@@ -663,7 +752,7 @@ const initialProducts: Product[] = [
   {
     id: uuidv4(),
     name: 'H2O / Limoneto',
-    description: 'Bebida H2O sabor Limoneto.',
+    description: 'Bebida mista H2O sabor Limoneto.',
     price: 6.00,
     image: 'https://images.pexels.com/photos/2536965/pexels-photo-2536965.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
     category: 'Bebidas'
