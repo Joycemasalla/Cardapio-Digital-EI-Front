@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProducts, Product, ProductVariation } from '../contexts/ProductContext';
 import InputMask from 'react-input-mask';
-import { ChevronDown, Plus, Edit, Trash2, X, Menu } from 'lucide-react';
+import { ChevronDown, Plus, Edit, Trash2, X, Menu, UploadCloud } from 'lucide-react'; // NOVO: Importa UploadCloud
 import {
   AdminDashboardContainer,
   AdminSidebar,
@@ -32,8 +32,11 @@ import {
   AdminMenuToggleButton,
   AdminMobileDrawer,
   AdminDrawerOverlay,
-  CustomSelectContainer
-} from './PageStyles';
+  CustomSelectContainer,
+  InputFileContainer, // NOVO: Estilo para o input de arquivo
+  InputFileName, // NOVO: Estilo para mostrar o nome do arquivo
+  UploadButton // NOVO: Estilo para o botão de upload
+} from './PageStyles'; // Adicione InputFileContainer, InputFileName, UploadButton aqui
 import { FormGroup, Label, Input, Textarea, SubmitButton } from './PageStyles';
 import { toast } from 'react-toastify';
 
@@ -43,7 +46,8 @@ interface ProductFormState {
   name: string;
   description: string;
   price: string;
-  image?: string;
+  image?: string; // Continua sendo a URL final
+  imageFile: File | null; // NOVO: Para o arquivo selecionado
   category: string;
   dynamicVariations: ProductVariation[];
 }
@@ -62,6 +66,10 @@ const AdminDashboard: React.FC = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
   const [selectedProductCategoryFilter, setSelectedProductCategoryFilter] = useState('Todos os Produtos');
+
+  // NOVO: Estado para a pré-visualização da imagem
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+
 
   const allCategories = [
     'Todos os Produtos',
@@ -108,22 +116,44 @@ const AdminDashboard: React.FC = () => {
     description: '',
     price: '',
     image: '',
+    imageFile: null, // Inicializa como nulo
     category: '',
     dynamicVariations: [],
   });
 
+  // NOVO: Efeito para criar URL de preview quando um arquivo é selecionado
+  useEffect(() => {
+    if (formData.imageFile) {
+      const url = URL.createObjectURL(formData.imageFile);
+      setImagePreviewUrl(url);
+      return () => URL.revokeObjectURL(url); // Limpa a URL do objeto quando o componente desmonta ou o arquivo muda
+    } else {
+      setImagePreviewUrl(formData.image || null); // Se não há arquivo, mostra a URL existente do produto
+    }
+  }, [formData.imageFile, formData.image]);
+
+
   const formCategories = allCategories.filter(cat => cat !== 'Todos os Produtos');
 
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    // CORRIGIDO: Asserção de tipo explícita para e.target
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | React.ChangeEvent<HTMLTextAreaElement> | HTMLSelectElement>) => {
     const target = e.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
-    const { name, value } = target; 
+    const { name, value } = target;
     setFormData({
       ...formData,
       [name]: value,
     });
   };
+
+  // NOVO: Handler para o input de arquivo
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    setFormData({
+      ...formData,
+      imageFile: file,
+    });
+  };
+
 
   const handleVariationChange = (index: number, field: keyof ProductVariation, value: string) => {
     const newVariations = [...formData.dynamicVariations];
@@ -159,6 +189,7 @@ const AdminDashboard: React.FC = () => {
       description: '',
       price: '',
       image: '',
+      imageFile: null,
       category: '',
       dynamicVariations: [],
     });
@@ -181,6 +212,7 @@ const AdminDashboard: React.FC = () => {
       ...product,
       price: product.price != null ? product.price.toFixed(2).replace('.', ',') : '',
       dynamicVariations: product.variations || [],
+      imageFile: null, // Ao editar, não há arquivo pré-selecionado
     } as ProductFormState);
     setEditingProduct(product);
     setShowForm(true);
@@ -200,7 +232,28 @@ const AdminDashboard: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    let finalImageUrl = formData.image; // Assume a URL existente por padrão
+
     try {
+      // NOVO: Se um arquivo de imagem foi selecionado, faça o upload primeiro
+      if (formData.imageFile) {
+        toast.info('Fazendo upload da imagem...');
+        const uploadFormData = new FormData();
+        uploadFormData.append('image', formData.imageFile);
+
+        const uploadResponse = await fetch('http://localhost:3001/api/upload', { // Rota de upload do seu backend
+          method: 'POST',
+          body: uploadFormData, // Multer espera FormData
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('Erro no upload da imagem');
+        }
+        const uploadResult = await uploadResponse.json();
+        finalImageUrl = uploadResult.imageUrl; // Obtém a URL do Cloudinary
+        toast.success('Upload da imagem concluído!');
+      }
+
       let productData: Product;
       
       if (formData.dynamicVariations.length > 0) {
@@ -216,7 +269,7 @@ const AdminDashboard: React.FC = () => {
           id: formData.id,
           name: formData.name,
           description: formData.description,
-          image: formData.image,
+          image: finalImageUrl, // Usa a URL final (Cloudinary ou original)
           category: formData.category,
           variations: formData.dynamicVariations,
           price: undefined
@@ -232,7 +285,7 @@ const AdminDashboard: React.FC = () => {
           name: formData.name,
           description: formData.description,
           price: priceValue,
-          image: formData.image,
+          image: finalImageUrl, // Usa a URL final (Cloudinary ou original)
           category: formData.category,
           variations: undefined
         };
@@ -519,7 +572,7 @@ const AdminDashboard: React.FC = () => {
                     required
                   />
                   <InputMask
-                    mask="R$ 999,99"
+                    mask="R$ 99,99"
                     maskChar={null}
                     className="variation-input"
                     placeholder="R$ 0,00"
@@ -547,7 +600,7 @@ const AdminDashboard: React.FC = () => {
               <FormGroup>
                 <Label htmlFor="price">Preço (R$)</Label>
                 <InputMask
-                  mask="R$ 999.999.999,99"
+                  mask="R$ 99,99"
                   maskChar={null}
                   id="price"
                   name="price"
@@ -574,14 +627,40 @@ const AdminDashboard: React.FC = () => {
 
             <FormGroup>
               <Label htmlFor="image">URL da Imagem</Label>
-              <Input
+              {/* NOVO: Input de arquivo para imagem e pré-visualização */}
+              <InputFileContainer>
+                <Input
+                  type="file"
+                  id="imageFile"
+                  name="imageFile"
+                  accept="image/*"
+                  onChange={handleImageFileChange} // Novo handler para arquivo
+                  style={{ display: 'none' }} // Esconde o input file original
+                />
+                <UploadButton htmlFor="imageFile">
+                  <UploadCloud size={20} /> Selecionar Imagem
+                </UploadButton>
+                {formData.imageFile && (
+                  <InputFileName>{formData.imageFile.name}</InputFileName>
+                )}
+                {(imagePreviewUrl && !formData.imageFile) && ( // Mostra URL original se não houver arquivo novo
+                  <InputFileName>{formData.image}</InputFileName>
+                )}
+              </InputFileContainer>
+              {imagePreviewUrl && ( // Pré-visualização da imagem
+                <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                  <img src={imagePreviewUrl} alt="Pré-visualização" style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '8px', objectFit: 'contain' }} />
+                </div>
+              )}
+               {/* REMOVIDO: O input de URL de imagem que era usado antes */}
+              {/* <Input
                 type="url"
                 id="image"
                 name="image"
                 value={formData.image}
                 onChange={handleInputChange}
                 required
-              />
+              /> */}
             </FormGroup>
 
             <SubmitButton type="submit">

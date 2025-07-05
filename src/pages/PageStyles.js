@@ -332,7 +332,7 @@ export const ProductsTable = styled.table`
     gap: 0.5rem;
   }
   
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) { /* MUDADO: Breakpoint para aplicar o layout de lista compacta */
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     display: block; /* Tabela como bloco */
     width: 100%; /* Ocupa a largura total */
     border: none; /* Remove bordas da tabela principal */
@@ -376,13 +376,13 @@ export const ProductsTable = styled.table`
       text-overflow: clip;
       flex-shrink: 0; /* Impede que os itens internos da célula encolham muito */
       
-      &::before { /* REMOVIDO: Labels não são mais necessários neste layout de lista */
+      &::before {
         display: none;
       }
 
       &:nth-child(1) { /* Imagem */
-        width: 50px; /* AJUSTADO: Largura da imagem */
-        height: 50px; /* AJUSTADO: Altura da imagem */
+        width: 50px;
+        height: 50px;
         justify-content: center;
         align-items: center;
         padding: 0;
@@ -390,13 +390,13 @@ export const ProductsTable = styled.table`
       }
 
       &:nth-child(2) { /* Nome */
-        flex-grow: 1; /* Permite que o nome cresça para ocupar espaço */
+        flex-grow: 1;
         font-weight: 600;
         color: ${({ theme }) => theme.colors.text};
-        font-size: 0.85rem; /* AJUSTADO: Fonte do nome */
-        white-space: normal; /* AJUSTADO: Permite quebra de linha para o nome */
+        font-size: 0.85rem;
+        white-space: normal;
         overflow: hidden;
-        text-overflow: ellipsis; /* Adiciona reticências se o nome for muito longo */
+        text-overflow: ellipsis;
         padding-left: 0.4rem;
       }
 
@@ -408,7 +408,7 @@ export const ProductsTable = styled.table`
         font-size: 0.8rem;
         font-weight: 600;
         color: ${({ theme }) => theme.colors.primary};
-        white-space: normal; /* AJUSTADO: Permite quebra de linha para o preço/variações */
+        white-space: normal;
         overflow: hidden;
         text-overflow: ellipsis;
         margin-left: auto;
@@ -548,6 +548,7 @@ export const NoProducts = styled.div`
   }
   
   button {
+
     margin: 0 auto;
   }
 `;
@@ -863,4 +864,36 @@ export const AdminDrawerOverlay = styled.div`
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 1050;
   transition: opacity 0.3s ease-in-out;
+`;
+
+
+// Estilos para o input de arquivo e upload
+export const InputFileContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+`;
+
+export const InputFileName = styled.span`
+  font-size: 0.9rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-style: italic;
+`;
+
+export const UploadButton = styled.label`
+  background-color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.background};
+  padding: 0.75rem 1rem;
+  border-radius: ${({ theme }) => theme.borderRadius.small};
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: ${({ theme }) => theme.transition};
+  
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.primaryDark};
+  }
 `;
