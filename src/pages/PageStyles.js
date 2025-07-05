@@ -500,7 +500,7 @@ export const TableCell = styled.td`
 export const TableImage = styled.img`
   width: 60px;
   height: 60px;
-  object-fit: cover;
+  object-fit: cover; /* CORRIGIDO: Volta para cover */
   border-radius: ${({ theme }) => theme.borderRadius.small};
   flex-shrink: 0;
 
@@ -509,7 +509,6 @@ export const TableImage = styled.img`
     height: 40px;
   }
 `;
-
 export const ActionButton = styled.button`
   background-color: rgba(255, 255, 255, 0.05);
   color: ${({ theme }) => theme.colors.text};

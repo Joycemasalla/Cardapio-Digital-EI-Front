@@ -28,7 +28,7 @@ type ProductContextType = {
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-const API_BASE_URL = 'https://render.com/docs/web-services#port-binding';
+const API_BASE_URL = 'https://cardapio-digital-ei-back.onrender.com';
 
 export const ProductProvider: FunctionComponent<{ children: ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
