@@ -15,7 +15,7 @@ import { ProductProvider } from './contexts/ProductContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import FloatingCartButton from './components/FloatingCartButton/FloatingCartButton';
-import BackToTopButton from './components/BackToTopButton/BackToTopButton'; // NOVO: Importação do BackToTopButton
+import BackToTopButton from './components/BackToTopButton/BackToTopButton';
 
 type ProtectedRouteProps = {
   children: ReactNode;
@@ -33,7 +33,8 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
 function App() {
   return (
-    <Router>
+    // NOVO: Adiciona as future flags ao BrowserRouter
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <ProductProvider>
           <CartProvider>
@@ -56,7 +57,7 @@ function App() {
                 </Routes>
                 <Cart />
                 <FloatingCartButton />
-                <BackToTopButton /> {/* NOVO: Componente BackToTopButton adicionado aqui */}
+                <BackToTopButton />
                 <ToastContainer position="bottom-right" theme="dark" />
               </div>
             </ThemeProvider>

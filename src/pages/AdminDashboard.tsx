@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProducts, Product, ProductVariation } from '../contexts/ProductContext';
+import InputMask from 'react-input-mask';
+import { ChevronDown, Plus, Edit, Trash2, X, Menu } from 'lucide-react';
 import {
   AdminDashboardContainer,
   AdminSidebar,
@@ -18,9 +20,20 @@ import {
   ProductForm,
   FormTitle,
   CloseFormButton,
-  TableImage
+  TableImage,
+  VariationsEditor,
+  VariationItem,
+  AddVariationButton,
+  SelectLabel,
+  SelectButton,
+  ChevronIcon,
+  DropdownList,
+  DropdownItem,
+  AdminMenuToggleButton,
+  AdminMobileDrawer,
+  AdminDrawerOverlay,
+  CustomSelectContainer
 } from './PageStyles';
-import { Plus, Edit, Trash2, X } from 'lucide-react';
 import { FormGroup, Label, Input, Textarea, SubmitButton } from './PageStyles';
 import { toast } from 'react-toastify';
 
@@ -30,9 +43,9 @@ interface ProductFormState {
   name: string;
   description: string;
   price: string;
-  image?: string; // CORRIGIDO: `image` agora é opcional aqui
+  image?: string;
   category: string;
-  variations: string;
+  dynamicVariations: ProductVariation[];
 }
 
 
@@ -43,17 +56,15 @@ const AdminDashboard: React.FC = () => {
   const [currentSection, setCurrentSection] = useState('products');
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState<ProductFormState>({
-    id: '',
-    name: '',
-    description: '',
-    price: '',
-    image: '',
-    category: '',
-    variations: '',
-  });
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const categorySelectRef = useRef<HTMLDivElement>(null);
 
-  const categories = [
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const [selectedProductCategoryFilter, setSelectedProductCategoryFilter] = useState('Todos os Produtos');
+
+  const allCategories = [
+    'Todos os Produtos',
     'Hambúrgueres Tradicionais',
     'Hambúrgueres Artesanais',
     'Porções',
@@ -64,13 +75,82 @@ const AdminDashboard: React.FC = () => {
     'Churrasco'
   ];
 
+  useEffect(() => {
+    const handleClickOutsideFormDropdown = (event: MouseEvent) => {
+      if (categorySelectRef.current && !categorySelectRef.current.contains(event.target as Node)) {
+        setIsCategoryDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutsideFormDropdown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutsideFormDropdown);
+    };
+  }, [categorySelectRef]);
+
+  useEffect(() => {
+    const handleClickOutsideDrawer = (event: MouseEvent) => {
+      if (drawerRef.current && !drawerRef.current.contains(event.target as Node)) {
+        setIsDrawerOpen(false);
+      }
+    };
+    if (isDrawerOpen) {
+      document.addEventListener('mousedown', handleClickOutsideDrawer);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutsideDrawer);
+    };
+  }, [isDrawerOpen, drawerRef]);
+
+
+  const [formData, setFormData] = useState<ProductFormState>({
+    id: '',
+    name: '',
+    description: '',
+    price: '',
+    image: '',
+    category: '',
+    dynamicVariations: [],
+  });
+
+  const formCategories = allCategories.filter(cat => cat !== 'Todos os Produtos');
+
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+    // CORRIGIDO: Asserção de tipo explícita para e.target
+    const target = e.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+    const { name, value } = target; 
     setFormData({
       ...formData,
-      [name]: name === 'price' ? value.replace(',', '.') : value,
+      [name]: value,
     });
   };
+
+  const handleVariationChange = (index: number, field: keyof ProductVariation, value: string) => {
+    const newVariations = [...formData.dynamicVariations];
+    let parsedValue: string | number = value;
+
+    if (field === 'price') {
+      const cleanValue = value.replace('R$', '').replace(/\./g, '').replace(',', '.');
+      parsedValue = parseFloat(cleanValue) || 0;
+    }
+    
+    (newVariations[index] as any)[field] = parsedValue;
+
+    setFormData({ ...formData, dynamicVariations: newVariations });
+  };
+
+  const addVariation = () => {
+    setFormData({
+      ...formData,
+      dynamicVariations: [...formData.dynamicVariations, { name: '', price: 0 }],
+    });
+  };
+
+  const removeVariation = (index: number) => {
+    const newVariations = formData.dynamicVariations.filter((_, i) => i !== index);
+    setFormData({ ...formData, dynamicVariations: newVariations });
+  };
+
 
   const resetForm = () => {
     setFormData({
@@ -80,26 +160,15 @@ const AdminDashboard: React.FC = () => {
       price: '',
       image: '',
       category: '',
-      variations: '',
+      dynamicVariations: [],
     });
     setEditingProduct(null);
   };
 
   const handleSectionChange = (section: string) => {
     setCurrentSection(section);
-    switch(section) {
-      case 'categories':
-        toast.info('Gerenciamento de categorias em desenvolvimento');
-        break;
-      case 'orders':
-        toast.info('Sistema de pedidos em desenvolvimento');
-        break;
-      case 'settings':
-        toast.info('Configurações em desenvolvimento');
-        break;
-      default:
-        break;
-    }
+    setIsDrawerOpen(false);
+    setSelectedProductCategoryFilter('Todos os Produtos');
   };
 
   const handleAddNewClick = () => {
@@ -110,9 +179,9 @@ const AdminDashboard: React.FC = () => {
   const handleEditClick = (product: Product) => {
     setFormData({
       ...product,
-      price: product.price != null ? product.price.toString() : '', 
-      variations: product.variations ? JSON.stringify(product.variations, null, 2) : '', 
-    });
+      price: product.price != null ? product.price.toFixed(2).replace('.', ',') : '',
+      dynamicVariations: product.variations || [],
+    } as ProductFormState);
     setEditingProduct(product);
     setShowForm(true);
   };
@@ -133,35 +202,30 @@ const AdminDashboard: React.FC = () => {
 
     try {
       let productData: Product;
-      let parsedVariations: ProductVariation[] | undefined;
-
-      if (formData.variations.trim() !== '') {
-        try {
-          parsedVariations = JSON.parse(formData.variations);
-          if (!Array.isArray(parsedVariations) || !parsedVariations.every(v => typeof v.name === 'string' && typeof v.price === 'number')) {
-            throw new Error('Formato de variações inválido. Use um array de objetos com "name" (string) e "price" (número).');
-          }
-        } catch (error: any) {
-          toast.error(`Erro no formato das variações: ${error.message || error}`);
+      
+      if (formData.dynamicVariations.length > 0) {
+        const hasInvalidVariations = formData.dynamicVariations.some(v => 
+          !v.name.trim() || isNaN(v.price) || v.price <= 0
+        );
+        if (hasInvalidVariations) {
+          toast.error('Por favor, preencha todos os campos de Nome e Preço para cada variação, e o preço deve ser maior que zero.');
           return;
         }
-      }
 
-      if (parsedVariations && parsedVariations.length > 0) {
         productData = {
           id: formData.id,
           name: formData.name,
           description: formData.description,
           image: formData.image,
           category: formData.category,
-          variations: parsedVariations,
+          variations: formData.dynamicVariations,
           price: undefined
         };
       } else {
-        const priceValue = parseFloat(formData.price);
-        if (isNaN(priceValue)) {
-            toast.error('Por favor, insira um preço válido para o produto sem variações.');
-            return;
+        const priceValue = parseFloat(formData.price.replace('R$', '').replace(/\./g, '').replace(',', '.'));
+        if (isNaN(priceValue) || priceValue <= 0) {
+          toast.error('Por favor, insira um preço válido (maior que zero) para o produto.');
+          return;
         }
         productData = {
           id: formData.id,
@@ -190,11 +254,75 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const filteredProducts = products.filter(product => true);
+  const filteredProducts = products.filter(product => {
+    if (selectedProductCategoryFilter === 'Todos os Produtos' || !selectedProductCategoryFilter) {
+      return true;
+    }
+    return product.category === selectedProductCategoryFilter;
+  });
+
+  const getAdminTitle = () => {
+    return `Gerenciar Produtos (${selectedProductCategoryFilter})`;
+  };
 
 
   return (
     <AdminDashboardContainer>
+      <AdminDrawerOverlay $isOpen={isDrawerOpen} onClick={() => setIsDrawerOpen(false)} />
+      <AdminMobileDrawer $isOpen={isDrawerOpen} ref={drawerRef}>
+        <div className="drawer-header">
+          <span className="drawer-title">Menu de Administração</span>
+          <button className="drawer-close-button" onClick={() => setIsDrawerOpen(false)}>
+            <X size={24} />
+          </button>
+        </div>
+        <AdminSidebar style={{ display: 'block', width: '100%', padding: 0, border: 'none' }}>
+          <h3>Navegação</h3>
+          <ul>
+            <li
+              className={currentSection === 'products' ? 'active' : ''}
+              onClick={() => handleSectionChange('products')}
+            >
+              Produtos
+            </li>
+          </ul>
+        </AdminSidebar>
+        {currentSection === 'products' && (
+          <div className="drawer-category-filter">
+            <SelectLabel htmlFor="product-category-filter">Filtrar Produtos por Categoria</SelectLabel>
+            <CustomSelectContainer style={{ maxWidth: '100%' }}>
+              <SelectButton
+                className={isCategoryDropdownOpen ? 'open' : ''}
+                onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                type="button"
+              >
+                <span>{selectedProductCategoryFilter}</span>
+                <ChevronIcon className={isCategoryDropdownOpen ? 'rotated' : ''}>
+                  <ChevronDown size={20} />
+                </ChevronIcon>
+              </SelectButton>
+              {isCategoryDropdownOpen && (
+                <DropdownList>
+                  {allCategories.map((categoryName) => (
+                    <DropdownItem
+                      key={categoryName}
+                      className={selectedProductCategoryFilter === categoryName ? 'selected' : ''}
+                      onClick={() => {
+                        setSelectedProductCategoryFilter(categoryName);
+                        setIsCategoryDropdownOpen(false);
+                      }}
+                    >
+                      {categoryName}
+                    </DropdownItem>
+                  ))}
+                </DropdownList>
+              )}
+            </CustomSelectContainer>
+          </div>
+        )}
+      </AdminMobileDrawer>
+
+
       <AdminSidebar>
         <div className="sidebar-menu">
           <h3>Menu</h3>
@@ -205,31 +333,16 @@ const AdminDashboard: React.FC = () => {
             >
               Produtos
             </li>
-            <li
-              className={currentSection === 'categories' ? 'active' : ''}
-              onClick={() => handleSectionChange('categories')}
-            >
-              Categorias
-            </li>
-            <li
-              className={currentSection === 'orders' ? 'active' : ''}
-              onClick={() => handleSectionChange('orders')}
-            >
-              Pedidos
-            </li>
-            <li
-              className={currentSection === 'settings' ? 'active' : ''}
-              onClick={() => handleSectionChange('settings')}
-            >
-              Configurações
-            </li>
           </ul>
         </div>
       </AdminSidebar>
 
       <AdminContent>
         <AdminHeader>
-          <AdminTitle>Gerenciar Produtos</AdminTitle>
+          <AdminMenuToggleButton onClick={() => setIsDrawerOpen(true)}>
+            <Menu size={24} />
+          </AdminMenuToggleButton>
+          <AdminTitle>{getAdminTitle()}</AdminTitle>
           <AdminControls>
             <AddButton onClick={handleAddNewClick}>
               <Plus size={16} />
@@ -237,6 +350,39 @@ const AdminDashboard: React.FC = () => {
             </AddButton>
           </AdminControls>
         </AdminHeader>
+
+        <div className="main-content-category-filter">
+          <SelectLabel htmlFor="product-category-filter-main">Filtrar por Categoria</SelectLabel>
+          <CustomSelectContainer style={{ maxWidth: '300px', margin: '0 auto 1.5rem auto' }}>
+            <SelectButton
+              className={isCategoryDropdownOpen ? 'open' : ''}
+              onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+              type="button"
+            >
+              <span>{selectedProductCategoryFilter}</span>
+              <ChevronIcon className={isCategoryDropdownOpen ? 'rotated' : ''}>
+                <ChevronDown size={20} />
+              </ChevronIcon>
+            </SelectButton>
+            {isCategoryDropdownOpen && (
+              <DropdownList>
+                {allCategories.map((categoryName) => (
+                  <DropdownItem
+                    key={categoryName}
+                    className={selectedProductCategoryFilter === categoryName ? 'selected' : ''}
+                    onClick={() => {
+                      setSelectedProductCategoryFilter(categoryName);
+                      setIsCategoryDropdownOpen(false);
+                    }}
+                  >
+                    {categoryName}
+                  </DropdownItem>
+                ))}
+              </DropdownList>
+            )}
+          </CustomSelectContainer>
+        </div>
+
 
         {loading ? (
           <div>Carregando...</div>
@@ -262,12 +408,12 @@ const AdminDashboard: React.FC = () => {
             <tbody>
               {filteredProducts.map((product) => (
                 <TableRow key={product.id}>
-                  <TableCell>
+                  <TableCell data-label="Imagem">
                     <TableImage src={product.image || 'https://via.placeholder.com/60'} alt={product.name} />
                   </TableCell>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>{product.category}</TableCell>
-                  <TableCell>
+                  <TableCell data-label="Nome">{product.name}</TableCell>
+                  <TableCell data-label="Categoria">{product.category}</TableCell>
+                  <TableCell data-label="Preço/Variações">
                     {product.variations && product.variations.length > 0 ? (
                       product.variations.map((v, i) => (
                         <div key={i}>{v.name}: R$ {v.price.toFixed(2).replace('.', ',')}</div>
@@ -276,7 +422,7 @@ const AdminDashboard: React.FC = () => {
                       product.price ? `R$ ${product.price.toFixed(2).replace('.', ',')}` : 'N/A'
                     )}
                   </TableCell>
-                  <TableCell className="actions">
+                  <TableCell data-label="Ações" className="actions">
                     <ActionButton onClick={() => handleEditClick(product)}>
                       <Edit size={16} />
                     </ActionButton>
@@ -299,9 +445,9 @@ const AdminDashboard: React.FC = () => {
               <FormTitle>
                 {editingProduct ? 'Editar Produto' : 'Adicionar Produto'}
               </FormTitle>
-              <CloseFormButton type="button" onClick={() => setShowForm(false)}>
-                <X size={20} />
-              </CloseFormButton>
+            <CloseFormButton type="button" onClick={() => setShowForm(false)}>
+                <X size={24} />
+            </CloseFormButton>
             </div>
 
             <FormGroup>
@@ -317,53 +463,103 @@ const AdminDashboard: React.FC = () => {
             </FormGroup>
 
             <FormGroup>
-              <Label htmlFor="category">Categoria</Label>
-              <select
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                required
-                className="form-select"
-              >
-                <option value="">Selecione uma categoria</option>
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
+                <SelectLabel htmlFor="category-select-admin">Categoria</SelectLabel>
+                <div ref={categorySelectRef} style={{ width: '100%', position: 'relative' }}>
+                    <CustomSelectContainer style={{ maxWidth: '100%' }}>
+                        <SelectButton 
+                            className={isCategoryDropdownOpen ? 'open' : ''} 
+                            onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                            type="button"
+                        >
+                            <span>{formData.category || 'Selecione uma categoria'}</span>
+                            <ChevronIcon className={isCategoryDropdownOpen ? 'rotated' : ''}>
+                                <ChevronDown size={20} />
+                            </ChevronIcon>
+                        </SelectButton>
+
+                        {isCategoryDropdownOpen && (
+                            <DropdownList>
+                                <DropdownItem
+                                    className={!formData.category ? 'selected' : ''}
+                                    onClick={() => {
+                                        setFormData({ ...formData, category: '' });
+                                        setIsCategoryDropdownOpen(false);
+                                    }}
+                                >
+                                    Selecione uma categoria
+                                </DropdownItem>
+                                {formCategories.map((category) => (
+                                    <DropdownItem
+                                        key={category}
+                                        className={formData.category === category ? 'selected' : ''}
+                                        onClick={() => {
+                                            setFormData({ ...formData, category: category });
+                                            setIsCategoryDropdownOpen(false);
+                                        }}
+                                    >
+                                        {category}
+                                    </DropdownItem>
+                                ))}
+                            </DropdownList>
+                        )}
+                    </CustomSelectContainer>
+                </div>
             </FormGroup>
 
-            <FormGroup>
-              <Label htmlFor="variations">Variações (JSON Array)</Label>
-              <Textarea
-                id="variations"
-                name="variations"
-                value={formData.variations}
-                onChange={handleInputChange}
-                placeholder='Ex: [{"name": "Pequena", "price": 30.00}, {"name": "Média", "price": 35.00}]'
-              />
-              <p style={{ fontSize: '0.8rem', color: '#ccc', marginTop: '0.2rem' }}>
-                Deixe vazio se o produto não tiver variações.
-              </p>
-            </FormGroup>
+            <VariationsEditor>
+              <Label>Variações do Produto</Label>
+              {formData.dynamicVariations.map((variation, index) => (
+                <VariationItem key={index}>
+                  <Input
+                    className="variation-input"
+                    type="text"
+                    placeholder="Nome da Variação (ex: Pequena)"
+                    value={variation.name}
+                    onChange={(e) => handleVariationChange(index, 'name', e.target.value)}
+                    required
+                  />
+                  <InputMask
+                    mask="R$ 999,99"
+                    maskChar={null}
+                    className="variation-input"
+                    placeholder="R$ 0,00"
+                    value={variation.price.toFixed(2).replace('.', ',')}
+                    onChange={(e) => handleVariationChange(index, 'price', e.target.value)}
+                    required
+                  >
+                    {(inputProps: React.InputHTMLAttributes<HTMLInputElement>) => <Input {...inputProps} />}
+                  </InputMask>
+                  <ActionButton 
+                    className="delete" 
+                    type="button" 
+                    onClick={() => removeVariation(index)}
+                  >
+                    <Trash2 size={16} />
+                  </ActionButton>
+                </VariationItem>
+              ))}
+              <AddVariationButton type="button" onClick={addVariation}>
+                <Plus size={16} /> Adicionar Variação
+              </AddVariationButton>
+            </VariationsEditor>
 
-            {formData.variations.trim() === '' && (
+            {formData.dynamicVariations.length === 0 && (
               <FormGroup>
                 <Label htmlFor="price">Preço (R$)</Label>
-                <Input
-                  type="text"
+                <InputMask
+                  mask="R$ 999.999.999,99"
+                  maskChar={null}
                   id="price"
                   name="price"
                   value={formData.price}
                   onChange={handleInputChange}
-                  placeholder="0,00"
+                  placeholder="R$ 0,00"
                   required
-                />
+                >
+                  {(inputProps: React.InputHTMLAttributes<HTMLInputElement>) => <Input {...inputProps} />}
+                </InputMask>
               </FormGroup>
             )}
-
 
             <FormGroup>
               <Label htmlFor="description">Descrição</Label>

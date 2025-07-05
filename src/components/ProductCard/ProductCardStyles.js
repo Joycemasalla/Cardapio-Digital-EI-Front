@@ -8,8 +8,8 @@ export const CardContainer = styled.div`
   transition: ${({ theme }) => theme.transition};
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 200px; /* Mais compacto na grade */
+  height: auto; /* AJUSTADO: Altura se adapta ao conteúdo */
+  min-height: 200px; /* Altura mínima na grade */
 
   &:hover {
     transform: translateY(-5px);
@@ -24,20 +24,22 @@ export const CardContainer = styled.div`
   &.list-view {
     flex-direction: row-reverse; /* Imagem à direita, informações à esquerda */
     min-height: unset;
-    height: auto; /* Remove altura fixa e permite ajuste ao conteúdo */
-    padding: 0.8rem; /* Aumenta padding para melhor espaçamento na lista */
+    height: auto; /* Altura se ajusta ao conteúdo */
+    padding: 0.6rem; /* Padding reduzido para compactação */
     align-items: flex-start; /* Alinha itens ao topo */
-    gap: 1rem; /* Aumenta espaçamento entre imagem e conteúdo na lista */
-    /* REMOVIDO: max-height para permitir que o conteúdo não seja cortado */
+    gap: 0.6rem; /* Espaçamento entre imagem e conteúdo */
+    max-height: 100px; /* Altura máxima para cards na lista (desktop/tablet) */
     
     @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-      padding: 0.7rem;
-      gap: 0.8rem;
+      max-height: 90px;
+      padding: 0.5rem;
+      gap: 0.5rem;
     }
 
     @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-      padding: 0.6rem; /* Padding em mobile list-view */
-      gap: 0.6rem;
+      padding: 0.4rem;
+      gap: 0.4rem;
+      max-height: 80px; /* Altura máxima em mobile list-view */
     }
   }
 `;
@@ -59,8 +61,8 @@ export const ImageContainer = styled.div`
     }
 
     @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-      width: 45px; /* Ajuste para mobile list-view */
-      height: 45px; /* Ajuste para mobile list-view */
+      width: 45px;
+      height: 45px;
     }
   }
 
@@ -81,10 +83,10 @@ export const ProductImage = styled.img`
 `;
 
 export const ProductInfo = styled.div`
-  padding: 0.7rem; /* Padding ajustado para o modo grade */
+  padding: 0.7rem; /* Padding ajustado */
   display: flex;
   flex-direction: column;
-  flex: 1; /* Permite que ProductInfo ocupe o espaço restante */
+  flex: 1;
   justify-content: space-between;
 
   ${CardContainer}.list-view & { /* Estilos no modo de lista */
@@ -95,7 +97,7 @@ export const ProductInfo = styled.div`
     overflow: hidden;
 
     @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-      width: calc(100% - 45px - 0.6rem); /* Ajusta largura em mobile list-view (largura da imagem + gap) */
+      width: calc(100% - 45px - 0.4rem); /* Ajusta largura em mobile list-view */
       padding: 0;
     }
   }
@@ -121,63 +123,42 @@ export const ProductName = styled.h3`
 `;
 
 export const ProductDescription = styled.p`
-  font-size: 0.75rem; /* Leve aumento para melhor legibilidade */
+  font-size: 0.75rem; /* Fonte menor para a descrição */
   color: ${({ theme }) => theme.colors.textSecondary};
   margin-bottom: 0.4rem;
   line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 5; /* Aumenta linhas visíveis na grade para 5 */
-  flex-grow: 1;
+  white-space: normal; /* NOVO: Permite quebra de linha para exibir todo o conteúdo */
+  overflow: visible; /* NOVO: Torna o overflow visível */
+  text-overflow: clip; /* NOVO: Remove ellipsis */
+  display: block; /* Garante que seja um bloco para quebra de linha */
+  /* Removido -webkit-box, -webkit-box-orient, -webkit-line-clamp */
 
   ${CardContainer}.list-view & { /* Estilos no modo de lista */
-    font-size: 0.7rem; /* Ainda menor na lista */
-    -webkit-line-clamp: 2; /* Apenas 2 linhas na lista */
+    font-size: 0.7rem;
+    white-space: normal; /* Mantém normal na lista */
     margin-bottom: 0.2rem;
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     font-size: 0.75rem;
-    -webkit-line-clamp: 4; /* 4 linhas em mobile */
   }
 `;
 
-export const ToggleDescriptionButton = styled.button`
-  background: none;
-  border: none;
-  color: ${({ theme }) => theme.colors.primary};
-  font-size: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  align-self: flex-start;
-  padding: 0.1rem 0;
-  margin-top: 0.1rem;
-  transition: color 0.3s ease;
-  white-space: nowrap;
+// REMOVIDO: ToggleDescriptionButton completamente, pois não será mais usado
 
-  &:hover {
-    color: ${({ theme }) => theme.colors.primaryLight};
-  }
-
-  ${CardContainer}.list-view & {
-    display: none;
-  }
-`;
 
 export const VariationsContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
-  margin-top: 0.3rem;
-  margin-bottom: 0.5rem;
+  gap: 0.2rem;
+  margin-top: 0.2rem;
+  margin-bottom: 0.4rem;
 
   ${CardContainer}.list-view & {
     font-size: 0.6rem;
-    gap: 0.2rem;
+    gap: 0.1rem;
     margin-top: 0.1rem;
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.1rem;
   }
 `;
 
@@ -186,8 +167,7 @@ export const VariationOption = styled.label`
     $selected ? theme.colors.primary : theme.colors.backgroundCard};
   color: ${({ theme, $selected }) => 
     $selected ? theme.colors.background : theme.colors.textSecondary};
-  border: 1px solid ${({ theme, $selected }) => 
-    $selected ? theme.colors.primary : theme.colors.textDark};
+  border: 1px solid ${({ theme }) => theme.colors.textDark};
   padding: 0.2rem 0.4rem;
   border-radius: ${({ theme }) => theme.borderRadius.small};
   cursor: pointer;
@@ -208,7 +188,7 @@ export const VariationOption = styled.label`
 `;
 
 export const ProductPrice = styled.div`
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 600;
   color: ${({ theme }) => theme.colors.primary};
   display: flex;
@@ -220,9 +200,9 @@ export const ProductPrice = styled.div`
   width: 100%;
 
   ${CardContainer}.list-view & {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     margin-top: 0.3rem;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 0.4rem;
   }
 
@@ -278,12 +258,9 @@ export const ViewToggleContainer = styled.div`
 `;
 
 export const ViewToggleButton = styled.button`
-  background-color: ${({ theme, $active }) =>
-    $active ? theme.colors.primary : theme.colors.backgroundCard};
-  color: ${({ theme, $active }) =>
-    $active ? theme.colors.background : theme.colors.textSecondary};
-  border: 1px solid ${({ theme, $active }) =>
-    $active ? theme.colors.primary : theme.colors.backgroundCard};
+  background-color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.background};
+  border: 1px solid ${({ theme }) => theme.colors.primary};
   padding: 0.6rem 1rem;
   border-radius: ${({ theme }) => theme.borderRadius.small};
   cursor: pointer;
@@ -296,10 +273,7 @@ export const ViewToggleButton = styled.button`
   font-weight: 500;
 
   &:hover:not(:disabled) {
-    background-color: ${({ theme, $active }) =>
-      $active ? theme.colors.primaryDark : 'rgba(255, 255, 255, 0.1)'};
-    color: ${({ theme, $active }) =>
-      $active ? theme.colors.background : theme.colors.text};
+    background-color: ${({ theme }) => theme.colors.primaryDark};
   }
 
   &:disabled {
