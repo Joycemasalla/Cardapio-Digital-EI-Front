@@ -3,8 +3,8 @@ import styled from 'styled-components';
 
 export const WhatsAppButtonContainer = styled.button`
   position: fixed;
-  bottom: 20px; /* Distância do fundo */
-  right: 20px; /* Distância da direita */
+  bottom: 20px; /* Distância do fundo, alinhado com o botão flutuante do carrinho */
+  left: 20px; /* Distância da esquerda (NOVO: mudamos de 'right' para 'left') */
   background: linear-gradient(45deg, #25D366, #128C7E); /* Cores do WhatsApp */
   color: white;
   border: none;
@@ -26,11 +26,11 @@ export const WhatsAppButtonContainer = styled.button`
   }
 
   /* Para telas menores */
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) { /* Use md para mais abrangência */
     width: 50px;
     height: 50px;
     font-size: 20px;
     bottom: 15px;
-    right: 15px;
+    left: 15px; /* Ajuste para telas menores */
   }
 `;
