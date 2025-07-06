@@ -1,4 +1,4 @@
-export const theme = {
+ const theme = {
   colors: {
     background: '#121212',
     backgroundLight: '#1E1E1E',
@@ -35,3 +35,5 @@ export const theme = {
   },
   transition: 'all 0.3s ease',
 };
+
+export default theme;
