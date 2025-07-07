@@ -342,7 +342,7 @@ export const ProductsTable = styled.table`
   .actions {
     display: flex;
     gap: 0.5rem;
-    flex-shrink: 0; /* Garante que os botões de ação não encolham */
+    flex-shrink: 0;
   }
   
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
@@ -362,10 +362,11 @@ export const ProductsTable = styled.table`
       width: 100%;
     }
 
-    tr { 
+    tr { /* Cada linha da tabela vira um card no estilo lista horizontal */
       display: flex;
       flex-direction: row; 
-      align-items: center; 
+      flex-wrap: wrap; 
+      align-items: flex-start; 
       gap: 0.8rem; 
       padding: 0.6rem; 
       background-color: ${({ theme }) => theme.colors.backgroundCard};
@@ -373,21 +374,26 @@ export const ProductsTable = styled.table`
       box-shadow: ${({ theme }) => theme.shadows.light};
       border: 1px solid rgba(255, 255, 255, 0.1);
       width: 100%; 
-      min-height: 70px; 
+      height: auto; 
+      min-height: unset; 
+      position: relative; 
+      padding-bottom: 2.5rem; 
     }
 
-    td { 
+    td { /* Células da tabela dentro do card de lista */
       display: flex;
       flex-direction: column; 
       justify-content: center; 
-      padding: 0; 
+      padding: 0.4rem; 
       border: none;
       font-size: 0.8rem; 
       color: ${({ theme }) => theme.colors.text};
       white-space: normal; 
       overflow: visible;
       text-overflow: clip;
-      flex-shrink: 0; /* Impede que os itens internos da célula encolham muito */
+      flex-shrink: 0; 
+      width: auto; 
+      flex-basis: auto; 
       
       &::before {
         display: none;
@@ -396,23 +402,26 @@ export const ProductsTable = styled.table`
       &:nth-child(1) { /* Imagem */
         width: 50px;
         height: 50px;
-        min-width: 50px; /* <--- NOVO: Garante largura mínima para a imagem */
-        justify-content: center;
-        align-items: center;
-        padding: 0;
-        margin: 0;
+        min-width: 50px; 
+        overflow: hidden; 
+        border-radius: ${({ theme }) => theme.borderRadius.small};
+        margin-right: 0.5rem; 
       }
 
       &:nth-child(2) { /* Nome */
         flex-grow: 1;
         font-weight: 600;
         color: ${({ theme }) => theme.colors.text};
-        font-size: 0.85rem;
+        font-size: 0.9rem; 
         white-space: normal;
         overflow: hidden;
         text-overflow: ellipsis;
-        padding-left: 0.4rem;
-        min-width: 80px; /* <--- NOVO: Largura mínima para o nome */
+        display: -webkit-box;
+        -webkit-line-clamp: 2; 
+        -webkit-box-orient: vertical;
+        padding-left: 0; 
+        margin-right: 0.5rem; 
+        min-width: 0; 
       }
 
       &:nth-child(3) { /* Categoria */
@@ -420,15 +429,23 @@ export const ProductsTable = styled.table`
       }
 
       &:nth-child(4) { /* Preço/Variações */
-        font-size: 0.8rem;
+        font-size: 0.75rem; /* AJUSTADO: Fonte ligeiramente menor para múltiplas variações */
         font-weight: 600;
         color: ${({ theme }) => theme.colors.primary};
-        white-space: normal;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        margin-left: auto;
-        padding-right: 0.4rem;
-        min-width: 60px; /* <--- NOVO: Largura mínima para preço */
+        white-space: normal; /* ALTERADO: Permite quebra de linha para variações */
+        overflow: visible; /* ALTERADO: Permite quebra de linha sem ellipsis */
+        text-overflow: clip; /* ALTERADO: Sem ellipsis para variações */
+        margin-left: auto; 
+        padding-right: 0; 
+        min-width: unset; 
+
+        /* NOVO: Estilo para cada item de variação individual */
+        div {
+          white-space: nowrap; /* Mantém cada variação "Nome: R$ X,XX" em uma única linha */
+          font-size: 0.7rem; /* Fonte ainda menor para cada variação individual */
+          line-height: 1.2; /* Espaçamento entre as linhas de variação */
+          text-align: right; /* Alinha o texto da variação à direita */
+        }
       }
 
       &:last-child { /* Ações */
@@ -438,7 +455,11 @@ export const ProductsTable = styled.table`
         border-top: none;
         margin-top: 0;
         gap: 0.4rem;
-        min-width: 70px; /* <--- NOVO: Largura mínima para os botões de ação */
+        position: absolute; 
+        bottom: 0.5rem; 
+        right: 0.5rem; 
+        width: auto; 
+        min-width: unset; 
       }
     }
   }
