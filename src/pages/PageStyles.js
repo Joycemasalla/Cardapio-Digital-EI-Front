@@ -352,130 +352,114 @@ export const ProductsTable = styled.table`
     overflow-x: hidden; 
     
     thead {
-      display: none;
+      display: none; /* Oculta o cabeçalho da tabela no mobile */
     }
 
     tbody {
       display: flex; 
       flex-direction: column; 
-      gap: 0.8rem; 
+      gap: 0.8rem; /* Espaçamento entre os cards de produto */
       width: 100%;
     }
 
-    tr { /* Cada linha da tabela vira um card no estilo lista horizontal */
+    tr { /* Cada linha da tabela (<tr>) vira um card de produto individual */
       display: flex;
-      flex-direction: row; /* Mantemos a direção de linha para os itens principais */
-      flex-wrap: nowrap; /* NOVO: Garante que o container principal do card não quebre em múltiplas linhas. Os TDs internos cuidarão da quebra. */
-      align-items: center; /* ALterado: Centraliza verticalmente o item principal (nome, preço, etc.) */
-      gap: 0.8rem; 
-      padding: 0.6rem; 
+      flex-direction: column; /* ALTERADO: Os elementos dentro do card agora se empilham verticalmente */
+      align-items: flex-start; /* Alinha o conteúdo do card ao início (esquerda/topo) */
+      gap: 0.4rem; /* Espaçamento entre os elementos empilhados dentro do card */
+      padding: 0.8rem; /* Padding interno do card */
       background-color: ${({ theme }) => theme.colors.backgroundCard};
       border-radius: ${({ theme }) => theme.borderRadius.medium};
       box-shadow: ${({ theme }) => theme.shadows.light};
       border: 1px solid rgba(255, 255, 255, 0.1);
       width: 100%; 
-      height: auto; 
-      min-height: 70px; /* Mantemos uma altura mínima para cards sem muito conteúdo */
-      position: relative; 
-      padding-bottom: 0.6rem; /* AJUSTADO: Padding normal, os botões de ação absolutos não precisam de padding extra aqui se o td deles tiver */
+      height: auto; /* A altura se ajusta ao conteúdo */
+      min-height: unset; /* Remove altura mínima fixa no mobile */
+      position: relative; /* Para posicionar elementos filhos se necessário */
     }
 
-    td { /* Células da tabela dentro do card de lista */
-      display: flex;
-      flex-direction: column; 
-      justify-content: center; 
-      padding: 0; /* AJUSTADO: Remover padding padrão da célula, usar margens ou padding internos específicos */
+    td { /* Cada célula (<td>) dentro do card */
+      display: flex; /* Mantém o display flex para controle interno */
+      align-items: center; /* Alinha o conteúdo verticalmente no centro da célula */
+      width: 100%; /* Cada célula ocupa a largura total do card */
+      padding: 0; /* Remove padding padrão, o espaçamento será por margens ou gaps específicos */
       border: none;
       font-size: 0.8rem; 
       color: ${({ theme }) => theme.colors.text};
-      white-space: normal; 
+      white-space: normal; /* Permite quebra de linha em todo o texto da célula */
       overflow: visible;
       text-overflow: clip;
       flex-shrink: 0; 
-      width: auto; 
       flex-basis: auto; 
       
       &::before {
         display: none;
       }
 
-      &:nth-child(1) { /* Imagem */
+      &:nth-child(1) { /* Célula da Imagem */
         width: 50px;
         height: 50px;
         min-width: 50px; 
         overflow: hidden; 
         border-radius: ${({ theme }) => theme.borderRadius.small};
-        /* margin-right: 0.5rem; */ /* Removido, o gap do tr já cuida do espaçamento */
+        margin-right: 0.8rem; /* Espaçamento à direita da imagem */
       }
 
-      &:nth-child(2) { /* Nome */
-        flex-grow: 1; /* Permite que o nome cresça e ocupe o espaço restante */
+      &:nth-child(2) { /* Célula do Nome do Produto */
+        flex-grow: 1; /* Permite que o nome ocupe o espaço restante */
+        min-width: 0; /* Permite que o texto do nome encolha para caber */
         font-weight: 600;
         color: ${({ theme }) => theme.colors.text};
-        font-size: 0.9rem; 
+        font-size: 0.95rem; /* Fonte ligeiramente maior para o nome principal */
         white-space: normal;
         overflow: hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
-        -webkit-line-clamp: 2; /* Limita o nome a 2 linhas */
+        -webkit-line-clamp: 2; /* Limita o nome a 2 linhas e adiciona "..." */
         -webkit-box-orient: vertical;
-        /* padding-left: 0; */ /* Removido, padding já é 0 */
-        /* margin-right: 0.5rem; */ /* Removido, o gap do tr já cuida do espaçamento */
-        min-width: 0; /* Permite que o nome encolha para caber */
-        align-self: flex-start; /* NOVO: Alinha o nome ao topo da célula */
       }
-
+      
       &:nth-child(3) { /* Categoria */
-        display: none;
+        display: none; /* Mantém oculto no mobile */
       }
 
-      &:nth-child(4) { /* Preço/Variações */
-        font-size: 0.75rem; 
+      &:nth-child(4) { /* Célula do Preço/Variações */
+        flex-direction: column; /* NOVO: Stack as variações verticalmente dentro desta célula */
+        align-items: flex-start; /* Alinha o texto das variações à esquerda */
+        font-size: 0.85rem; 
         font-weight: 600;
         color: ${({ theme }) => theme.colors.primary};
         white-space: normal; 
         overflow: visible; 
         text-overflow: clip; 
-        margin-left: auto; /* Empurra para a direita */
-        /* padding-right: 0; */ /* Removido, padding já é 0 */
-        min-width: unset; 
-        flex-shrink: 1; /* Permite que a célula encolha se necessário */
-        text-align: right; /* Garante que o texto se alinhe à direita */
-        align-self: flex-start; /* NOVO: Alinha as variações/preço ao topo da célula */
-        padding-right: 0.5rem; /* NOVO: Adiciona um pequeno padding à direita para o texto não colar nas ações */
-
-
-        /* Estilo para cada item de variação individual */
-        div {
-          white-space: nowrap; 
-          font-size: 0.7rem; 
-          line-height: 1.2; 
-          text-align: right; 
+        margin-top: 0.4rem; /* Espaçamento do elemento acima (nome) */
+        width: 100%; /* Ocupa a largura total do card para as variações */
+        
+        div { /* Estilo para cada item de variação individual (ex: "Pequena: R$ X,XX") */
+          white-space: nowrap; /* Mantém cada variação em uma única linha */
+          font-size: 0.75rem; /* Fonte um pouco maior para leitura */
+          line-height: 1.3; /* Ajusta o espaçamento entre as linhas de variação */
+          text-align: left; /* Alinha o texto da variação à esquerda */
         }
       }
 
-      &:last-child { /* Ações */
-        flex-direction: row;
-        justify-content: flex-end;
-        padding: 0;
-        border-top: none;
-        margin-top: 0;
-        gap: 0.4rem;
-        position: static; /* ALTERADO: Retorna à posição estática para não sobrepor outros elementos */
-        bottom: unset; /* Remove propriedades de posição absoluta */
-        right: unset; /* Remove propriedades de posição absoluta */
-        width: auto;
-        min-width: unset;
-        flex-basis: 100%; /* NOVO: Força os botões de ação a ocuparem uma nova linha completa */
-        justify-content: flex-end; /* NOVO: Alinha os botões à direita na nova linha */
-        margin-top: 0.5rem; /* NOVO: Espaçamento do conteúdo acima */
+      &:last-child { /* Célula de Ações (botões de Editar/Excluir) */
+        flex-direction: row; /* Mantém os botões em linha */
+        justify-content: flex-end; /* Alinha os botões à direita */
+        padding-top: 0.8rem; /* Espaçamento do conteúdo acima */
+        border-top: 1px solid rgba(255, 255, 255, 0.1); /* Adiciona uma linha separadora acima dos botões */
+        margin-top: 0.8rem; /* Espaçamento da linha separadora para as variações */
+        gap: 0.6rem; /* Espaçamento entre os botões */
+        position: static; /* Remove qualquer posicionamento absoluto que possa causar problemas */
+        width: 100%; /* Ocupa a largura total para os botões */
+        min-width: unset; 
       }
     }
   }
   /* Responsivo para tablets */
   @media (min-width: ${({ theme }) => theme.breakpoints.sm}) and (max-width: ${({ theme }) => theme.breakpoints.md}) {
     display: block;
-    overflow-x: auto; /* <--- MANTIDO: Permite rolagem horizontal em telas de tablet se o conteúdo for muito largo */
+    overflow-x: auto;
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
     
