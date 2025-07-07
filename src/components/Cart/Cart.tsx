@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+// src/components/Cart/Cart.tsx
+import React, { useState, useEffect } from 'react';
 import { X, ShoppingCart, Send, Trash2, Copy } from 'lucide-react';
-// IMPORTAÇÕES CORRIGIDAS: Importa CartItem do CartContext
 import { useCart, CartItem } from '../../contexts/CartContext';
 import InputMask from 'react-input-mask';
 import { toast } from 'react-toastify';
@@ -12,7 +12,7 @@ import {
   CloseButton,
   CartContent,
   CartItemsList,
-  CartItem as StyledCartItem, // Renomeado para evitar conflito com o tipo CartItem
+  CartItem as StyledCartItem,
   ItemInfo,
   ItemName,
   ItemPrice,
@@ -44,8 +44,6 @@ import {
   StyledInputMask
 } from './CartStyles';
 
-// REMOVIDO: CartItemType não é mais necessário aqui, use o tipo CartItem importado
-
 const Cart: React.FC = () => {
   const {
     cartItems,
@@ -59,6 +57,8 @@ const Cart: React.FC = () => {
 
   const [activeStep, setActiveStep] = useState(0);
   const [deliveryOption, setDeliveryOption] = useState<'pickup' | 'local' | 'delivery'>('pickup');
+  
+  // NOVO: Estado inicial com valores padrão ou vazio
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     phone: '',
@@ -68,7 +68,44 @@ const Cart: React.FC = () => {
     notes: ''
   });
 
-  // CORRIGIDO: Acessa o preço da variação se existir, caso contrário o preço base.
+  // NOVO: useEffect para carregar as informações do cliente do localStorage ao montar o componente
+  useEffect(() => {
+    const savedInfo = localStorage.getItem('customerInfo');
+    if (savedInfo) {
+      try {
+        const parsedInfo = JSON.parse(savedInfo);
+        // Preenche o estado com as informações salvas, garantindo que os campos de inputMask sejam strings
+        setCustomerInfo(prev => ({
+          ...prev,
+          ...parsedInfo,
+          phone: parsedInfo.phone || '', // Garante que é string para InputMask
+          change: parsedInfo.change || '', // Garante que é string para InputMask
+        }));
+        // Define a opção de entrega salva, se existir e for válida
+        if (['pickup', 'local', 'delivery'].includes(parsedInfo.deliveryOption)) {
+          setDeliveryOption(parsedInfo.deliveryOption);
+        }
+      } catch (e) {
+        console.error("Falha ao analisar informações do cliente do localStorage", e);
+        // Em caso de dados corrompidos, limpa o localStorage para evitar problemas futuros
+        localStorage.removeItem('customerInfo');
+      }
+    }
+  }, []); // Array de dependências vazio para rodar apenas uma vez no montagem
+
+  // NOVO: useEffect para salvar as informações do cliente no localStorage sempre que 'customerInfo' ou 'deliveryOption' mudar
+  useEffect(() => {
+    // Evita salvar um objeto vazio se o componente acabou de montar e não há dados.
+    // Salva apenas se algum campo principal foi preenchido.
+    if (customerInfo.name || customerInfo.phone || customerInfo.address || customerInfo.notes || customerInfo.paymentMethod !== 'money' || deliveryOption !== 'pickup') {
+      localStorage.setItem('customerInfo', JSON.stringify({ ...customerInfo, deliveryOption }));
+    } else if (!customerInfo.name && !customerInfo.phone && !customerInfo.address && !customerInfo.notes && customerInfo.paymentMethod === 'money' && deliveryOption === 'pickup') {
+      // Se todos os campos estiverem vazios e as opções forem padrão, limpa o localStorage
+      localStorage.removeItem('customerInfo');
+    }
+  }, [customerInfo, deliveryOption]); // Salva sempre que customerInfo ou deliveryOption muda
+
+
   const totalAmount = cartItems.reduce(
     (sum: number, item: CartItem) => sum + (item.selectedVariation?.price || item.price || 0) * item.quantity,
     0
@@ -79,7 +116,6 @@ const Cart: React.FC = () => {
 
   const steps = ['Carrinho', 'Entrega', 'Pagamento'];
 
-  // CORRIGIDO: Tipagem do evento para garantir acesso a `name` e `value`
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setCustomerInfo({
@@ -125,7 +161,6 @@ const Cart: React.FC = () => {
     let message = `*Novo Pedido - Espaço Imperial*\n\n`;
     message += `*Itens do Pedido:*\n`;
 
-    // CORRIGIDO: Acessa o nome e preço do item CartItem, que já inclui a variação
     cartItems.forEach((item: CartItem) => {
       message += `- ${item.quantity}x ${item.name} - R$ ${((item.selectedVariation?.price || item.price || 0) * item.quantity).toFixed(2).replace('.', ',')}\n`;
     });
@@ -169,6 +204,10 @@ const Cart: React.FC = () => {
 
     clearCart();
     toggleCart();
+    
+    // NOVO: Limpa apenas o campo de "troco" após a submissão, pois é específico da compra atual
+    setCustomerInfo(prev => ({ ...prev, change: '' })); 
+    // O useEffect que salva no localStorage vai capturar esta mudança
   };
 
   return (
@@ -208,20 +247,17 @@ const Cart: React.FC = () => {
             <>
               {cartItems.length > 0 ? (
                 <CartItemsList>
-                  {/* CORRIGIDO: Itera sobre CartItem importado */}
                   {cartItems.map((item: CartItem) => (
-                    <StyledCartItem key={item.id + (item.selectedVariation?.name || '')}> {/* Adiciona key da variação */}
+                    <StyledCartItem key={item.id + (item.selectedVariation?.name || '')}>
                       <ItemDetails>
                         <ItemInfo>
                           <ItemName>{item.name}</ItemName>
-                          {/* CORRIGIDO: Acessa o preço da variação ou preço base */}
                           <ItemPrice>
                             R$ {(item.selectedVariation?.price || item.price || 0).toFixed(2).replace('.', ',')}
                           </ItemPrice>
                         </ItemInfo>
 
                         <QuantityControl>
-                          {/* CORRIGIDO: Passa nome da variação para controle de quantidade */}
                           <QuantityButton onClick={() => decrementQuantity(item.id, item.selectedVariation?.name)}>-</QuantityButton>
                           <QuantityDisplay>{item.quantity}</QuantityDisplay>
                           <QuantityButton onClick={() => incrementQuantity(item.id, item.selectedVariation?.name)}>+</QuantityButton>
@@ -287,7 +323,7 @@ const Cart: React.FC = () => {
                     type="text"
                     id="name"
                     name="name"
-                    value={customerInfo.name}
+                    value={customerInfo.name} // Pré-preenchido
                     onChange={handleInputChange}
                     required
                   />
@@ -299,7 +335,7 @@ const Cart: React.FC = () => {
                     mask="(99) 99999-9999"
                     id="phone"
                     name="phone"
-                    value={customerInfo.phone}
+                    value={customerInfo.phone} // Pré-preenchido
                     onChange={handleInputChange}
                     className="form-input"
                   >
@@ -313,7 +349,7 @@ const Cart: React.FC = () => {
                     <Textarea
                       id="address"
                       name="address"
-                      value={customerInfo.address}
+                      value={customerInfo.address} // Pré-preenchido
                       onChange={handleInputChange}
                       required
                     />
@@ -372,7 +408,7 @@ const Cart: React.FC = () => {
                     maskChar={null}
                     id="change"
                     name="change"
-                    value={customerInfo.change}
+                    value={customerInfo.change} // Pré-preenchido
                     onChange={handleInputChange}
                     className="form-input"
                   >
@@ -428,7 +464,7 @@ const Cart: React.FC = () => {
                 <Textarea
                   id="notes"
                   name="notes"
-                  value={customerInfo.notes}
+                  value={customerInfo.notes} // Pré-preenchido
                   onChange={handleInputChange}
                   placeholder="Ex: Sem cebola, bem passado, etc."
                 />
@@ -448,7 +484,6 @@ const Cart: React.FC = () => {
                   )}
                 </TotalText>
                 <TotalAmount>
-                  {/* CORRIGIDO: Acessa o preço da variação ou preço base para o total */}
                   R$ {activeStep > 0 ? finalTotal.toFixed(2).replace('.', ',') : totalAmount.toFixed(2).replace('.', ',')}
                 </TotalAmount>
               </CartTotal>

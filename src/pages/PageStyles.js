@@ -206,7 +206,10 @@ export const AdminTitle = styled.h2`
 // Admin Dashboard Styles (Ajustados para responsividade da tabela)
 export const AdminDashboardContainer = styled.div`
   display: flex;
+  flex-direction: column; /* ALTERADO: Itens empilhados verticalmente (Nav, Header, Content) */
   min-height: calc(100vh - 72px);
+  background-color: ${({ theme }) => theme.colors.background};
+
   /* Se a imagem de fundo estiver aqui, remova-a para evitar repetições/bugs visuais */
   /* background-image: url('CAMINHO_DA_SUA_IMAGEM_DE_FUNDO_ADMIN'); */
   /* background-size: cover; */
@@ -215,10 +218,10 @@ export const AdminDashboardContainer = styled.div`
 `;
 
 export const AdminSidebar = styled.div`
-  width: 250px;
-  background-color: ${({ theme }) => theme.colors.backgroundLight};
+  width: 100%; /* No drawer mobile, ocupa a largura total */
   padding: 2rem 1rem;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: ${({ theme }) => theme.colors.backgroundLight};
+  border-right: none; /* No PC, não haverá sidebar fixa */
   
   h3 {
     color: ${({ theme }) => theme.colors.textSecondary};
@@ -226,6 +229,7 @@ export const AdminSidebar = styled.div`
     margin-bottom: 1rem;
     text-transform: uppercase;
     letter-spacing: 1px;
+    opacity: 1; /* Sempre visível no drawer */
   }
   
   ul {
@@ -240,6 +244,8 @@ export const AdminSidebar = styled.div`
     margin-bottom: 0.5rem;
     cursor: pointer;
     transition: ${({ theme }) => theme.transition};
+    white-space: nowrap; 
+    text-align: left; /* Alinhamento padrão para lista */
     
     &:hover {
       background-color: rgba(255, 255, 255, 0.05);
@@ -251,32 +257,20 @@ export const AdminSidebar = styled.div`
     }
   }
   
-  @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
-    width: 60px;
-    padding: 1rem 0;
-    
-    h3 {
-      display: none;
-    }
-    
-    li {
-      text-align: center;
-      padding: 0.75rem 0;
-      font-size: 0.8rem;
-    }
-  }
-  
-  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    display: none; /* Esconde a sidebar em telas menores, o drawer mobile a substitui */
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) { /* Em telas maiores que mobile */
+    display: none; /* Esconde a AdminSidebar principal, que agora é só o conteúdo do drawer */
   }
 `;
 
+// AdminContent agora ocupa a largura total no PC
 export const AdminContent = styled.div`
   flex: 1;
   padding: 2rem;
   position: relative;
-  overflow-x: hidden; /* Garante que não haja rolagem horizontal indesejada no conteúdo principal */
-  
+  overflow-x: hidden;
+  margin-left: 0; /* NOVO: Sem margem esquerda, ocupa a largura total */
+  transition: none; /* Remove transição de margem, não é mais sidebar colapsável */
+
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     padding: 1rem;
   }
@@ -767,6 +761,7 @@ export const ChevronIcon = styled.span`
   }
 `;
 
+// MODIFICADO: Remove max-height para evitar corte
 export const DropdownList = styled.ul`
   position: absolute;
   top: 100%;
@@ -781,10 +776,12 @@ export const DropdownList = styled.ul`
   list-style: none;
   padding: 0;
   margin: 0;
-  max-height: 200px;
+  max-height: 200px; /* RE-ADICIONADO: Mantido para que a lista tenha rolagem se for muito longa, dentro do espaço do modal/drawer */
   overflow-y: auto;
   z-index: 100;
 `;
+
+
 
 export const DropdownItem = styled.li`
   padding: 0.75rem 1rem;
@@ -812,19 +809,16 @@ export const DropdownItem = styled.li`
   }
 `;
 
-// Estilos para o botão de abrir o Drawer (menu hambúrguer do admin)
+/// AdminMenuToggleButton agora só aparece no mobile
 export const AdminMenuToggleButton = styled.button`
-  display: none;
   background: transparent;
   border: none;
   color: ${({ theme }) => theme.colors.text};
   padding: 0.5rem;
   cursor: pointer;
   
-  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) { /* NOVO: Esconde em PC */
+    display: none; 
   }
 `;
 
@@ -927,3 +921,57 @@ export const UploadButton = styled.label`
   }
 `;
 
+// NOVO: Navegação superior do Admin (para PC)
+export const AdminNav = styled.nav`
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Alinha links à esquerda */
+  background-color: ${({ theme }) => theme.colors.backgroundLight}; /* Um fundo sutil */
+  padding: 0.8rem 2rem; /* Padding para a barra de navegação */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Separador */
+  gap: 1.5rem; /* Espaçamento entre os links */
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    display: none; /* Esconde esta navegação no mobile, o drawer substitui */
+  }
+`;
+
+export const AdminNavLink = styled.button`
+  background: transparent;
+  border: none;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-weight: 500;
+  padding: 0.5rem 0.2rem;
+  transition: ${({ theme }) => theme.transition};
+  position: relative;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.95rem;
+  cursor: pointer;
+
+  &:after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: ${({ theme }) => theme.colors.primary};
+    transition: width 0.3s ease;
+  }
+  
+  &:hover {
+    color: ${({ theme }) => theme.colors.text};
+    &:after {
+      width: 100%;
+    }
+  }
+
+  &.active {
+    color: ${({ theme }) => theme.colors.primary}; /* Cor de destaque para o link ativo */
+    &:after {
+      width: 100%; /* Sublinhado completo para o link ativo */
+      background-color: ${({ theme }) => theme.colors.primary};
+    }
+  }
+`;

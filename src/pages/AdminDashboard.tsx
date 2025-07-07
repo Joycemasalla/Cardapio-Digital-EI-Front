@@ -1,11 +1,12 @@
+// src/pages/AdminDashboard.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProducts, Product, ProductVariation } from '../contexts/ProductContext';
 import InputMask from 'react-input-mask';
-import { ChevronDown, Plus, Edit, Trash2, X, Menu, UploadCloud } from 'lucide-react'; // NOVO: Importa UploadCloud
-import {
+import { ChevronDown, Plus, Edit, Trash2, X, Menu, UploadCloud } from 'lucide-react';
+import { // Importa os componentes de estilo necessários
   AdminDashboardContainer,
-  AdminSidebar,
+  AdminSidebar, // Adaptado para ser o conteúdo do drawer mobile
   AdminContent,
   AdminHeader,
   AdminTitle,
@@ -29,14 +30,16 @@ import {
   ChevronIcon,
   DropdownList,
   DropdownItem,
-  AdminMenuToggleButton,
+  AdminMenuToggleButton, // Botão hambúrguer (apenas mobile)
   AdminMobileDrawer,
   AdminDrawerOverlay,
   CustomSelectContainer,
-  InputFileContainer, // NOVO: Estilo para o input de arquivo
-  InputFileName, // NOVO: Estilo para mostrar o nome do arquivo
-  UploadButton // NOVO: Estilo para o botão de upload
-} from './PageStyles'; // Adicione InputFileContainer, InputFileName, UploadButton aqui
+  InputFileContainer,
+  InputFileName,
+  UploadButton,
+  AdminNav, // Nova barra de navegação superior (apenas PC)
+  AdminNavLink // Links de navegação do Admin
+} from './PageStyles';
 import { FormGroup, Label, Input, Textarea, SubmitButton } from './PageStyles';
 import { toast } from 'react-toastify';
 
@@ -46,8 +49,8 @@ interface ProductFormState {
   name: string;
   description: string;
   price: string;
-  image?: string; // Continua sendo a URL final
-  imageFile: File | null; // NOVO: Para o arquivo selecionado
+  image?: string;
+  imageFile: File | null;
   category: string;
   dynamicVariations: ProductVariation[];
 }
@@ -57,30 +60,57 @@ const AdminDashboard: React.FC = () => {
   const { products, addProduct, updateProduct, deleteProduct, loading } = useProducts();
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [currentSection, setCurrentSection] = useState('products');
+  const [currentSection, setCurrentSection] = useState('products'); // Controla a seção ativa da navegação
   const navigate = useNavigate();
 
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const categorySelectRef = useRef<HTMLDivElement>(null);
 
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Controla o drawer mobile
   const drawerRef = useRef<HTMLDivElement>(null);
   const [selectedProductCategoryFilter, setSelectedProductCategoryFilter] = useState('Todos os Produtos');
 
-  // NOVO: Estado para a pré-visualização da imagem
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
 
-
-  const allCategories = [
-    'Todos os Produtos',
+  // Ordem customizada das categorias para filtros e formulários
+  const customAdminCategoryOrder = [
+    'Pizzas',
     'Hambúrgueres Tradicionais',
     'Hambúrgueres Artesanais',
-    'Porções',
-    'Pizzas',
-    'Pizzas Doces',
-    'Bebidas',
     'Combos',
-    'Churrasco'
+    'Churrasco',
+    'Porções',
+    'Pizzas Doces',
+    'Bebidas'
+  ];
+
+  // Lista completa de categorias, ordenada para filtros e formulários
+  const allCategories = [
+    'Todos os Produtos', // Mantém "Todos os Produtos" sempre no topo
+    ...[ // Lista todas as categorias que devem ser ordenadas
+      'Hambúrgueres Tradicionais',
+      'Hambúrgueres Artesanais',
+      'Porções',
+      'Pizzas',
+      'Pizzas Doces',
+      'Bebidas',
+      'Combos',
+      'Churrasco'
+    ].sort((a, b) => {
+        const indexA = customAdminCategoryOrder.indexOf(a);
+        const indexB = customAdminCategoryOrder.indexOf(b);
+
+        if (indexA !== -1 && indexB !== -1) {
+            return indexA - indexB;
+        }
+        if (indexA !== -1) {
+            return -1;
+        }
+        if (indexB !== -1) {
+            return 1;
+        }
+        return a.localeCompare(b);
+    })
   ];
 
   useEffect(() => {
@@ -116,23 +146,22 @@ const AdminDashboard: React.FC = () => {
     description: '',
     price: '',
     image: '',
-    imageFile: null, // Inicializa como nulo
+    imageFile: null,
     category: '',
     dynamicVariations: [],
   });
 
-  // NOVO: Efeito para criar URL de preview quando um arquivo é selecionado
   useEffect(() => {
     if (formData.imageFile) {
       const url = URL.createObjectURL(formData.imageFile);
       setImagePreviewUrl(url);
-      return () => URL.revokeObjectURL(url); // Limpa a URL do objeto quando o componente desmonta ou o arquivo muda
+      return () => URL.revokeObjectURL(url);
     } else {
-      setImagePreviewUrl(formData.image || null); // Se não há arquivo, mostra a URL existente do produto
+      setImagePreviewUrl(formData.image || null);
     }
   }, [formData.imageFile, formData.image]);
 
-
+  // formCategories agora usa a lista `allCategories` já ordenada, sem "Todos os Produtos"
   const formCategories = allCategories.filter(cat => cat !== 'Todos os Produtos');
 
 
@@ -145,7 +174,6 @@ const AdminDashboard: React.FC = () => {
     });
   };
 
-  // NOVO: Handler para o input de arquivo
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
     setFormData({
@@ -163,7 +191,7 @@ const AdminDashboard: React.FC = () => {
       const cleanValue = value.replace('R$', '').replace(/\./g, '').replace(',', '.');
       parsedValue = parseFloat(cleanValue) || 0;
     }
-
+    
     (newVariations[index] as any)[field] = parsedValue;
 
     setFormData({ ...formData, dynamicVariations: newVariations });
@@ -198,8 +226,8 @@ const AdminDashboard: React.FC = () => {
 
   const handleSectionChange = (section: string) => {
     setCurrentSection(section);
-    setIsDrawerOpen(false);
-    setSelectedProductCategoryFilter('Todos os Produtos');
+    setIsDrawerOpen(false); // Fecha o drawer mobile ao mudar de seção
+    setSelectedProductCategoryFilter('Todos os Produtos'); // Reseta o filtro de categoria
   };
 
   const handleAddNewClick = () => {
@@ -212,7 +240,7 @@ const AdminDashboard: React.FC = () => {
       ...product,
       price: product.price != null ? product.price.toFixed(2).replace('.', ',') : '',
       dynamicVariations: product.variations || [],
-      imageFile: null, // Ao editar, não há arquivo pré-selecionado
+      imageFile: null,
     } as ProductFormState);
     setEditingProduct(product);
     setShowForm(true);
@@ -232,34 +260,31 @@ const AdminDashboard: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    let finalImageUrl = formData.image; // Assume a URL existente por padrão
+    let finalImageUrl = formData.image;
 
     try {
-      // NOVO: Se um arquivo de imagem foi selecionado, faça o upload primeiro
       if (formData.imageFile) {
         toast.info('Fazendo upload da imagem...');
         const uploadFormData = new FormData();
         uploadFormData.append('image', formData.imageFile);
 
-        // CORREÇÃO: Altere esta linha para a URL do seu backend no Render
-        const uploadResponse = await fetch('https://cardapio-digital-ei-back.onrender.com/api/upload', { // Rota de upload do seu backend
-          // const uploadResponse = await fetch('http://localhost:3001/api/upload', { // Remova ou comente esta linha
+        const uploadResponse = await fetch('https://cardapio-digital-ei-back.onrender.com/api/upload', {
           method: 'POST',
-          body: uploadFormData, // Multer espera FormData
+          body: uploadFormData,
         });
 
         if (!uploadResponse.ok) {
           throw new Error('Erro no upload da imagem');
         }
         const uploadResult = await uploadResponse.json();
-        finalImageUrl = uploadResult.imageUrl; // Obtém a URL do Cloudinary
+        finalImageUrl = uploadResult.imageUrl;
         toast.success('Upload da imagem concluído!');
       }
 
       let productData: Product;
-
+      
       if (formData.dynamicVariations.length > 0) {
-        const hasInvalidVariations = formData.dynamicVariations.some(v =>
+        const hasInvalidVariations = formData.dynamicVariations.some(v => 
           !v.name.trim() || isNaN(v.price) || v.price <= 0
         );
         if (hasInvalidVariations) {
@@ -271,7 +296,7 @@ const AdminDashboard: React.FC = () => {
           id: formData.id,
           name: formData.name,
           description: formData.description,
-          image: finalImageUrl, // Usa a URL final (Cloudinary ou original)
+          image: finalImageUrl,
           category: formData.category,
           variations: formData.dynamicVariations,
           price: undefined
@@ -287,12 +312,12 @@ const AdminDashboard: React.FC = () => {
           name: formData.name,
           description: formData.description,
           price: priceValue,
-          image: finalImageUrl, // Usa a URL final (Cloudinary ou original)
+          image: finalImageUrl,
           category: formData.category,
           variations: undefined
         };
       }
-
+      
       if (editingProduct) {
         await updateProduct({ ...productData, id: editingProduct.id });
         toast.success('Produto atualizado com sucesso!');
@@ -309,12 +334,15 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const filteredProducts = products.filter(product => {
-    if (selectedProductCategoryFilter === 'Todos os Produtos' || !selectedProductCategoryFilter) {
-      return true;
-    }
-    return product.category === selectedProductCategoryFilter;
-  });
+  // Produtos filtrados e ordenados alfabeticamente
+  const filteredProducts = products
+    .filter(product => {
+      if (selectedProductCategoryFilter === 'Todos os Produtos' || !selectedProductCategoryFilter) {
+        return true;
+      }
+      return product.category === selectedProductCategoryFilter;
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const getAdminTitle = () => {
     return `Gerenciar Produtos (${selectedProductCategoryFilter})`;
@@ -322,15 +350,17 @@ const AdminDashboard: React.FC = () => {
 
 
   return (
-    <AdminDashboardContainer>
+    // AdminDashboardContainer agora não usa $isSidebarOpen, é apenas um container flex vertical
+    <AdminDashboardContainer> 
       <AdminDrawerOverlay $isOpen={isDrawerOpen} onClick={() => setIsDrawerOpen(false)} />
       <AdminMobileDrawer $isOpen={isDrawerOpen} ref={drawerRef}>
         <div className="drawer-header">
           <span className="drawer-title">Menu de Administração</span>
-          <button className="drawer-close-button" onClick={() => setIsDrawerOpen(false)}>
+          <CloseFormButton onClick={() => setIsDrawerOpen(false)}>
             <X size={24} />
-          </button>
+          </CloseFormButton>
         </div>
+        {/* Conteúdo da AdminSidebar (agora usada apenas dentro do drawer mobile) */}
         <AdminSidebar style={{ display: 'block', width: '100%', padding: 0, border: 'none' }}>
           <h3>Navegação</h3>
           <ul>
@@ -340,6 +370,8 @@ const AdminDashboard: React.FC = () => {
             >
               Produtos
             </li>
+            {/* Adicione outros links de navegação para o drawer mobile aqui */}
+            {/* Ex: <li>Pedidos</li> */}
           </ul>
         </AdminSidebar>
         {currentSection === 'products' && (
@@ -358,7 +390,7 @@ const AdminDashboard: React.FC = () => {
               </SelectButton>
               {isCategoryDropdownOpen && (
                 <DropdownList>
-                  {allCategories.map((categoryName) => (
+                  {allCategories.map((categoryName) => ( 
                     <DropdownItem
                       key={categoryName}
                       className={selectedProductCategoryFilter === categoryName ? 'selected' : ''}
@@ -377,26 +409,26 @@ const AdminDashboard: React.FC = () => {
         )}
       </AdminMobileDrawer>
 
+      {/* NOVO: AdminNav para links de topo em PC */}
+      <AdminNav>
+        {/* Botão hambúrguer para abrir o drawer mobile (escondido em PC) */}
+        <AdminMenuToggleButton onClick={() => setIsDrawerOpen(true)}>
+          <Menu size={24} />
+        </AdminMenuToggleButton>
+        {/* Links de navegação do Admin para PC */}
+        <AdminNavLink 
+          className={currentSection === 'products' ? 'active' : ''}
+          onClick={() => handleSectionChange('products')}
+        >
+          Produtos
+        </AdminNavLink>
+        {/* Adicione outros links de navegação do admin aqui para PC (ex: Pedidos, Configurações) */}
+        {/* Ex: <AdminNavLink onClick={() => handleSectionChange('orders')}>Pedidos</AdminNavLink> */}
+      </AdminNav>
 
-      <AdminSidebar>
-        <div className="sidebar-menu">
-          <h3>Menu</h3>
-          <ul>
-            <li
-              className={currentSection === 'products' ? 'active' : ''}
-              onClick={() => handleSectionChange('products')}
-            >
-              Produtos
-            </li>
-          </ul>
-        </div>
-      </AdminSidebar>
-
-      <AdminContent>
+      {/* AdminContent agora tem largura total no PC, sem sidebar */}
+      <AdminContent> 
         <AdminHeader>
-          <AdminMenuToggleButton onClick={() => setIsDrawerOpen(true)}>
-            <Menu size={24} />
-          </AdminMenuToggleButton>
           <AdminTitle>{getAdminTitle()}</AdminTitle>
           <AdminControls>
             <AddButton onClick={handleAddNewClick}>
@@ -421,7 +453,7 @@ const AdminDashboard: React.FC = () => {
             </SelectButton>
             {isCategoryDropdownOpen && (
               <DropdownList>
-                {allCategories.map((categoryName) => (
+                {allCategories.map((categoryName) => ( 
                   <DropdownItem
                     key={categoryName}
                     className={selectedProductCategoryFilter === categoryName ? 'selected' : ''}
@@ -500,9 +532,9 @@ const AdminDashboard: React.FC = () => {
               <FormTitle>
                 {editingProduct ? 'Editar Produto' : 'Adicionar Produto'}
               </FormTitle>
-              <CloseFormButton type="button" onClick={() => setShowForm(false)}>
+            <CloseFormButton type="button" onClick={() => setShowForm(false)}>
                 <X size={24} />
-              </CloseFormButton>
+            </CloseFormButton>
             </div>
 
             <FormGroup>
@@ -518,47 +550,47 @@ const AdminDashboard: React.FC = () => {
             </FormGroup>
 
             <FormGroup>
-              <SelectLabel htmlFor="category-select-admin">Categoria</SelectLabel>
-              <div ref={categorySelectRef} style={{ width: '100%', position: 'relative' }}>
-                <CustomSelectContainer style={{ maxWidth: '100%' }}>
-                  <SelectButton
-                    className={isCategoryDropdownOpen ? 'open' : ''}
-                    onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                    type="button"
-                  >
-                    <span>{formData.category || 'Selecione uma categoria'}</span>
-                    <ChevronIcon className={isCategoryDropdownOpen ? 'rotated' : ''}>
-                      <ChevronDown size={20} />
-                    </ChevronIcon>
-                  </SelectButton>
-
-                  {isCategoryDropdownOpen && (
-                    <DropdownList>
-                      <DropdownItem
-                        className={!formData.category ? 'selected' : ''}
-                        onClick={() => {
-                          setFormData({ ...formData, category: '' });
-                          setIsCategoryDropdownOpen(false);
-                        }}
-                      >
-                        Selecione uma categoria
-                      </DropdownItem>
-                      {formCategories.map((category) => (
-                        <DropdownItem
-                          key={category}
-                          className={formData.category === category ? 'selected' : ''}
-                          onClick={() => {
-                            setFormData({ ...formData, category: category });
-                            setIsCategoryDropdownOpen(false);
-                          }}
+                <SelectLabel htmlFor="category-select-admin">Categoria</SelectLabel>
+                <div ref={categorySelectRef} style={{ width: '100%', position: 'relative' }}>
+                    <CustomSelectContainer style={{ maxWidth: '100%' }}>
+                        <SelectButton 
+                            className={isCategoryDropdownOpen ? 'open' : ''} 
+                            onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                            type="button"
                         >
-                          {category}
-                        </DropdownItem>
-                      ))}
-                    </DropdownList>
-                  )}
-                </CustomSelectContainer>
-              </div>
+                            <span>{formData.category || 'Selecione uma categoria'}</span>
+                            <ChevronIcon className={isCategoryDropdownOpen ? 'rotated' : ''}>
+                                <ChevronDown size={20} />
+                            </ChevronIcon>
+                        </SelectButton>
+
+                        {isCategoryDropdownOpen && (
+                            <DropdownList>
+                                <DropdownItem
+                                    className={!formData.category ? 'selected' : ''}
+                                    onClick={() => {
+                                        setFormData({ ...formData, category: '' });
+                                        setIsCategoryDropdownOpen(false);
+                                    }}
+                                >
+                                    Selecione uma categoria
+                                </DropdownItem>
+                                {formCategories.map((category) => (
+                                    <DropdownItem
+                                        key={category}
+                                        className={formData.category === category ? 'selected' : ''}
+                                        onClick={() => {
+                                            setFormData({ ...formData, category: category });
+                                            setIsCategoryDropdownOpen(false);
+                                        }}
+                                    >
+                                        {category}
+                                    </DropdownItem>
+                                ))}
+                            </DropdownList>
+                        )}
+                    </CustomSelectContainer>
+                </div>
             </FormGroup>
 
             <VariationsEditor>
@@ -584,9 +616,9 @@ const AdminDashboard: React.FC = () => {
                   >
                     {(inputProps: React.InputHTMLAttributes<HTMLInputElement>) => <Input {...inputProps} />}
                   </InputMask>
-                  <ActionButton
-                    className="delete"
-                    type="button"
+                  <ActionButton 
+                    className="delete" 
+                    type="button" 
                     onClick={() => removeVariation(index)}
                   >
                     <Trash2 size={16} />
@@ -629,15 +661,14 @@ const AdminDashboard: React.FC = () => {
 
             <FormGroup>
               <Label htmlFor="image">URL da Imagem</Label>
-              {/* NOVO: Input de arquivo para imagem e pré-visualização */}
               <InputFileContainer>
                 <Input
                   type="file"
                   id="imageFile"
                   name="imageFile"
                   accept="image/*"
-                  onChange={handleImageFileChange} // Novo handler para arquivo
-                  style={{ display: 'none' }} // Esconde o input file original
+                  onChange={handleImageFileChange}
+                  style={{ display: 'none' }}
                 />
                 <UploadButton htmlFor="imageFile">
                   <UploadCloud size={20} /> Selecionar Imagem
@@ -645,24 +676,15 @@ const AdminDashboard: React.FC = () => {
                 {formData.imageFile && (
                   <InputFileName>{formData.imageFile.name}</InputFileName>
                 )}
-                {(imagePreviewUrl && !formData.imageFile) && ( // Mostra URL original se não houver arquivo novo
+                {(imagePreviewUrl && !formData.imageFile) && (
                   <InputFileName>{formData.image}</InputFileName>
                 )}
               </InputFileContainer>
-              {imagePreviewUrl && ( // Pré-visualização da imagem
+              {imagePreviewUrl && (
                 <div style={{ marginTop: '1rem', textAlign: 'center' }}>
                   <img src={imagePreviewUrl} alt="Pré-visualização" style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '8px', objectFit: 'contain' }} />
                 </div>
               )}
-              {/* REMOVIDO: O input de URL de imagem que era usado antes */}
-              {/* <Input
-                type="url"
-                id="image"
-                name="image"
-                value={formData.image}
-                onChange={handleInputChange}
-                required
-              /> */}
             </FormGroup>
 
             <SubmitButton type="submit">

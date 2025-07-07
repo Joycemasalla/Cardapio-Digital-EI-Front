@@ -6,7 +6,7 @@ import { useProducts, Product } from '../contexts/ProductContext';
 import { ViewToggleContainer, ViewToggleButton } from '../components/ProductCard/ProductCardStyles';
 import { Grid, List } from 'lucide-react';
 import CategoryQuickLinks from '../components/CategoryQuickLinks/CategoryQuickLinks';
-import ProductModal from '../components/ProductModal/ProductModal'; // NOVO: Importa o modal
+import ProductModal from '../components/ProductModal/ProductModal';
 
 type CategoryType = {
   id: string;
@@ -19,7 +19,22 @@ const MenuPage = () => {
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>(''); 
   const [isListView, setIsListView] = useState(false);
-  const [selectedProductForModal, setSelectedProductForModal] = useState<Product | null>(null); // NOVO: Estado para o produto do modal
+  const [selectedProductForModal, setSelectedProductForModal] = useState<Product | null>(null);
+
+  // NOVO: Define a ordem customizada das categorias
+  // As categorias não listadas aqui aparecerão depois, em ordem alfabética (ou a ordem natural dos objetos)
+  const customCategoryOrder = [
+    'Pizzas',
+    'Pizzas Doces',
+    'Hambúrgueres Tradicionais',
+    'Hambúrgueres Artesanais',
+    'Porções',
+    'Bebidas',
+    'Combos',
+    'Churrasco',
+    // Adicione outras categorias aqui se você quiser uma ordem específica para elas também
+    // Ex: 'Porções', 'Bebidas', 'Pizzas Doces'
+  ];
 
   useEffect(() => {
     if (products.length > 0) {
@@ -32,7 +47,7 @@ const MenuPage = () => {
         categoriesMap[product.category].push(product);
       });
 
-      const categoriesArray: CategoryType[] = Object.entries(categoriesMap).map(
+      let categoriesArray: CategoryType[] = Object.entries(categoriesMap).map(
         ([name, products]) => ({
           id: normalizeId(name),
           name,
@@ -40,9 +55,30 @@ const MenuPage = () => {
         })
       );
 
+      // NOVO: Aplica a ordenação customizada
+      categoriesArray.sort((a, b) => {
+        const indexA = customCategoryOrder.indexOf(a.name);
+        const indexB = customCategoryOrder.indexOf(b.name);
+
+        // Se ambos estão na ordem customizada, ordena pela posição na lista customizada
+        if (indexA !== -1 && indexB !== -1) {
+          return indexA - indexB;
+        }
+        // Se apenas 'a' está na ordem customizada, 'a' vem primeiro
+        if (indexA !== -1) {
+          return -1;
+        }
+        // Se apenas 'b' está na ordem customizada, 'b' vem primeiro
+        if (indexB !== -1) {
+          return 1;
+        }
+        // Se nenhum está na ordem customizada, mantém a ordem alfabética pelo nome
+        return a.name.localeCompare(b.name);
+      });
+
       setCategories(categoriesArray);
     }
-  }, [products]);
+  }, [products]); // A dependência é `products` para que a ordem seja recalculada quando os produtos mudam
 
   const normalizeId = (text: string): string => {
     return text
@@ -60,12 +96,10 @@ const MenuPage = () => {
     }
   };
 
-  // NOVO: Função para abrir o modal
   const handleProductClick = (product: Product) => {
     setSelectedProductForModal(product);
   };
 
-  // NOVO: Função para fechar o modal
   const handleCloseModal = () => {
     setSelectedProductForModal(null);
   };
@@ -107,12 +141,11 @@ const MenuPage = () => {
               title={category.name}
               products={category.products}
               isListView={isListView}
-              onProductClick={handleProductClick} // NOVO: Passa a função para o CategorySection/ProductCard
+              onProductClick={handleProductClick}
             />
           ))
       )}
 
-      {/* NOVO: Renderiza o modal se um produto estiver selecionado */}
       <ProductModal 
         product={selectedProductForModal} 
         onClose={handleCloseModal} 
