@@ -342,7 +342,7 @@ export const ProductsTable = styled.table`
   .actions {
     display: flex;
     gap: 0.5rem;
-    flex-shrink: 0;
+    flex-shrink: 0; 
   }
   
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
@@ -364,9 +364,9 @@ export const ProductsTable = styled.table`
 
     tr { /* Cada linha da tabela vira um card no estilo lista horizontal */
       display: flex;
-      flex-direction: row; 
-      flex-wrap: wrap; 
-      align-items: flex-start; 
+      flex-direction: row; /* Mantemos a direção de linha para os itens principais */
+      flex-wrap: nowrap; /* NOVO: Garante que o container principal do card não quebre em múltiplas linhas. Os TDs internos cuidarão da quebra. */
+      align-items: center; /* ALterado: Centraliza verticalmente o item principal (nome, preço, etc.) */
       gap: 0.8rem; 
       padding: 0.6rem; 
       background-color: ${({ theme }) => theme.colors.backgroundCard};
@@ -375,16 +375,16 @@ export const ProductsTable = styled.table`
       border: 1px solid rgba(255, 255, 255, 0.1);
       width: 100%; 
       height: auto; 
-      min-height: unset; 
+      min-height: 70px; /* Mantemos uma altura mínima para cards sem muito conteúdo */
       position: relative; 
-      padding-bottom: 2.5rem; 
+      padding-bottom: 0.6rem; /* AJUSTADO: Padding normal, os botões de ação absolutos não precisam de padding extra aqui se o td deles tiver */
     }
 
     td { /* Células da tabela dentro do card de lista */
       display: flex;
       flex-direction: column; 
       justify-content: center; 
-      padding: 0.4rem; 
+      padding: 0; /* AJUSTADO: Remover padding padrão da célula, usar margens ou padding internos específicos */
       border: none;
       font-size: 0.8rem; 
       color: ${({ theme }) => theme.colors.text};
@@ -405,11 +405,11 @@ export const ProductsTable = styled.table`
         min-width: 50px; 
         overflow: hidden; 
         border-radius: ${({ theme }) => theme.borderRadius.small};
-        margin-right: 0.5rem; 
+        /* margin-right: 0.5rem; */ /* Removido, o gap do tr já cuida do espaçamento */
       }
 
       &:nth-child(2) { /* Nome */
-        flex-grow: 1;
+        flex-grow: 1; /* Permite que o nome cresça e ocupe o espaço restante */
         font-weight: 600;
         color: ${({ theme }) => theme.colors.text};
         font-size: 0.9rem; 
@@ -417,11 +417,12 @@ export const ProductsTable = styled.table`
         overflow: hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
-        -webkit-line-clamp: 2; 
+        -webkit-line-clamp: 2; /* Limita o nome a 2 linhas */
         -webkit-box-orient: vertical;
-        padding-left: 0; 
-        margin-right: 0.5rem; 
-        min-width: 0; 
+        /* padding-left: 0; */ /* Removido, padding já é 0 */
+        /* margin-right: 0.5rem; */ /* Removido, o gap do tr já cuida do espaçamento */
+        min-width: 0; /* Permite que o nome encolha para caber */
+        align-self: flex-start; /* NOVO: Alinha o nome ao topo da célula */
       }
 
       &:nth-child(3) { /* Categoria */
@@ -429,22 +430,27 @@ export const ProductsTable = styled.table`
       }
 
       &:nth-child(4) { /* Preço/Variações */
-        font-size: 0.75rem; /* AJUSTADO: Fonte ligeiramente menor para múltiplas variações */
+        font-size: 0.75rem; 
         font-weight: 600;
         color: ${({ theme }) => theme.colors.primary};
-        white-space: normal; /* ALTERADO: Permite quebra de linha para variações */
-        overflow: visible; /* ALTERADO: Permite quebra de linha sem ellipsis */
-        text-overflow: clip; /* ALTERADO: Sem ellipsis para variações */
-        margin-left: auto; 
-        padding-right: 0; 
+        white-space: normal; 
+        overflow: visible; 
+        text-overflow: clip; 
+        margin-left: auto; /* Empurra para a direita */
+        /* padding-right: 0; */ /* Removido, padding já é 0 */
         min-width: unset; 
+        flex-shrink: 1; /* Permite que a célula encolha se necessário */
+        text-align: right; /* Garante que o texto se alinhe à direita */
+        align-self: flex-start; /* NOVO: Alinha as variações/preço ao topo da célula */
+        padding-right: 0.5rem; /* NOVO: Adiciona um pequeno padding à direita para o texto não colar nas ações */
 
-        /* NOVO: Estilo para cada item de variação individual */
+
+        /* Estilo para cada item de variação individual */
         div {
-          white-space: nowrap; /* Mantém cada variação "Nome: R$ X,XX" em uma única linha */
-          font-size: 0.7rem; /* Fonte ainda menor para cada variação individual */
-          line-height: 1.2; /* Espaçamento entre as linhas de variação */
-          text-align: right; /* Alinha o texto da variação à direita */
+          white-space: nowrap; 
+          font-size: 0.7rem; 
+          line-height: 1.2; 
+          text-align: right; 
         }
       }
 
@@ -455,11 +461,14 @@ export const ProductsTable = styled.table`
         border-top: none;
         margin-top: 0;
         gap: 0.4rem;
-        position: absolute; 
-        bottom: 0.5rem; 
-        right: 0.5rem; 
-        width: auto; 
-        min-width: unset; 
+        position: static; /* ALTERADO: Retorna à posição estática para não sobrepor outros elementos */
+        bottom: unset; /* Remove propriedades de posição absoluta */
+        right: unset; /* Remove propriedades de posição absoluta */
+        width: auto;
+        min-width: unset;
+        flex-basis: 100%; /* NOVO: Força os botões de ação a ocuparem uma nova linha completa */
+        justify-content: flex-end; /* NOVO: Alinha os botões à direita na nova linha */
+        margin-top: 0.5rem; /* NOVO: Espaçamento do conteúdo acima */
       }
     }
   }
