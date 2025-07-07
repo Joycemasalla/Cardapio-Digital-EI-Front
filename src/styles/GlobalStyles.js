@@ -1,6 +1,6 @@
 import { createGlobalStyle } from 'styled-components';
 
- const GlobalStyle = createGlobalStyle`
+const GlobalStyle = createGlobalStyle`
 
   * {
     margin: 0;
@@ -13,6 +13,12 @@ import { createGlobalStyle } from 'styled-components';
     background-color: ${({ theme }) => theme.colors.background};
     color: ${({ theme }) => theme.colors.text};
     min-height: 100vh;
+    padding-bottom: 60px; /* Ajuste esse valor para ser maior que a altura do seu botão flutuante + a notificação */
+
+    @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+      padding-bottom: 70px; /* Ajuste para telas menores se necessário */
+    }
+
   }
 
   h1, h2, h3, h4, h5, h6 {

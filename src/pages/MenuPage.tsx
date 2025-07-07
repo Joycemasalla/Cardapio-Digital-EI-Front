@@ -1,10 +1,12 @@
+// src/pages/MenuPage.tsx
 import React, { useEffect, useState } from 'react';
 import CategorySection from '../components/CategorySection/CategorySection';
 import { PageContainer, HeroSection, HeroContent, HeroTitle, HeroSubtitle } from './PageStyles';
 import { useProducts, Product } from '../contexts/ProductContext';
 import { ViewToggleContainer, ViewToggleButton } from '../components/ProductCard/ProductCardStyles';
 import { Grid, List } from 'lucide-react';
-import CategoryQuickLinks from '../components/CategoryQuickLinks/CategoryQuickLinks'; // NOVO: Importa CategoryQuickLinks
+import CategoryQuickLinks from '../components/CategoryQuickLinks/CategoryQuickLinks';
+import ProductModal from '../components/ProductModal/ProductModal'; // NOVO: Importa o modal
 
 type CategoryType = {
   id: string;
@@ -17,6 +19,7 @@ const MenuPage = () => {
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>(''); 
   const [isListView, setIsListView] = useState(false);
+  const [selectedProductForModal, setSelectedProductForModal] = useState<Product | null>(null); // NOVO: Estado para o produto do modal
 
   useEffect(() => {
     if (products.length > 0) {
@@ -50,12 +53,21 @@ const MenuPage = () => {
       .replace(/[^\w-]/g, '');
   };
 
-  // NOVO: Função para scrollar para a categoria (copiada e adaptada do Header)
   const handleCategoryScroll = (categoryId: string) => {
     const section = document.getElementById(categoryId);
     if (section) {
       section.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  // NOVO: Função para abrir o modal
+  const handleProductClick = (product: Product) => {
+    setSelectedProductForModal(product);
+  };
+
+  // NOVO: Função para fechar o modal
+  const handleCloseModal = () => {
+    setSelectedProductForModal(null);
   };
   
 
@@ -77,7 +89,6 @@ const MenuPage = () => {
         </ViewToggleButton>
       </ViewToggleContainer>
 
-      {/* NOVO: Seção de Links Rápidos para Categorias */}
       <CategoryQuickLinks onCategoryClick={handleCategoryScroll} />
 
 
@@ -96,9 +107,16 @@ const MenuPage = () => {
               title={category.name}
               products={category.products}
               isListView={isListView}
+              onProductClick={handleProductClick} // NOVO: Passa a função para o CategorySection/ProductCard
             />
           ))
       )}
+
+      {/* NOVO: Renderiza o modal se um produto estiver selecionado */}
+      <ProductModal 
+        product={selectedProductForModal} 
+        onClose={handleCloseModal} 
+      />
     </PageContainer>
   );
 };

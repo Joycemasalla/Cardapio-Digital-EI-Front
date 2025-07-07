@@ -1,7 +1,7 @@
+// src/components/CategorySection/CategorySection.tsx
 import React, { useState } from 'react';
 import ProductCard from '../ProductCard/ProductCard';
-import { ChevronDown } from 'lucide-react'; // Importar ícone ChevronDown
-// CORRIGIDO: Importa o tipo Product do ProductContext
+import { ChevronDown } from 'lucide-react'; 
 import { Product } from '../../contexts/ProductContext';
 import {
   SectionContainer,
@@ -13,28 +13,15 @@ import {
   ToggleIcon
 } from './CategorySectionStyles';
 
-
-// REMOVIDO: A tipagem local Product (agora importada do ProductContext)
-/*
-type Product = {
-  id: string;
-  name: string;
-  price: number;
-  description?: string;
-  image?: string;
-  category: string;
-};
-*/
-
-// Tipagem do CategorySectionProps, onde "products" usa o tipo Product importado
 type CategorySectionProps = {
   id: string;
   title: string;
-  products: Product[]; // Usa o tipo Product importado
-  isListView?: boolean; // Mantido
+  products: Product[];
+  isListView?: boolean;
+  onProductClick?: (product: Product) => void; // NOVO: Recebe a prop
 };
 
-const CategorySection: React.FC<CategorySectionProps> = ({ title, id, products, isListView = false }) => {
+const CategorySection: React.FC<CategorySectionProps> = ({ title, id, products, isListView = false, onProductClick }) => {
   const [isExpanded, setIsExpanded] = useState(true); 
 
   const toggleExpanded = () => {
@@ -57,7 +44,8 @@ const CategorySection: React.FC<CategorySectionProps> = ({ title, id, products, 
           <ProductCard 
             key={product.id} 
             product={product}
-            isListView={isListView} // Passa a prop isListView
+            isListView={isListView} 
+            onProductClick={onProductClick} // NOVO: Repassa a prop para o ProductCard
           />
         ))}
       </ProductsGrid>

@@ -926,3 +926,4 @@ export const UploadButton = styled.label`
     background-color: ${({ theme }) => theme.colors.primaryDark};
   }
 `;
+

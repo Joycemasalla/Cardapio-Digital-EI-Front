@@ -9,8 +9,9 @@ export const CardContainer = styled.div`
   transition: ${({ theme }) => theme.transition};
   display: flex;
   flex-direction: column;
-  height: auto; /* Altura se adapta ao conteúdo */
-  min-height: 200px; /* Altura mínima na grade */
+  height: auto; 
+  min-height: 200px; 
+  cursor: ${({ $clickable }) => ($clickable ? 'pointer' : 'default')};
 
   &:hover {
     transform: translateY(-5px);
@@ -25,14 +26,12 @@ export const CardContainer = styled.div`
   &.list-view {
     flex-direction: row-reverse;
     min-height: unset;
-    height: auto; /* <--- REMOVIDO: 'max-height' fixo para permitir expansão */
+    height: auto; 
     padding: 0.6rem;
-    align-items: flex-start; /* <--- ALTERADO: Alinha os itens ao topo */
+    align-items: flex-start; 
     gap: 0.6rem;
-    /* REMOVIDO: max-height: 100px; */
     
     @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-      /* REMOVIDO: max-height: 90px; */
       padding: 0.5rem;
       gap: 0.5rem;
     }
@@ -40,8 +39,6 @@ export const CardContainer = styled.div`
     @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
       padding: 0.4rem;
       gap: 0.4rem;
-      /* REMOVIDO: max-height: 80px; */
-      flex-wrap: nowrap; /* Garante que não quebre em várias linhas inesperadamente */
     }
   }
 `;
@@ -76,7 +73,7 @@ export const ImageContainer = styled.div`
 export const ProductImage = styled.img`
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover; 
   transition: ${({ theme }) => theme.transition};
 
   ${CardContainer}:hover & {
@@ -90,15 +87,14 @@ export const ProductInfo = styled.div`
   flex-direction: column;
   flex: 1;
   justify-content: space-between;
-  min-width: 0; /* Permite que o conteúdo encolha para não transbordar */
 
   ${CardContainer}.list-view & {
     padding: 0;
     flex-direction: column;
     justify-content: flex-start;
     flex-grow: 1;
-    overflow: hidden; /* <--- MANTIDO: Para cortar o que transborda se o espaço for MUITO pequeno */
-    flex-shrink: 1; /* <--- ALTERADO: Permite que encolha se necessário, mas com min-width 0 */
+    overflow: hidden;
+    flex-shrink: 1; 
 
     @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
       width: calc(100% - 45px - 0.4rem);
@@ -119,11 +115,11 @@ export const ProductName = styled.h3`
 
   ${CardContainer}.list-view & {
     font-size: 0.85rem;
-    white-space: normal; /* <--- ALTERADO: Permite quebra de linha no nome do produto */
+    white-space: normal; 
     overflow: hidden;
-    text-overflow: ellipsis; /* Para cortar se tiver muitas linhas */
-    display: -webkit-box; /* Para múltiplas linhas com ellipsis */
-    -webkit-line-clamp: 2; /* Limita a 2 linhas */
+    text-overflow: ellipsis; 
+    display: -webkit-box; 
+    -webkit-line-clamp: 2; 
     -webkit-box-orient: vertical;
   }
 
@@ -138,18 +134,20 @@ export const ProductDescription = styled.p`
   margin-bottom: 0.4rem;
   line-height: 1.4;
   white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
-  display: block;
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  display: -webkit-box; 
+  -webkit-line-clamp: 2; 
+  -webkit-box-orient: vertical;
 
   ${CardContainer}.list-view & {
     font-size: 0.7rem;
     white-space: normal;
     margin-bottom: 0.2rem;
-    overflow: hidden; /* <--- MANTIDO: Para garantir que não transborde */
+    overflow: hidden; 
     text-overflow: ellipsis;
-    display: -webkit-box; /* <--- NOVO: Para múltiplas linhas com ellipsis */
-    -webkit-line-clamp: 2; /* <--- NOVO: Limita a 2 linhas, ajuste conforme necessário */
+    display: -webkit-box; 
+    -webkit-line-clamp: 2; 
     -webkit-box-orient: vertical;
   }
 
@@ -160,36 +158,40 @@ export const ProductDescription = styled.p`
 
 export const VariationsContainer = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.2rem;
-  margin-top: 0.2rem;
-  margin-bottom: 0.4rem;
-  overflow: hidden; /* <--- NOVO: Garante que variações não transbordem */
-  max-height: 40px; /* <--- NOVO: Limita a altura para variações, pode ajustar */
-
+  flex-wrap: wrap; /* Permite que as opções de variação quebrem a linha */
+  justify-content: flex-start; /* Alinha as opções à esquerda */
+  gap: 0.4rem; /* Espaçamento entre as opções de variação */
+  margin-top: 0.4rem; /* Margem superior */
+  margin-bottom: 0.4rem; /* Margem inferior */
+  overflow: hidden; 
+  /* max-height: unset; */ /* Remove max-height para permitir todas as opções visíveis */
 
   ${CardContainer}.list-view & {
-    font-size: 0.6rem;
-    gap: 0.1rem;
-    margin-top: 0.1rem;
-    margin-bottom: 0.1rem;
-    max-height: 30px; /* <--- NOVO: Altura menor para variações em lista */
+    gap: 0.3rem; 
+    margin-top: 0.2rem;
+    margin-bottom: 0.2rem;
   }
 `;
 
+// NOVO: Estilo para as "pílulas" de variação no card (P, M, G)
 export const VariationOption = styled.label`
   background-color: ${({ theme, $selected }) => 
     $selected ? theme.colors.primary : theme.colors.backgroundCard};
   color: ${({ theme, $selected }) => 
     $selected ? theme.colors.background : theme.colors.textSecondary};
   border: 1px solid ${({ theme }) => theme.colors.textDark};
-  padding: 0.2rem 0.4rem;
+  padding: 0.2rem 0.5rem;
   border-radius: ${({ theme }) => theme.borderRadius.small};
   cursor: pointer;
-  font-size: 0.65rem;
-  font-weight: 500;
+  font-size: 0.7rem;
+  font-weight: 600;
   transition: all 0.2s ease;
   white-space: nowrap;
+  min-width: 25px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
   &:hover {
     color: ${({ theme }) => theme.colors.primaryLight};
@@ -199,6 +201,18 @@ export const VariationOption = styled.label`
 
   input[type="radio"] {
     display: none;
+  }
+
+  ${CardContainer}.list-view & {
+    padding: 0.15rem 0.4rem;
+    font-size: 0.65rem;
+    min-width: 20px;
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    min-width: 25px;
   }
 `;
 
@@ -219,8 +233,6 @@ export const ProductPrice = styled.div`
     margin-top: 0.3rem;
     justify-content: flex-start;
     gap: 0.4rem;
-    flex-wrap: nowrap; /* <--- NOVO: Garante que preço e botão fiquem na mesma linha */
-    align-items: center;
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
@@ -246,7 +258,7 @@ export const AddButton = styled.button`
   flex-shrink: 0;
   white-space: nowrap;
   justify-content: center;
-  margin-left: auto; /* <--- NOVO: Empurra o botão para a direita no modo lista */
+  margin-left: auto; 
 
 
   &:hover {
@@ -285,7 +297,6 @@ export const ViewToggleButton = styled.button`
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
   justify-content: center;
   transition: ${({ theme }) => theme.transition};
   font-size: 0.9rem;
