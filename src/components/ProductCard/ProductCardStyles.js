@@ -1,3 +1,4 @@
+// src/components/ProductCard/ProductCardStyles.js
 import styled from 'styled-components';
 
 export const CardContainer = styled.div`
@@ -24,14 +25,14 @@ export const CardContainer = styled.div`
   &.list-view {
     flex-direction: row-reverse;
     min-height: unset;
-    height: auto;
+    height: auto; /* <--- REMOVIDO: 'max-height' fixo para permitir expansão */
     padding: 0.6rem;
-    align-items: flex-start;
+    align-items: flex-start; /* <--- ALTERADO: Alinha os itens ao topo */
     gap: 0.6rem;
-    max-height: 100px;
+    /* REMOVIDO: max-height: 100px; */
     
     @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-      max-height: 90px;
+      /* REMOVIDO: max-height: 90px; */
       padding: 0.5rem;
       gap: 0.5rem;
     }
@@ -39,7 +40,8 @@ export const CardContainer = styled.div`
     @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
       padding: 0.4rem;
       gap: 0.4rem;
-      max-height: 80px;
+      /* REMOVIDO: max-height: 80px; */
+      flex-wrap: nowrap; /* Garante que não quebre em várias linhas inesperadamente */
     }
   }
 `;
@@ -74,7 +76,7 @@ export const ImageContainer = styled.div`
 export const ProductImage = styled.img`
   width: 100%;
   height: 100%;
-  object-fit: cover; /* CORRIGIDO: Volta para cover */
+  object-fit: cover;
   transition: ${({ theme }) => theme.transition};
 
   ${CardContainer}:hover & {
@@ -88,13 +90,15 @@ export const ProductInfo = styled.div`
   flex-direction: column;
   flex: 1;
   justify-content: space-between;
+  min-width: 0; /* Permite que o conteúdo encolha para não transbordar */
 
   ${CardContainer}.list-view & {
     padding: 0;
     flex-direction: column;
     justify-content: flex-start;
     flex-grow: 1;
-    overflow: hidden;
+    overflow: hidden; /* <--- MANTIDO: Para cortar o que transborda se o espaço for MUITO pequeno */
+    flex-shrink: 1; /* <--- ALTERADO: Permite que encolha se necessário, mas com min-width 0 */
 
     @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
       width: calc(100% - 45px - 0.4rem);
@@ -115,6 +119,12 @@ export const ProductName = styled.h3`
 
   ${CardContainer}.list-view & {
     font-size: 0.85rem;
+    white-space: normal; /* <--- ALTERADO: Permite quebra de linha no nome do produto */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Para cortar se tiver muitas linhas */
+    display: -webkit-box; /* Para múltiplas linhas com ellipsis */
+    -webkit-line-clamp: 2; /* Limita a 2 linhas */
+    -webkit-box-orient: vertical;
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
@@ -136,6 +146,11 @@ export const ProductDescription = styled.p`
     font-size: 0.7rem;
     white-space: normal;
     margin-bottom: 0.2rem;
+    overflow: hidden; /* <--- MANTIDO: Para garantir que não transborde */
+    text-overflow: ellipsis;
+    display: -webkit-box; /* <--- NOVO: Para múltiplas linhas com ellipsis */
+    -webkit-line-clamp: 2; /* <--- NOVO: Limita a 2 linhas, ajuste conforme necessário */
+    -webkit-box-orient: vertical;
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
@@ -149,12 +164,16 @@ export const VariationsContainer = styled.div`
   gap: 0.2rem;
   margin-top: 0.2rem;
   margin-bottom: 0.4rem;
+  overflow: hidden; /* <--- NOVO: Garante que variações não transbordem */
+  max-height: 40px; /* <--- NOVO: Limita a altura para variações, pode ajustar */
+
 
   ${CardContainer}.list-view & {
     font-size: 0.6rem;
     gap: 0.1rem;
     margin-top: 0.1rem;
     margin-bottom: 0.1rem;
+    max-height: 30px; /* <--- NOVO: Altura menor para variações em lista */
   }
 `;
 
@@ -200,6 +219,8 @@ export const ProductPrice = styled.div`
     margin-top: 0.3rem;
     justify-content: flex-start;
     gap: 0.4rem;
+    flex-wrap: nowrap; /* <--- NOVO: Garante que preço e botão fiquem na mesma linha */
+    align-items: center;
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
@@ -225,6 +246,8 @@ export const AddButton = styled.button`
   flex-shrink: 0;
   white-space: nowrap;
   justify-content: center;
+  margin-left: auto; /* <--- NOVO: Empurra o botão para a direita no modo lista */
+
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.primaryDark};
