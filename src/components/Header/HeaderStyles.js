@@ -1,10 +1,11 @@
+// src/components/Header/HeaderStyles.js
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
 export const HeaderContainer = styled.header`
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-between; /* Mantém o logo à esquerda e o bloco Nav+Ações à direita */
   padding: 1rem 2rem;
   position: sticky;
   top: 0;
@@ -23,7 +24,7 @@ export const HeaderContainer = styled.header`
 
 
 export const LogoContainer = styled.div`
-  flex: 0.4 0 auto;
+  flex: 0 0 auto; /* Não cresce nem encolhe, ocupa o espaço do conteúdo */
   display: flex;
   align-items: center;
   max-height: 80px;
@@ -62,13 +63,11 @@ export const Logo = styled(Link)`
 
 export const Nav = styled.nav`
   display: flex;
-  gap: 1.5rem;
-  font-size: 1rem;
-  margin-right: auto;
-  padding-right: 20px;
+  gap: 1.2rem; /* Espaçamento entre os links de navegação */
+  font-size: 0.9rem; /* AJUSTADO: Garante que a fonte dos links seja consistente e menor */
+  margin-left: auto; /* ALTERADO: Empurra a navegação para a direita, próximo às ações */
   transition: all 0.3s ease;
 
-  
   @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
     display: none;
   }
@@ -77,12 +76,12 @@ export const Nav = styled.nav`
 export const NavLink = styled(Link)`
   color: ${({ theme }) => theme.colors.textSecondary};
   font-weight: 500;
-  padding: 0.5rem 0.2rem; /* Adicionado padding para aumentar a área de clique */
+  padding: 0.5rem 0; /* Padding vertical */
   transition: ${({ theme }) => theme.transition};
   position: relative;
-  text-transform: uppercase; /* Deixa o texto em maiúsculas */
-  letter-spacing: 0.5px; /* Pequeno espaçamento entre letras */
-  font-size: 0.95rem; /* Levemente menor para caber mais links */
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  /* font-size: 0.9rem; */ /* REMOVIDO: Será herdado do Nav pai */
   
   &:after {
     content: '';
@@ -92,7 +91,7 @@ export const NavLink = styled(Link)`
     bottom: -4px;
     left: 0;
     background-color: ${({ theme }) => theme.colors.primary};
-    transition: width 0.3s ease; /* Transição apenas na largura */
+    transition: width 0.3s ease;
   }
   
   &:hover {
@@ -106,19 +105,19 @@ export const NavLink = styled(Link)`
   /* Estilos para o MobileNav (dentro do MobileNav) */
   ${({ theme }) => `
     ${MobileNav} & {
-      padding: 0.75rem 1rem; /* Mais padding no menu mobile */
+      padding: 0.75rem 1rem; 
       font-size: 1rem;
-      color: ${theme.colors.text}; /* Cor diferente para destaque no menu mobile */
+      color: ${theme.colors.text}; 
       background-color: transparent;
       border-radius: ${theme.borderRadius.small};
 
       &:hover {
-        background-color: rgba(255, 255, 255, 0.05); /* Efeito de hover no menu mobile */
+        background-color: rgba(255, 255, 255, 0.05); 
         color: ${theme.colors.primaryLight};
       }
 
       &:after {
-        display: none; /* Remove underline no mobile nav */
+        display: none; 
       }
     }
   `}
@@ -128,10 +127,8 @@ export const HeaderActions = styled.div`
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-left: auto;
-  margin-right: 0.4em;
-
-
+  /* REMOVIDO: margin-left: auto; <-- ESSA ERA A CAUSA PRINCIPAL DO PROBLEMA */
+  margin-right: 0.4em; /* Mantém uma pequena margem para a borda direita */
 `;
 
 export const CartButton = styled.button`

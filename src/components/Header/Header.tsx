@@ -1,9 +1,10 @@
+// src/components/Header/Header.tsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ShoppingCart, User, Menu, X } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
-import logoespaco from '../../assets/logoespaco.png'; // CORRIGIDO: A importação agora deve funcionar com o custom.d.ts
+import logoespaco from '../../assets/logoespaco.png';
 import {
   HeaderContainer,
   Logo,
@@ -23,10 +24,10 @@ const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { cartItems, toggleCart } = useCart();
-  const { currentUser } = useAuth();
+  const { currentUser } = useAuth(); // Obtém o usuário logado
   const location = useLocation();
 
-  const isAdminPage = location.pathname.includes('/admin');
+  const isAdminPage = location.pathname.includes('/admin'); // Verifica se a página atual é de admin
   const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   useEffect(() => {
@@ -54,6 +55,11 @@ const Header: React.FC = () => {
     }
   };
 
+  // LÓGICA ALTERADA: O ícone do Admin só aparece se houver um usuário logado E não estivermos já em uma página de admin.
+  // Se o admin já está no dashboard, o ícone não precisa aparecer na barra de navegação principal.
+  // Se o usuário não está logado, ele não vê o ícone em nenhuma página pública.
+  const shouldShowAdminIcon = currentUser && !isAdminPage;
+
   return (
     <HeaderContainer $scrolled={scrolled}>
       <LogoContainer>
@@ -62,7 +68,7 @@ const Header: React.FC = () => {
         </Logo>
       </LogoContainer>
 
-      {!isAdminPage && (
+      {!isAdminPage && ( // A navegação principal é escondida nas páginas de admin
         <Nav>
           <NavLink onClick={() => handleCategoryClick('hamburgueres-tradicionais')}>
             Hambúrgueres Tradicionais
@@ -92,28 +98,28 @@ const Header: React.FC = () => {
       )}
 
       <HeaderActions>
-        {!isAdminPage && (
+        {!isAdminPage && ( // O botão do carrinho é escondido nas páginas de admin
           <CartButton onClick={toggleCart}>
             <ShoppingCart size={24} />
             {itemCount > 0 && <ItemCount>{itemCount}</ItemCount>}
           </CartButton>
         )}
 
-        {(currentUser || location.pathname === "/admin") && (
-            <AdminLink to={currentUser ? "/admin/dashboard" : "/admin"}>
+        {/* CONDIÇÃO MODIFICADA AQUI: */}
+        {shouldShowAdminIcon && ( 
+          <AdminLink to="/admin/dashboard">
             <User size={24} />
           </AdminLink>
         )}
 
-
-        {!isAdminPage && (
+        {!isAdminPage && ( // O botão do menu mobile é escondido nas páginas de admin
           <MobileMenuButton onClick={toggleMobileMenu}>
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </MobileMenuButton>
         )}
       </HeaderActions>
 
-      {mobileMenuOpen && !isAdminPage && (
+      {mobileMenuOpen && !isAdminPage && ( // A navegação mobile é escondida nas páginas de admin
         <MobileNav>
           <NavLink onClick={() => handleCategoryClick('hamburgueres-tradicionais')}>
             Hambúrgueres Tradicionais
