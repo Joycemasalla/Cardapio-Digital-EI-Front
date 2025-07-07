@@ -1,3 +1,4 @@
+// src/pages/PageStyles.js
 import styled from 'styled-components';
 
 // Shared Styles (Mantidos)
@@ -206,6 +207,11 @@ export const AdminTitle = styled.h2`
 export const AdminDashboardContainer = styled.div`
   display: flex;
   min-height: calc(100vh - 72px);
+  /* Se a imagem de fundo estiver aqui, remova-a para evitar repetições/bugs visuais */
+  /* background-image: url('CAMINHO_DA_SUA_IMAGEM_DE_FUNDO_ADMIN'); */
+  /* background-size: cover; */
+  /* background-position: center; */
+  /* background-repeat: no-repeat; */
 `;
 
 export const AdminSidebar = styled.div`
@@ -261,7 +267,7 @@ export const AdminSidebar = styled.div`
   }
   
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    display: none;
+    display: none; /* Esconde a sidebar em telas menores, o drawer mobile a substitui */
   }
 `;
 
@@ -269,6 +275,7 @@ export const AdminContent = styled.div`
   flex: 1;
   padding: 2rem;
   position: relative;
+  overflow-x: hidden; /* Garante que não haja rolagem horizontal indesejada no conteúdo principal */
   
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     padding: 1rem;
@@ -280,6 +287,7 @@ export const AdminHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+  flex-wrap: wrap; /* <--- NOVO: Permite que os itens quebrem a linha se não houver espaço */
   
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     justify-content: flex-start;
@@ -297,6 +305,10 @@ export const AdminHeader = styled.div`
 export const AdminControls = styled.div`
   display: flex;
   gap: 1rem;
+  
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    width: 100%; /* Ocupa largura total para o botão "Adicionar Produto" */
+  }
 `;
 
 export const AddButton = styled.button`
@@ -330,48 +342,49 @@ export const ProductsTable = styled.table`
   .actions {
     display: flex;
     gap: 0.5rem;
+    flex-shrink: 0; /* Garante que os botões de ação não encolham */
   }
   
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    display: block; /* Tabela como bloco */
-    width: 100%; /* Ocupa a largura total */
-    border: none; /* Remove bordas da tabela principal */
-    overflow-x: hidden; /* Remove rolagem horizontal para o corpo da tabela */
+    display: block; 
+    width: 100%; 
+    border: none; 
+    overflow-x: hidden; 
     
     thead {
       display: none;
     }
 
     tbody {
-      display: flex; /* Transforma tbody em flex container */
-      flex-direction: column; /* Empilha os produtos verticalmente */
-      gap: 0.8rem; /* Espaçamento entre os produtos (cards de lista) */
+      display: flex; 
+      flex-direction: column; 
+      gap: 0.8rem; 
       width: 100%;
     }
 
-    tr { /* Cada linha da tabela vira um card no estilo lista horizontal */
+    tr { 
       display: flex;
-      flex-direction: row; /* Layout horizontal para o produto */
-      align-items: center; /* Alinha itens ao centro verticalmente */
-      gap: 0.8rem; /* Espaçamento entre imagem e texto/ações */
-      padding: 0.6rem; /* Padding interno do card reduzido */
+      flex-direction: row; 
+      align-items: center; 
+      gap: 0.8rem; 
+      padding: 0.6rem; 
       background-color: ${({ theme }) => theme.colors.backgroundCard};
       border-radius: ${({ theme }) => theme.borderRadius.medium};
       box-shadow: ${({ theme }) => theme.shadows.light};
       border: 1px solid rgba(255, 255, 255, 0.1);
-      width: 100%; /* Ocupa a largura total */
-      min-height: 70px; /* Altura mínima para o card na lista */
+      width: 100%; 
+      min-height: 70px; 
     }
 
-    td { /* Células da tabela dentro do card de lista */
+    td { 
       display: flex;
-      flex-direction: column; /* Conteúdo da célula empilhado */
-      justify-content: center; /* Centraliza conteúdo verticalmente */
-      padding: 0; /* REMOVIDO padding padrão para otimizar espaço */
+      flex-direction: column; 
+      justify-content: center; 
+      padding: 0; 
       border: none;
-      font-size: 0.8rem; /* Fonte menor */
+      font-size: 0.8rem; 
       color: ${({ theme }) => theme.colors.text};
-      white-space: normal; /* Permite quebra de linha */
+      white-space: normal; 
       overflow: visible;
       text-overflow: clip;
       flex-shrink: 0; /* Impede que os itens internos da célula encolham muito */
@@ -383,6 +396,7 @@ export const ProductsTable = styled.table`
       &:nth-child(1) { /* Imagem */
         width: 50px;
         height: 50px;
+        min-width: 50px; /* <--- NOVO: Garante largura mínima para a imagem */
         justify-content: center;
         align-items: center;
         padding: 0;
@@ -398,6 +412,7 @@ export const ProductsTable = styled.table`
         overflow: hidden;
         text-overflow: ellipsis;
         padding-left: 0.4rem;
+        min-width: 80px; /* <--- NOVO: Largura mínima para o nome */
       }
 
       &:nth-child(3) { /* Categoria */
@@ -413,6 +428,7 @@ export const ProductsTable = styled.table`
         text-overflow: ellipsis;
         margin-left: auto;
         padding-right: 0.4rem;
+        min-width: 60px; /* <--- NOVO: Largura mínima para preço */
       }
 
       &:last-child { /* Ações */
@@ -422,13 +438,14 @@ export const ProductsTable = styled.table`
         border-top: none;
         margin-top: 0;
         gap: 0.4rem;
+        min-width: 70px; /* <--- NOVO: Largura mínima para os botões de ação */
       }
     }
   }
   /* Responsivo para tablets */
   @media (min-width: ${({ theme }) => theme.breakpoints.sm}) and (max-width: ${({ theme }) => theme.breakpoints.md}) {
     display: block;
-    overflow-x: auto;
+    overflow-x: auto; /* <--- MANTIDO: Permite rolagem horizontal em telas de tablet se o conteúdo for muito largo */
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
     
