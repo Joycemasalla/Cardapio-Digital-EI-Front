@@ -24,6 +24,7 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false }) => {
+  
   // Removido isDescriptionExpanded, toggleDescription, descriptionRef, showToggle
   const [selectedVariation, setSelectedVariation] = useState<ProductVariation | null>(null);
 
@@ -41,21 +42,53 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false }
     // Removida a lógica de verificação de overflow da descrição
   }, [product, selectedVariation]);
 
+  // const handleAddToCart = (e: React.MouseEvent) => {
+  //     e.preventDefault(); // Mude de stopPropagation para preventDefault
+
+  //   e.stopPropagation(); // Impede que o clique no botão propague
+  //       console.log('Botão "Add" clicado para o produto:', product.name); // LOG 1: Clicou no botão
+
+  //   if (product.variations && !selectedVariation) {
+  //     toast.error('Por favor, selecione uma opção para o produto!');
+  //           console.warn('Produto com variações, mas nenhuma selecionada. Não adicionando ao carrinho.'); // LOG 2: Variação faltando
+
+  //     return;
+  //   }
+  //       console.log('Chamando addToCart com produto:', product, 'e variação selecionada:', selectedVariation); // LOG 3: Chamando a função
+
+  //   addToCart(product, selectedVariation || undefined);
+  // };
+
+
+
   const handleAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Impede que o clique no botão propague
-    if (product.variations && !selectedVariation) {
+    e.preventDefault(); // Mude de stopPropagation para preventDefault
+    e.stopPropagation(); // Mantenha este também
+
+    console.log('Botão "Add" clicado para o produto:', product.name);
+
+    if (product.variations && product.variations.length > 0 && !selectedVariation) {
       toast.error('Por favor, selecione uma opção para o produto!');
+      console.warn('Produto com variações, mas nenhuma selecionada. Não adicionando ao carrinho.');
       return;
     }
-    addToCart(product, selectedVariation || undefined);
+
+    console.log('Chamando addToCart com produto:', product, 'e variação selecionada:', selectedVariation);
+
+    try {
+      addToCart(product, selectedVariation || undefined);
+      console.log('addToCart chamado com sucesso');
+    } catch (error) {
+      console.error('Erro ao adicionar ao carrinho:', error);
+    }
   };
 
-  const displayPrice = product.variations && selectedVariation 
-    ? selectedVariation.price 
+  const displayPrice = product.variations && selectedVariation
+    ? selectedVariation.price
     : product.price;
 
-  const canAddToCart = product.variations 
-    ? (selectedVariation !== null) 
+  const canAddToCart = product.variations
+    ? (selectedVariation !== null)
     : (product.price !== undefined && product.price !== null);
 
   return (
@@ -67,14 +100,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false }
         <ProductName>{product.name}</ProductName>
         {/* NOVO: Descrição sem lógica de expansão, controlada puramente por CSS */}
         <ProductDescription>{product.description || 'Descrição não disponível.'}</ProductDescription>
-        
+
         {/* Removido ToggleDescriptionButton */}
 
         {product.variations && product.variations.length > 0 && (
           <VariationsContainer onClick={(e) => e.stopPropagation()}>
             {product.variations.map((variation, index) => (
-              <VariationOption 
-                key={index} 
+              <VariationOption
+                key={index}
                 $selected={selectedVariation?.name === variation.name}
               >
                 <input
@@ -96,7 +129,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false }
           ) : (
             <span>Selecione uma opção</span>
           )}
-          <AddButton onClick={handleAddToCart} disabled={!canAddToCart}>
+          <AddButton type="button" onClick={handleAddToCart} disabled={!canAddToCart}>
             <Plus size={16} /> Add
           </AddButton>
         </ProductPrice>

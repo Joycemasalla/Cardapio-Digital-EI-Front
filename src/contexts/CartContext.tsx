@@ -34,6 +34,8 @@ export const CartProvider: FunctionComponent<{ children: ReactNode }> = ({ child
 
   // Adaptação de addToCart para lidar com variações
   const addToCart = (product: Product, selectedVariation?: ProductVariation) => {
+        console.log('addToCart recebido: Produto:', product, 'Variação:', selectedVariation); // LOG 4: Função recebida
+
     setCartItems(prevItems => {
       // Usamos uma "chave" para identificar itens no carrinho de forma única, incluindo a variação
       const itemKey = selectedVariation ? `${product.id}-${selectedVariation.name}` : product.id;
@@ -48,6 +50,8 @@ export const CartProvider: FunctionComponent<{ children: ReactNode }> = ({ child
           (item.selectedVariation ? `${item.id}-${item.selectedVariation.name}` : item.id) === itemKey
             ? { ...item, quantity: item.quantity + 1 } : item
         );
+                console.log('Item existente: Incrementando quantidade. Novos itens:', updatedItems); // LOG 5: Item existente
+
         toast.success(`Mais um ${product.name}${selectedVariation ? ` (${selectedVariation.name})` : ''} adicionado!`);
         return updatedItems;
       } else {
@@ -64,6 +68,8 @@ export const CartProvider: FunctionComponent<{ children: ReactNode }> = ({ child
           quantity: 1, 
           selectedVariation: selectedVariation 
         };
+                console.log('Novo item: Adicionando ao carrinho. Novos itens:', [...prevItems, newItem]); // LOG 6: Novo item
+
         toast.success(`${itemName} adicionado ao carrinho!`);
         return [...prevItems, newItem];
       }
