@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'; // Removido useRef
+// src/components/ProductCard/ProductCard.tsx
+import React, { useState, useEffect } from 'react';
 import {
   CardContainer,
   ImageContainer,
@@ -10,7 +11,6 @@ import {
   AddButton,
   VariationsContainer,
   VariationOption,
-  // Removido ToggleDescriptionButton
 } from './ProductCardStyles';
 import { Plus } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
@@ -24,50 +24,34 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false }) => {
-  
-  // Removido isDescriptionExpanded, toggleDescription, descriptionRef, showToggle
   const [selectedVariation, setSelectedVariation] = useState<ProductVariation | null>(null);
-
   const { addToCart } = useCart();
+
+  // Variável auxiliar para verificar se o produto realmente possui variações para seleção
+  const hasAvailableVariations = product.variations && product.variations.length > 0;
 
   useEffect(() => {
     // Lógica para selecionar a primeira variação por padrão
-    if (product.variations && product.variations.length > 0) {
-      if (!selectedVariation || !product.variations.some(v => v.name === selectedVariation.name)) {
-        setSelectedVariation(product.variations?.[0] || null);
+    if (hasAvailableVariations) {
+      // Para satisfazer o TypeScript: usamos uma asserção non-null
+      // pois 'hasAvailableVariations' já confirmou que 'product.variations' não é undefined
+      const currentVariations = product.variations!; // <--- CORREÇÃO AQUI (Linha 36 indiretamente)
+
+      if (!selectedVariation || !currentVariations.some(v => v.name === selectedVariation.name)) {
+        setSelectedVariation(currentVariations[0]);
       }
     } else {
       setSelectedVariation(null);
     }
-    // Removida a lógica de verificação de overflow da descrição
-  }, [product, selectedVariation]);
-
-  // const handleAddToCart = (e: React.MouseEvent) => {
-  //     e.preventDefault(); // Mude de stopPropagation para preventDefault
-
-  //   e.stopPropagation(); // Impede que o clique no botão propague
-  //       console.log('Botão "Add" clicado para o produto:', product.name); // LOG 1: Clicou no botão
-
-  //   if (product.variations && !selectedVariation) {
-  //     toast.error('Por favor, selecione uma opção para o produto!');
-  //           console.warn('Produto com variações, mas nenhuma selecionada. Não adicionando ao carrinho.'); // LOG 2: Variação faltando
-
-  //     return;
-  //   }
-  //       console.log('Chamando addToCart com produto:', product, 'e variação selecionada:', selectedVariation); // LOG 3: Chamando a função
-
-  //   addToCart(product, selectedVariation || undefined);
-  // };
-
-
+  }, [product, hasAvailableVariations]); // Dependências: 'product' e 'hasAvailableVariations'
 
   const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault(); // Mude de stopPropagation para preventDefault
-    e.stopPropagation(); // Mantenha este também
+    e.preventDefault();
+    e.stopPropagation();
 
     console.log('Botão "Add" clicado para o produto:', product.name);
 
-    if (product.variations && product.variations.length > 0 && !selectedVariation) {
+    if (hasAvailableVariations && !selectedVariation) {
       toast.error('Por favor, selecione uma opção para o produto!');
       console.warn('Produto com variações, mas nenhuma selecionada. Não adicionando ao carrinho.');
       return;
@@ -83,13 +67,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false }
     }
   };
 
-  const displayPrice = product.variations && selectedVariation
+  // Ajusta o preço exibido com base na seleção de variação
+  const displayPrice = hasAvailableVariations && selectedVariation
     ? selectedVariation.price
     : product.price;
 
-  const canAddToCart = product.variations
-    ? (selectedVariation !== null)
-    : (product.price !== undefined && product.price !== null);
+  // Lógica do `canAddToCart` para habilitar/desabilitar o botão
+  const canAddToCart = hasAvailableVariations
+    ? (selectedVariation !== null) // Se tem variações, uma precisa estar selecionada
+    : (product.price !== undefined && product.price !== null); // Se não tem variações, o preço base precisa existir
 
   return (
     <CardContainer className={isListView ? 'list-view' : ''}>
@@ -98,14 +84,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false }
       </ImageContainer>
       <ProductInfo>
         <ProductName>{product.name}</ProductName>
-        {/* NOVO: Descrição sem lógica de expansão, controlada puramente por CSS */}
         <ProductDescription>{product.description || 'Descrição não disponível.'}</ProductDescription>
 
-        {/* Removido ToggleDescriptionButton */}
-
-        {product.variations && product.variations.length > 0 && (
+        {/* Renderiza as variações apenas se houver variações disponíveis */}
+        {hasAvailableVariations && ( // Isso garante que product.variations não é undefined ou null
           <VariationsContainer onClick={(e) => e.stopPropagation()}>
-            {product.variations.map((variation, index) => (
+            {product.variations!.map((variation, index) => ( // <--- CORREÇÃO AQUI (Linha 87)
               <VariationOption
                 key={index}
                 $selected={selectedVariation?.name === variation.name}
