@@ -352,41 +352,41 @@ export const ProductsTable = styled.table`
     overflow-x: hidden; 
     
     thead {
-      display: none; /* Oculta o cabeçalho da tabela no mobile */
+      display: none; 
     }
 
     tbody {
       display: flex; 
       flex-direction: column; 
-      gap: 0.8rem; /* Espaçamento entre os cards de produto */
+      gap: 0.6rem; /* AJUSTADO: Reduz o espaço entre um card e outro (entre os <tr>) */
       width: 100%;
     }
 
     tr { /* Cada linha da tabela (<tr>) vira um card de produto individual */
       display: flex;
-      flex-direction: column; /* ALTERADO: Os elementos dentro do card agora se empilham verticalmente */
-      align-items: flex-start; /* Alinha o conteúdo do card ao início (esquerda/topo) */
-      gap: 0.4rem; /* Espaçamento entre os elementos empilhados dentro do card */
-      padding: 0.8rem; /* Padding interno do card */
+      flex-direction: column; 
+      align-items: flex-start; 
+      gap: 0.2rem; /* AJUSTADO: Reduz o espaço entre os elementos empilhados dentro do card (ex: entre nome e preço) */
+      padding: 0.6rem; /* AJUSTADO: Reduz o padding interno do card, tornando-o mais compacto */
       background-color: ${({ theme }) => theme.colors.backgroundCard};
       border-radius: ${({ theme }) => theme.borderRadius.medium};
       box-shadow: ${({ theme }) => theme.shadows.light};
       border: 1px solid rgba(255, 255, 255, 0.1);
       width: 100%; 
-      height: auto; /* A altura se ajusta ao conteúdo */
-      min-height: unset; /* Remove altura mínima fixa no mobile */
-      position: relative; /* Para posicionar elementos filhos se necessário */
+      height: auto; 
+      min-height: unset; /* Garante que a altura não seja fixada e se ajuste ao conteúdo */
+      position: relative; 
     }
 
     td { /* Cada célula (<td>) dentro do card */
-      display: flex; /* Mantém o display flex para controle interno */
-      align-items: center; /* Alinha o conteúdo verticalmente no centro da célula */
-      width: 100%; /* Cada célula ocupa a largura total do card */
-      padding: 0; /* Remove padding padrão, o espaçamento será por margens ou gaps específicos */
+      display: flex; 
+      align-items: center; 
+      width: 100%; 
+      padding: 0; /* Zera o padding da célula, o espaçamento será controlado por margens e gaps */
       border: none;
       font-size: 0.8rem; 
       color: ${({ theme }) => theme.colors.text};
-      white-space: normal; /* Permite quebra de linha em todo o texto da célula */
+      white-space: normal; 
       overflow: visible;
       text-overflow: clip;
       flex-shrink: 0; 
@@ -397,61 +397,60 @@ export const ProductsTable = styled.table`
       }
 
       &:nth-child(1) { /* Célula da Imagem */
-        width: 50px;
-        height: 50px;
-        min-width: 50px; 
+        width: 45px; /* AJUSTADO: Diminui ligeiramente o tamanho da imagem */
+        height: 45px; /* AJUSTADO: Diminui ligeiramente o tamanho da imagem */
+        min-width: 45px; 
         overflow: hidden; 
         border-radius: ${({ theme }) => theme.borderRadius.small};
-        margin-right: 0.8rem; /* Espaçamento à direita da imagem */
+        margin-right: 0.6rem; /* AJUSTADO: Reduz a margem à direita da imagem */
       }
 
       &:nth-child(2) { /* Célula do Nome do Produto */
-        flex-grow: 1; /* Permite que o nome ocupe o espaço restante */
-        min-width: 0; /* Permite que o texto do nome encolha para caber */
+        flex-grow: 1; 
+        min-width: 0; 
         font-weight: 600;
         color: ${({ theme }) => theme.colors.text};
-        font-size: 0.95rem; /* Fonte ligeiramente maior para o nome principal */
+        font-size: 0.9rem; /* Mantém o tamanho da fonte para o nome para boa legibilidade */
         white-space: normal;
         overflow: hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
-        -webkit-line-clamp: 2; /* Limita o nome a 2 linhas e adiciona "..." */
+        -webkit-line-clamp: 2; 
         -webkit-box-orient: vertical;
       }
       
       &:nth-child(3) { /* Categoria */
-        display: none; /* Mantém oculto no mobile */
+        display: none; 
       }
 
       &:nth-child(4) { /* Célula do Preço/Variações */
-        flex-direction: column; /* NOVO: Stack as variações verticalmente dentro desta célula */
-        align-items: flex-start; /* Alinha o texto das variações à esquerda */
-        font-size: 0.85rem; 
+        flex-direction: column; 
+        align-items: flex-start; 
+        font-size: 0.8rem; /* AJUSTADO: Reduz o tamanho da fonte para o texto "Preço/Variações" geral */
         font-weight: 600;
         color: ${({ theme }) => theme.colors.primary};
         white-space: normal; 
         overflow: visible; 
         text-overflow: clip; 
-        margin-top: 0.4rem; /* Espaçamento do elemento acima (nome) */
-        width: 100%; /* Ocupa a largura total do card para as variações */
+        margin-top: 0.2rem; /* AJUSTADO: Reduz a margem do topo para diminuir o espaço vertical */
+        width: 100%; 
         
         div { /* Estilo para cada item de variação individual (ex: "Pequena: R$ X,XX") */
-          white-space: nowrap; /* Mantém cada variação em uma única linha */
-          font-size: 0.75rem; /* Fonte um pouco maior para leitura */
-          line-height: 1.3; /* Ajusta o espaçamento entre as linhas de variação */
-          text-align: left; /* Alinha o texto da variação à esquerda */
+          white-space: nowrap; 
+          font-size: 0.7rem; /* AJUSTADO: Reduz o tamanho da fonte para cada variação individual */
+          line-height: 1.2; /* AJUSTADO: Torna o espaçamento entre as linhas de variação mais compacto */
+          text-align: left; 
         }
       }
 
       &:last-child { /* Célula de Ações (botões de Editar/Excluir) */
-        flex-direction: row; /* Mantém os botões em linha */
-        justify-content: flex-end; /* Alinha os botões à direita */
-        padding-top: 0.8rem; /* Espaçamento do conteúdo acima */
-        border-top: 1px solid rgba(255, 255, 255, 0.1); /* Adiciona uma linha separadora acima dos botões */
-        margin-top: 0.8rem; /* Espaçamento da linha separadora para as variações */
-        gap: 0.6rem; /* Espaçamento entre os botões */
-        position: static; /* Remove qualquer posicionamento absoluto que possa causar problemas */
-        width: 100%; /* Ocupa a largura total para os botões */
+        flex-direction: row; 
+        justify-content: flex-end; 
+        padding-top: 0.6rem; /* AJUSTADO: Reduz o padding do topo */
+        border-top: 1px solid rgba(255, 255, 255, 0.1); 
+        margin-top: 0.6rem; /* AJUSTADO: Reduz a margem do topo */
+        gap: 0.4rem; /* AJUSTADO: Reduz o espaçamento entre os botões de ação */
+        width: 100%; 
         min-width: unset; 
       }
     }
