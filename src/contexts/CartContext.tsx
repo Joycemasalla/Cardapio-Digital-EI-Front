@@ -1,28 +1,40 @@
+// src/contexts/CartContext.tsx
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { toast } from 'react-toastify';
 import { FunctionComponent } from 'react';
-// IMPORTAÇÃO CORRIGIDA: Importa Product e ProductVariation do ProductContext
 import { Product, ProductVariation } from './ProductContext';
 
+// NOVO: Tipos para as metades da pizza
+type PizzaHalfDetails = {
+    id: string;
+    name: string;
+    price: number;
+};
 
-// CartItem agora pode incluir a variação selecionada
-export type CartItem = Product & { // Estende o tipo Product importado
+// Modifica CartItem para incluir informações de "meio a meio"
+export type CartItem = Product & {
   quantity: number;
-  selectedVariation?: ProductVariation; // Nova propriedade para armazenar a variação escolhida
+  selectedVariation?: ProductVariation;
+  isHalfAndHalf?: boolean; // Flag para indicar que é uma pizza meio a meio
+  half1?: PizzaHalfDetails; // Detalhes da primeira metade
+  half2?: PizzaHalfDetails; // Detalhes da segunda metade
 };
 
 type CartContextType = {
   cartItems: CartItem[];
   isCartOpen: boolean;
   toggleCart: () => void;
-  addToCart: (product: Product, selectedVariation?: ProductVariation) => void; // Aceita variação
-  removeFromCart: (productId: string, selectedVariationName?: string) => void; // Aceita nome da variação para remoção mais precisa
-  incrementQuantity: (productId: string, selectedVariationName?: string) => void; // Aceita nome da variação
-  decrementQuantity: (productId: string, selectedVariationName?: string) => void; // Aceita nome da variação
+  // addToCart agora aceita o produto "combinado" do modal
+  addToCart: (product: CartItem, selectedVariation?: ProductVariation) => void;
+  removeFromCart: (productId: string, selectedVariationName?: string, half1Name?: string, half2Name?: string) => void; // NOVO: Adiciona nomes das metades
+  incrementQuantity: (productId: string, selectedVariationName?: string, half1Name?: string, half2Name?: string) => void; // NOVO: Adiciona nomes das metades
+  decrementQuantity: (productId: string, selectedVariationName?: string, half1Name?: string, half2Name?: string) => void; // NOVO: Adiciona nomes das metades
   clearCart: () => void;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+
+const API_BASE_URL = 'https://cardapio-digital-ei-back.onrender.com/api/products'; 
 
 export const CartProvider: FunctionComponent<{ children: ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -32,44 +44,57 @@ export const CartProvider: FunctionComponent<{ children: ReactNode }> = ({ child
     setIsCartOpen(!isCartOpen);
   };
 
-  // Adaptação de addToCart para lidar com variações
-  const addToCart = (product: Product, selectedVariation?: ProductVariation) => {
-        console.log('addToCart recebido: Produto:', product, 'Variação:', selectedVariation); // LOG 4: Função recebida
-
+  // Adaptação de addToCart para lidar com variações e "meio a meio"
+  const addToCart = (productToAdd: CartItem, selectedVariation?: ProductVariation) => {
     setCartItems(prevItems => {
-      // Usamos uma "chave" para identificar itens no carrinho de forma única, incluindo a variação
-      const itemKey = selectedVariation ? `${product.id}-${selectedVariation.name}` : product.id;
+      // Cria uma chave única para o item no carrinho, considerando variações E metades
+      let itemKey = productToAdd.id;
+      let itemName = productToAdd.name;
+      let itemPrice = productToAdd.price || 0; // Preço final do item
       
+      if (productToAdd.isHalfAndHalf && productToAdd.half1 && productToAdd.half2) {
+          itemKey = `half-${productToAdd.half1.id}-${productToAdd.half2.id}-${selectedVariation?.name || 'no-var'}`;
+          itemName = `Pizza ${productToAdd.half1.name} / ${productToAdd.half2.name} (${selectedVariation?.name})`;
+          itemPrice = productToAdd.price || 0; // Já vem calculado
+      } else if (selectedVariation) {
+          itemKey = `${productToAdd.id}-${selectedVariation.name}`;
+          itemName = `${productToAdd.name} (${selectedVariation.name})`;
+          itemPrice = selectedVariation.price;
+      } else {
+          itemKey = productToAdd.id;
+          itemName = productToAdd.name;
+          itemPrice = productToAdd.price || 0;
+      }
+
       const existingItem = prevItems.find(item => {
-        const existingItemKey = item.selectedVariation ? `${item.id}-${item.selectedVariation.name}` : item.id;
+        let existingItemKey = item.id;
+        if (item.isHalfAndHalf && item.half1 && item.half2) {
+            existingItemKey = `half-${item.half1.id}-${item.half2.id}-${item.selectedVariation?.name || 'no-var'}`;
+        } else if (item.selectedVariation) {
+            existingItemKey = `${item.id}-${item.selectedVariation.name}`;
+        }
         return existingItemKey === itemKey;
       });
   
       if (existingItem) {
         const updatedItems = prevItems.map(item =>
-          (item.selectedVariation ? `${item.id}-${item.selectedVariation.name}` : item.id) === itemKey
+          itemKey === (item.isHalfAndHalf && item.half1 && item.half2 ? `half-${item.half1.id}-${item.half2.id}-${item.selectedVariation?.name || 'no-var'}` : item.selectedVariation ? `${item.id}-${item.selectedVariation.name}` : item.id)
             ? { ...item, quantity: item.quantity + 1 } : item
         );
-                console.log('Item existente: Incrementando quantidade. Novos itens:', updatedItems); // LOG 5: Item existente
-
-        toast.success(`Mais um ${product.name}${selectedVariation ? ` (${selectedVariation.name})` : ''} adicionado!`);
+        toast.success(`Mais um ${itemName} adicionado!`);
         return updatedItems;
       } else {
-        // Calcula o preço correto e o nome (com variação)
-        // Garante que price é um number, pois o CartItem agora espera price: number
-        const itemPrice = selectedVariation ? selectedVariation.price : (product.price ?? 0); 
-        const itemName = selectedVariation ? `${product.name} (${selectedVariation.name})` : product.name;
-
         const newItem: CartItem = { 
-          ...product, 
-          id: product.id, // Mantém o ID original do produto
-          name: itemName,
-          price: itemPrice, // Usa o preço da variação ou o preço base do produto
+          ...productToAdd, // Copia as propriedades do produto
+          id: productToAdd.id, // Mantém o ID original ou o ID composto para meio a meio
+          name: itemName, // Nome formatado para exibição
+          price: itemPrice, // Preço final calculado
           quantity: 1, 
-          selectedVariation: selectedVariation 
+          selectedVariation: selectedVariation, // Variação de tamanho
+          isHalfAndHalf: productToAdd.isHalfAndHalf || false, // Flag meio a meio
+          half1: productToAdd.half1, // Detalhes da metade 1
+          half2: productToAdd.half2 // Detalhes da metade 2
         };
-                console.log('Novo item: Adicionando ao carrinho. Novos itens:', [...prevItems, newItem]); // LOG 6: Novo item
-
         toast.success(`${itemName} adicionado ao carrinho!`);
         return [...prevItems, newItem];
       }
@@ -77,24 +102,33 @@ export const CartProvider: FunctionComponent<{ children: ReactNode }> = ({ child
   };
   
 
-  // Adaptação de incrementQuantity para lidar com variações
-  const incrementQuantity = (productId: string, selectedVariationName?: string) => {
+  // Adaptação de incrementQuantity, decrementQuantity, removeFromCart para lidar com "meio a meio"
+  // Agora aceitam nomes das metades para criar uma chave de identificação mais precisa
+  const getCompositeKey = (productId: string, selectedVariationName?: string, half1Name?: string, half2Name?: string): string => {
+    if (half1Name && half2Name) {
+      // Chave para pizza meio a meio (ordem das metades não importa para a chave, então ordena)
+      const sortedHalves = [half1Name, half2Name].sort();
+      return `half-${sortedHalves[0]}-${sortedHalves[1]}-${selectedVariationName || 'no-var'}`;
+    }
+    // Chave para produto normal com ou sem variação
+    return selectedVariationName ? `${productId}-${selectedVariationName}` : productId;
+  };
+
+  const incrementQuantity = (productId: string, selectedVariationName?: string, half1Name?: string, half2Name?: string) => {
+    const targetKey = getCompositeKey(productId, selectedVariationName, half1Name, half2Name);
     setCartItems(prevItems =>
       prevItems.map(item => {
-        const itemKey = item.selectedVariation ? `${item.id}-${item.selectedVariation.name}` : item.id;
-        const targetKey = selectedVariationName ? `${productId}-${selectedVariationName}` : productId;
+        const itemKey = getCompositeKey(item.id, item.selectedVariation?.name, item.half1?.name, item.half2?.name);
         return itemKey === targetKey ? { ...item, quantity: item.quantity + 1 } : item;
       })
     );
   };
 
-  // Adaptação de decrementQuantity para lidar com variações
-  const decrementQuantity = (productId: string, selectedVariationName?: string) => {
+  const decrementQuantity = (productId: string, selectedVariationName?: string, half1Name?: string, half2Name?: string) => {
+    const targetKey = getCompositeKey(productId, selectedVariationName, half1Name, half2Name);
     setCartItems(prevItems =>
       prevItems.map(item => {
-        const itemKey = item.selectedVariation ? `${item.id}-${item.selectedVariation.name}` : item.id;
-        const targetKey = selectedVariationName ? `${productId}-${selectedVariationName}` : productId;
-        
+        const itemKey = getCompositeKey(item.id, item.selectedVariation?.name, item.half1?.name, item.half2?.name);
         return (itemKey === targetKey && item.quantity > 1)
           ? { ...item, quantity: item.quantity - 1 }
           : item;
@@ -102,11 +136,10 @@ export const CartProvider: FunctionComponent<{ children: ReactNode }> = ({ child
     );
   };
 
-  // Adaptação de removeFromCart para lidar com variações
-  const removeFromCart = (productId: string, selectedVariationName?: string) => {
+  const removeFromCart = (productId: string, selectedVariationName?: string, half1Name?: string, half2Name?: string) => {
+    const targetKey = getCompositeKey(productId, selectedVariationName, half1Name, half2Name);
     setCartItems(prevItems => prevItems.filter(item => {
-      const itemKey = item.selectedVariation ? `${item.id}-${item.selectedVariation.name}` : item.id;
-      const targetKey = selectedVariationName ? `${productId}-${selectedVariationName}` : productId;
+      const itemKey = getCompositeKey(item.id, item.selectedVariation?.name, item.half1?.name, item.half2?.name);
       return itemKey !== targetKey;
     }));
     toast.info('Item removido do carrinho');

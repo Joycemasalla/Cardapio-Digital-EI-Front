@@ -18,9 +18,9 @@ export const ModalContainer = styled.div`
   background-color: ${({ theme }) => theme.colors.backgroundLight};
   border-radius: ${({ theme }) => theme.borderRadius.large};
   width: 90%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
+  max-width: 500px; 
+  max-height: 90vh; 
+  overflow-y: auto; 
   position: relative;
   box-shadow: ${({ theme }) => theme.shadows.strong};
   padding: 1.5rem;
@@ -55,8 +55,8 @@ export const ModalContent = styled.div`
 
 export const ProductImage = styled.img`
   width: 100%;
-  max-height: 250px;
-  object-fit: contain;
+  max-height: 250px; 
+  object-fit: contain; 
   border-radius: ${({ theme }) => theme.borderRadius.medium};
   margin-bottom: 1.5rem;
 
@@ -91,8 +91,8 @@ export const ProductDescription = styled.p`
   color: ${({ theme }) => theme.colors.textSecondary};
   line-height: 1.5;
   margin-bottom: 1rem;
-  white-space: pre-wrap;
-  text-align: left;
+  white-space: pre-wrap; 
+  text-align: left; 
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     font-size: 0.9rem;
@@ -100,41 +100,117 @@ export const ProductDescription = styled.p`
   }
 `;
 
-export const PriceDisplay = styled.span`
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: 1rem;
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    font-size: 1.2rem;
-    margin-bottom: 0.8rem;
-  }
+export const PizzaModeSelector = styled.div`
+    display: flex;
+    width: 100%;
+    margin-bottom: 1rem;
+    border-radius: ${({ theme }) => theme.borderRadius.small};
+    overflow: hidden;
+    border: 1px solid ${({ theme }) => theme.colors.textDark};
 `;
+
+// CORRIGIDO: Removida a anotação de tipo <{ $selected: boolean }>
+export const PizzaModeButton = styled.button`
+    flex: 1;
+    padding: 0.8rem 0.5rem;
+    background-color: ${({ theme, $selected }) => $selected ? theme.colors.primary : theme.colors.backgroundCard};
+    color: ${({ theme, $selected }) => $selected ? theme.colors.background : theme.colors.textSecondary};
+    border: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background-color: ${({ theme, $selected }) => $selected ? theme.colors.primaryDark : 'rgba(255,255,255,0.1)'};
+        color: ${({ theme, $selected }) => $selected ? theme.colors.background : theme.colors.text};
+    }
+
+    &:first-child {
+        border-top-left-radius: ${({ theme }) => theme.borderRadius.small};
+        border-bottom-left-radius: ${({ theme }) => theme.borderRadius.small};
+    }
+    &:last-child {
+        border-top-right-radius: ${({ theme }) => theme.borderRadius.small};
+        border-bottom-right-radius: ${({ theme }) => theme.borderRadius.small};
+    }
+`;
+
+export const HalfPizzaSelectGroup = styled.div`
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    width: 100%;
+    flex-wrap: wrap; 
+`;
+
+export const HalfPizzaSelect = styled.select`
+    flex: 1;
+    min-width: 120px; 
+    padding: 0.8rem 0.5rem; 
+    border-radius: ${({ theme }) => theme.borderRadius.small};
+    border: 1px solid ${({ theme }) => theme.colors.textDark};
+    background-color: ${({ theme }) => theme.colors.backgroundCard};
+    color: ${({ theme }) => theme.colors.text};
+    font-size: 0.9rem;
+    appearance: none; 
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+
+    &:focus {
+        outline: none;
+        border-color: ${({ theme }) => theme.colors.primary};
+    }
+
+    option {
+        background-color: ${({ theme }) => theme.colors.backgroundLight};
+        color: ${({ theme }) => theme.colors.text};
+    }
+
+    @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+        flex-basis: 100%; 
+        min-width: unset; 
+    }
+`;
+
 
 export const VariationsContainer = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-  width: 100%;
+  flex-wrap: wrap; 
+  justify-content: flex-start; 
+  gap: 0.4rem; 
+  margin-top: 0.4rem; 
+  margin-bottom: 0.4rem; 
+  overflow: hidden; 
+
+  ${HalfPizzaSelectGroup} + & { 
+    margin-top: 1.5rem;
+  }
 `;
 
-// REMOÇÃO DA ANOTAÇÃO DE TIPO:
+// CORRIGIDO: Removida a anotação de tipo <{ $selected: boolean }>
 export const VariationOption = styled.label`
   background-color: ${({ theme, $selected }) => 
     $selected ? theme.colors.primary : theme.colors.backgroundCard};
   color: ${({ theme, $selected }) => 
-    $selected ? theme.colors.background : theme.colors.text};
+    $selected ? theme.colors.background : theme.colors.textSecondary};
   border: 1px solid ${({ theme }) => theme.colors.textDark};
-  padding: 0.6rem 1rem;
+  padding: 0.2rem 0.5rem; 
   border-radius: ${({ theme }) => theme.borderRadius.small};
   cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 0.7rem; 
+  font-weight: 600; 
   transition: all 0.2s ease;
   white-space: nowrap;
+  min-width: 25px; 
+  text-align: center; 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
 
   &:hover {
     color: ${({ theme }) => theme.colors.primaryLight};
@@ -147,8 +223,9 @@ export const VariationOption = styled.label`
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    font-size: 0.8rem;
-    padding: 0.5rem 0.8rem;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    min-width: 25px;
   }
 `;
 
@@ -157,7 +234,7 @@ export const ProductActions = styled.div`
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin-top: 1rem;
+  margin-top: 1rem; 
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     flex-direction: column;

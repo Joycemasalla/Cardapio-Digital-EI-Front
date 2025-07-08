@@ -28,8 +28,8 @@ type ProductContextType = {
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-const API_BASE_URL = 'https://cardapio-digital-ei-back.onrender.com/api/products'; 
-//const API_BASE_URL = 'http://localhost:3001/api/products'; // ou a porta do seu backend local
+//const API_BASE_URL = 'https://cardapio-digital-ei-back.onrender.com/api/products'; 
+const API_BASE_URL = 'http://localhost:3001/api/products'; // ou a porta do seu backend local
 
 export const ProductProvider: FunctionComponent<{ children: ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);

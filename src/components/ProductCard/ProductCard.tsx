@@ -10,11 +10,13 @@ import {
   ProductPrice,
   AddButton,
   VariationsContainer,
-  VariationOption, // Reintroduzido para as opções clicáveis no card
+  VariationOption,
 } from './ProductCardStyles';
 import { Plus } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { Product, ProductVariation } from '../../contexts/ProductContext';
+// NOVO: Importa CartItem para tipagem correta
+import { CartItem } from '../../contexts/CartContext';
 import { toast } from 'react-toastify';
 
 
@@ -31,42 +33,45 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
   const hasAvailableVariations = product.variations && product.variations.length > 0;
 
   useEffect(() => {
-    // Ao carregar o produto ou se houver variações, seleciona a primeira por padrão
     if (product) {
       if (hasAvailableVariations) {
-        setSelectedVariation(product.variations![0]); // Seleciona a primeira variação automaticamente
+        setSelectedVariation(product.variations![0]);
       } else {
-        setSelectedVariation(null); // Sem variações, limpa a seleção
+        setSelectedVariation(null);
       }
     }
-  }, [product, hasAvailableVariations]); // Depende do produto e se ele tem variações
+  }, [product, hasAvailableVariations]);
 
   const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault(); // Impede o comportamento padrão do botão
-    e.stopPropagation(); // Impede que o clique no botão abra o modal do card
+    e.preventDefault();
+    e.stopPropagation();
 
     console.log('Botão "Add" clicado para o produto:', product.name);
 
     if (hasAvailableVariations) {
-      // Se o produto tem variações
       if (!selectedVariation) {
-        toast.error('Por favor, selecione um tamanho para a pizza!'); // Mensagem de erro se nenhuma variação for escolhida
+        toast.error('Por favor, selecione um tamanho para a pizza!');
         return;
       }
-      addToCart(product, selectedVariation); // Adiciona a variação selecionada ao carrinho
+      // CORRIGIDO: Garante que o argumento seja do tipo CartItem (com quantity)
+      const itemToAdd: CartItem = { ...product, quantity: 1 }; 
+      addToCart(itemToAdd, selectedVariation); 
+      toast.success(`${product.name} (${selectedVariation.name}) adicionado ao carrinho!`);
     } else {
-      // Se o produto não tem variações (é um produto simples)
       if (product.price === undefined || product.price === null || product.price <= 0) {
         toast.error('Preço inválido para adicionar ao carrinho!');
         return;
       }
-      addToCart(product, undefined); // Adiciona o produto simples
+      // CORRIGIDO: Garante que o argumento seja do tipo CartItem (com quantity)
+      const itemToAdd: CartItem = { ...product, quantity: 1 };
+      addToCart(itemToAdd, undefined); 
+      toast.success(`${product.name} adicionado ao carrinho!`);
     }
   };
 
   const handleCardClick = () => {
     if (onProductClick) {
-      onProductClick(product); // Clicar em qualquer lugar no card abre o modal de detalhes
+      onProductClick(product);
     }
   };
 
@@ -74,20 +79,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
   let isAddButtonEnabled: boolean;
 
   if (hasAvailableVariations) {
-    // Se tem variações
     if (selectedVariation) {
-      // Exibe o preço da variação selecionada
       displayedPriceText = `R$ ${selectedVariation.price.toFixed(2).replace('.', ',')}`;
-      isAddButtonEnabled = true; // Botão habilitado se uma variação for selecionada
+      isAddButtonEnabled = true;
     } else {
-      // Se não há variação selecionada (estado inicial, teoricamente coberto pelo useEffect)
-      // Exibe "A partir de R$ X,XX" e desabilita o botão
       const minPrice = product.variations!.reduce((min, v) => Math.min(min, v.price), Infinity);
       displayedPriceText = `A partir de R$ ${minPrice.toFixed(2).replace('.', ',')}`;
-      isAddButtonEnabled = false; // Desabilitado até que uma variação seja selecionada
+      isAddButtonEnabled = false;
     }
   } else {
-    // Se não tem variações (produto simples)
     displayedPriceText = product.price !== undefined && product.price !== null && product.price > 0
       ? `R$ ${product.price.toFixed(2).replace('.', ',')}`
       : 'N/A';
@@ -97,15 +97,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
   return (
     <CardContainer 
       className={isListView ? 'list-view' : ''}
-      onClick={handleCardClick} // O clique no card abre o modal
-      $clickable={!!onProductClick} // Indica que o card é clicável
+      onClick={handleCardClick} 
+      $clickable={!!onProductClick} 
     >
       <ImageContainer>
         <ProductImage src={product.image || 'https://via.placeholder.com/300x200'} alt={product.name} />
       </ImageContainer>
       <ProductInfo>
         <ProductName>{product.name}</ProductName>
-        {/* Descrição abreviada no card, completa no modal */}
         <ProductDescription>
           {product.description && product.description.length > 50 
             ? product.description.substring(0, 50) + '...' 
@@ -113,22 +112,20 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
           }
         </ProductDescription>
 
-        {/* Renderiza as opções de variação clicáveis se o produto tiver variações */}
         {hasAvailableVariations && (
-          <VariationsContainer onClick={(e) => e.stopPropagation()}> {/* Impede que clicar nas variações abra o modal */}
+          <VariationsContainer onClick={(e) => e.stopPropagation()}>
             {product.variations!.map((variation, index) => (
               <VariationOption
-                key={variation.name} // Chave única para cada variação
+                key={variation.name}
                 $selected={selectedVariation?.name === variation.name}
               >
                 <input
                   type="radio"
-                  name={`card-variation-${product.id}`} // Garante que apenas um radio seja selecionado por produto
+                  name={`card-variation-${product.id}`}
                   value={variation.name}
                   checked={selectedVariation?.name === variation.name}
-                  onChange={() => setSelectedVariation(variation)} // Atualiza a variação selecionada
+                  onChange={() => setSelectedVariation(variation)}
                 />
-                {/* Exibe a primeira letra (P, M, G) ou o nome completo se for curto */}
                 {variation.name.length <= 3 ? variation.name.substring(0, 1).toUpperCase() : variation.name}
               </VariationOption>
             ))}
@@ -136,11 +133,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
         )}
 
         <ProductPrice>
-          <span>{displayedPriceText}</span> {/* Exibe o preço dinâmico */}
+          <span>{displayedPriceText}</span>
           <AddButton 
             type="button" 
             onClick={handleAddToCart} 
-            disabled={!isAddButtonEnabled} // Desabilita/habilita o botão Add
+            disabled={!isAddButtonEnabled}
           >
             <Plus size={16} /> Add
           </AddButton>
