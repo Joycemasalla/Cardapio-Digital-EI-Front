@@ -25,6 +25,7 @@ import WhatsAppButton from './components/WhatsAppButton/WhatsAppButton'; //
 import GlobalStyles from './styles/GlobalStyles'; //
 import { ThemeProvider } from 'styled-components';
 import theme from './styles/theme'; //
+import Footer from './components/Footer/Footer';
 
 
 function App() {
@@ -44,15 +45,15 @@ function App() {
                 <Route path="/categoria/:categoryName" element={<CategoryPage />} /> {/* */}
                 <Route path="/admin" element={<AdminLogin />} /> {/* */}
                 {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
-                
+
                 {/* <--- ALTERAÇÃO PRINCIPAL AQUI: Rota protegida para o Dashboard */}
-                <Route 
-                  path="/admin/dashboard" 
+                <Route
+                  path="/admin/dashboard"
                   element={
                     <PrivateRoute allowedRoles={['admin']}> {/* Adapte o papel 'admin' conforme seu AuthContext */}
                       <AdminDashboard /> {/* */}
                     </PrivateRoute>
-                  } 
+                  }
                 />
                 {/* Adicione outras rotas conforme necessário */}
               </Routes>
@@ -67,6 +68,7 @@ function App() {
 
               {/* Container para as notificações (toasts) */}
               <ToastContainer position="top-center" autoClose={1000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
+              <Footer />
             </Router>
           </CartProvider>
         </ProductProvider>

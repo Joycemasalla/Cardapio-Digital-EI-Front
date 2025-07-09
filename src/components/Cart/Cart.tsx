@@ -58,7 +58,6 @@ const Cart: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [deliveryOption, setDeliveryOption] = useState<'pickup' | 'local' | 'delivery'>('pickup');
   
-  // NOVO: Estado inicial com valores padrão ou vazio
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     phone: '',
@@ -68,42 +67,34 @@ const Cart: React.FC = () => {
     notes: ''
   });
 
-  // NOVO: useEffect para carregar as informações do cliente do localStorage ao montar o componente
   useEffect(() => {
     const savedInfo = localStorage.getItem('customerInfo');
     if (savedInfo) {
       try {
         const parsedInfo = JSON.parse(savedInfo);
-        // Preenche o estado com as informações salvas, garantindo que os campos de inputMask sejam strings
         setCustomerInfo(prev => ({
           ...prev,
           ...parsedInfo,
-          phone: parsedInfo.phone || '', // Garante que é string para InputMask
-          change: parsedInfo.change || '', // Garante que é string para InputMask
+          phone: parsedInfo.phone || '',
+          change: parsedInfo.change || '',
         }));
-        // Define a opção de entrega salva, se existir e for válida
         if (['pickup', 'local', 'delivery'].includes(parsedInfo.deliveryOption)) {
           setDeliveryOption(parsedInfo.deliveryOption);
         }
       } catch (e) {
         console.error("Falha ao analisar informações do cliente do localStorage", e);
-        // Em caso de dados corrompidos, limpa o localStorage para evitar problemas futuros
         localStorage.removeItem('customerInfo');
       }
     }
-  }, []); // Array de dependências vazio para rodar apenas uma vez no montagem
+  }, []);
 
-  // NOVO: useEffect para salvar as informações do cliente no localStorage sempre que 'customerInfo' ou 'deliveryOption' mudar
   useEffect(() => {
-    // Evita salvar um objeto vazio se o componente acabou de montar e não há dados.
-    // Salva apenas se algum campo principal foi preenchido.
     if (customerInfo.name || customerInfo.phone || customerInfo.address || customerInfo.notes || customerInfo.paymentMethod !== 'money' || deliveryOption !== 'pickup') {
       localStorage.setItem('customerInfo', JSON.stringify({ ...customerInfo, deliveryOption }));
     } else if (!customerInfo.name && !customerInfo.phone && !customerInfo.address && !customerInfo.notes && customerInfo.paymentMethod === 'money' && deliveryOption === 'pickup') {
-      // Se todos os campos estiverem vazios e as opções forem padrão, limpa o localStorage
       localStorage.removeItem('customerInfo');
     }
-  }, [customerInfo, deliveryOption]); // Salva sempre que customerInfo ou deliveryOption muda
+  }, [customerInfo, deliveryOption]);
 
 
   const totalAmount = cartItems.reduce(
@@ -125,13 +116,11 @@ const Cart: React.FC = () => {
   };
 
   const handleNextStep = () => {
-    // Validação para o passo 1 (Carrinho)
     if (activeStep === 0 && cartItems.length === 0) {
       toast.warn('Seu carrinho está vazio. Adicione itens antes de continuar.');
       return;
     }
 
-    // Validação para o passo 2 (Entrega)
     if (activeStep === 1) {
       if (!customerInfo.name.trim()) {
         toast.warn('Por favor, informe seu nome.');
@@ -162,7 +151,26 @@ const Cart: React.FC = () => {
     message += `*Itens do Pedido:*\n`;
 
     cartItems.forEach((item: CartItem) => {
-      message += `- ${item.quantity}x ${item.name} - R$ ${((item.selectedVariation?.price || item.price || 0) * item.quantity).toFixed(2).replace('.', ',')}\n`;
+      let itemLine = `- ${item.quantity}x `;
+
+      if (item.isHalfAndHalf && item.half1 && item.half2 && item.selectedVariation) {
+        // Formata para pizza meio a meio
+        itemLine += `Pizza ${item.half1.name} / ${item.half2.name} (${item.selectedVariation.name})`;
+      } else if (item.selectedVariation) {
+        // Formata para produto normal com variação
+        itemLine += `${item.name} (${item.selectedVariation.name})`;
+      } else {
+        // Formata para produto simples sem variação
+        itemLine += `${item.name}`;
+      }
+
+      // Adiciona a forma de corte se presente (para pizzas normais e meio a meio)
+      if (item.cuttingStyle) {
+        itemLine += ` (Corte: ${item.cuttingStyle === 'normal' ? 'Normal' : 'Francesinha'})`;
+      }
+
+      itemLine += ` - R$ ${((item.selectedVariation?.price || item.price || 0) * item.quantity).toFixed(2).replace('.', ',')}\n`;
+      message += itemLine;
     });
 
     message += `\n*Subtotal:* R$ ${totalAmount.toFixed(2).replace('.', ',')}\n`;
@@ -204,10 +212,7 @@ const Cart: React.FC = () => {
 
     clearCart();
     toggleCart();
-    
-    // NOVO: Limpa apenas o campo de "troco" após a submissão, pois é específico da compra atual
-    setCustomerInfo(prev => ({ ...prev, change: '' })); 
-    // O useEffect que salva no localStorage vai capturar esta mudança
+    setCustomerInfo(prev => ({ ...prev, change: '' }));
   };
 
   return (
@@ -248,20 +253,27 @@ const Cart: React.FC = () => {
               {cartItems.length > 0 ? (
                 <CartItemsList>
                   {cartItems.map((item: CartItem) => (
-                    <StyledCartItem key={item.id + (item.selectedVariation?.name || '')}>
+                    <StyledCartItem key={item.id + (item.selectedVariation?.name || '') + (item.half1?.name || '') + (item.half2?.name || '')}>
                       <ItemDetails>
                         <ItemInfo>
-                          <ItemName>{item.name}</ItemName>
+                          <ItemName>
+                            {item.isHalfAndHalf && item.half1 && item.half2 && item.selectedVariation
+                              ? `Pizza ${item.half1.name} / ${item.half2.name} (${item.selectedVariation.name})`
+                              : item.selectedVariation
+                                ? `${item.name} (${item.selectedVariation.name})`
+                                : item.name}
+                            {item.cuttingStyle && ` (Corte: ${item.cuttingStyle === 'normal' ? 'Normal' : 'Francesinha'})`}
+                          </ItemName>
                           <ItemPrice>
                             R$ {(item.selectedVariation?.price || item.price || 0).toFixed(2).replace('.', ',')}
                           </ItemPrice>
                         </ItemInfo>
 
                         <QuantityControl>
-                          <QuantityButton onClick={() => decrementQuantity(item.id, item.selectedVariation?.name)}>-</QuantityButton>
+                          <QuantityButton onClick={() => removeFromCart(item.id, item.selectedVariation?.name, item.half1?.name, item.half2?.name)}>-</QuantityButton>
                           <QuantityDisplay>{item.quantity}</QuantityDisplay>
-                          <QuantityButton onClick={() => incrementQuantity(item.id, item.selectedVariation?.name)}>+</QuantityButton>
-                          <RemoveButton onClick={() => removeFromCart(item.id, item.selectedVariation?.name)}>
+                          <QuantityButton onClick={() => incrementQuantity(item.id, item.selectedVariation?.name, item.half1?.name, item.half2?.name)}>+</QuantityButton>
+                          <RemoveButton onClick={() => removeFromCart(item.id, item.selectedVariation?.name, item.half1?.name, item.half2?.name)}>
                             <Trash2 size={16} />
                           </RemoveButton>
                         </QuantityControl>
@@ -323,7 +335,7 @@ const Cart: React.FC = () => {
                     type="text"
                     id="name"
                     name="name"
-                    value={customerInfo.name} // Pré-preenchido
+                    value={customerInfo.name}
                     onChange={handleInputChange}
                     required
                   />
@@ -335,7 +347,7 @@ const Cart: React.FC = () => {
                     mask="(99) 99999-9999"
                     id="phone"
                     name="phone"
-                    value={customerInfo.phone} // Pré-preenchido
+                    value={customerInfo.phone}
                     onChange={handleInputChange}
                     className="form-input"
                   >
@@ -349,7 +361,7 @@ const Cart: React.FC = () => {
                     <Textarea
                       id="address"
                       name="address"
-                      value={customerInfo.address} // Pré-preenchido
+                      value={customerInfo.address}
                       onChange={handleInputChange}
                       required
                     />
@@ -408,7 +420,7 @@ const Cart: React.FC = () => {
                     maskChar={null}
                     id="change"
                     name="change"
-                    value={customerInfo.change} // Pré-preenchido
+                    value={customerInfo.change}
                     onChange={handleInputChange}
                     className="form-input"
                   >
@@ -464,7 +476,7 @@ const Cart: React.FC = () => {
                 <Textarea
                   id="notes"
                   name="notes"
-                  value={customerInfo.notes} // Pré-preenchido
+                  value={customerInfo.notes}
                   onChange={handleInputChange}
                   placeholder="Ex: Sem cebola, bem passado, etc."
                 />

@@ -12,13 +12,14 @@ type PizzaHalfDetails = {
 };
 
 // Modifica CartItem para incluir informações de "meio a meio"
-export type CartItem = Product & {
+export interface CartItem extends Product {
   quantity: number;
   selectedVariation?: ProductVariation;
-  isHalfAndHalf?: boolean; // Flag para indicar que é uma pizza meio a meio
-  half1?: PizzaHalfDetails; // Detalhes da primeira metade
-  half2?: PizzaHalfDetails; // Detalhes da segunda metade
-};
+  isHalfAndHalf?: boolean;
+  half1?: { id: string; name: string; price: number };
+  half2?: { id: string; name: string; price: number };
+  cuttingStyle?: 'normal' | 'francesinha'; // NOVO: Adiciona a propriedade cuttingStyle
+}
 
 type CartContextType = {
   cartItems: CartItem[];

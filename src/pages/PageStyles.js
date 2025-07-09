@@ -81,6 +81,7 @@ export const SubmitButton = styled.button`
   }
 `;
 
+
 export const ErrorMessage = styled.div`
   color: ${({ theme }) => theme.colors.error};
   background-color: rgba(255, 82, 82, 0.1);
@@ -704,10 +705,21 @@ export const CustomSelectContainer = styled.div`
   position: relative;
   text-align: left;
 
+  /* NOVO: Ajusta o flex-basis e min-width para melhor responsividade em grupos flex */
+  flex: 1; /* Permite que cresça em um grupo flex */
+  min-width: 150px; /* Largura mínima para ser clicável */
+
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     max-width: 240px;
   }
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    /* Em telas muito pequenas, garante que os selects ocupem a largura total */
+    flex-basis: 100%; /* Ocupa 100% da largura em uma linha */
+    max-width: 100%; /* Garante que não ultrapasse */
+    min-width: unset; /* Remove min-width para que flex-basis 100% funcione */
+  }
 `;
+
 
 export const SelectLabel = styled.label`
   font-size: 1rem;
@@ -767,6 +779,8 @@ export const DropdownList = styled.ul`
   top: 100%;
   left: 0;
   width: 100%;
+  max-width: 100%; /* NOVO: Garante que a lista não seja mais larga que seu pai */
+  box-sizing: border-box; /* NOVO: Importante para cálculos de largura/padding */
   background-color: ${({ theme }) => theme.colors.backgroundCard};
   border: 1px solid ${({ theme }) => theme.colors.primary};
   border-top: none;
@@ -780,6 +794,7 @@ export const DropdownList = styled.ul`
   overflow-y: auto;
   z-index: 100;
 `;
+
 
 
 
@@ -920,7 +935,6 @@ export const UploadButton = styled.label`
     background-color: ${({ theme }) => theme.colors.primaryDark};
   }
 `;
-
 // NOVO: Navegação superior do Admin (para PC)
 export const AdminNav = styled.nav`
   display: flex;
