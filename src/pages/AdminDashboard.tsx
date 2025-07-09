@@ -300,6 +300,7 @@ const AdminDashboard: React.FC = () => {
         const uploadFormData = new FormData();
         uploadFormData.append('image', formData.imageFile);
 
+        // ESTA LINHA DEVE USAR import.meta.env.VITE_API_UPLOAD_URL
         const uploadResponse = await fetch(import.meta.env.VITE_API_UPLOAD_URL, {
           method: 'POST',
           body: uploadFormData,
