@@ -2,12 +2,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProducts, Product, ProductVariation } from '../contexts/ProductContext';
-// IMPORTANTE: Remova ou comente a linha abaixo se você desinstalou react-input-mask
-// import InputMask from 'react-input-mask'; 
 import { NumericFormat } from 'react-number-format'; // Importar NumericFormat
 
-import { ChevronDown, Plus, Edit, Trash2, X, Menu, UploadCloud } from 'lucide-react'; 
-import { 
+import { ChevronDown, Plus, Edit, Trash2, X, Menu, UploadCloud } from 'lucide-react';
+import {
   AdminDashboardContainer,
   AdminSidebar,
   AdminContent,
@@ -46,25 +44,21 @@ import {
 import { FormGroup, Label, Input, Textarea, SubmitButton } from './PageStyles';
 import { toast } from 'react-toastify';
 
-
-// Interface atualizada para permitir que 'price' na variação seja string no formulário
-// antes de ser parseado. Se a ProductVariation original for sempre number,
-// este ajuste é crucial para o estado local do formulário.
+// Interface atualizada para armazenar 'price' como number diretamente no formulário
 interface ProductVariationForm extends Omit<ProductVariation, 'price'> {
-  price: number | string; // Permite string para lidar com a máscara de entrada
+  price: number; // Armazena o número puro do NumericFormat
 }
 
 interface ProductFormState {
   id: string;
   name: string;
   description: string;
-  price: string; // Mantém como string, mas será manipulado por NumericFormat
+  price: number; // Armazena o número puro do NumericFormat
   image?: string;
   imageFile: File | null;
   category: string;
-  dynamicVariations: ProductVariationForm[]; // Usa a nova interface
+  dynamicVariations: ProductVariationForm[];
 }
-
 
 const AdminDashboard: React.FC = () => {
   const { products, addProduct, updateProduct, deleteProduct, loading } = useProducts();
@@ -147,12 +141,11 @@ const AdminDashboard: React.FC = () => {
     };
   }, [isDrawerOpen, drawerRef]);
 
-
   const [formData, setFormData] = useState<ProductFormState>({
     id: '',
     name: '',
     description: '',
-    price: '',
+    price: 0, // Inicializa como número
     image: '',
     imageFile: null,
     category: '',
@@ -179,19 +172,8 @@ const AdminDashboard: React.FC = () => {
     }).format(value);
   };
 
-  // Função para converter string formatada para número (usada no submit)
-  // Agora simplificada, pois NumericFormat pode nos dar o valor numérico diretamente.
-  const parseCurrency = (value: string): number => {
-    if (!value) return 0;
-    // Remove tudo que não for dígito e substitui vírgula por ponto para parseFloat
-    const cleanValue = value.replace(/[R$\s.]/g, '').replace(',', '.');
-    const parsed = parseFloat(cleanValue);
-    return isNaN(parsed) ? 0 : parsed;
-  };
-
-  // Esta função não é mais necessária com NumericFormat,
-  // pois ele formata o número para exibição automaticamente.
-  // const formatValueToInputMask = (value: number | string | undefined): string => { ... };
+  // A função parseCurrency não é mais necessária para valores que vêm do NumericFormat,
+  // pois ele já nos dá o floatValue diretamente.
 
   const formCategories = allCategories.filter(cat => cat !== 'Todos os Produtos');
 
@@ -204,11 +186,11 @@ const AdminDashboard: React.FC = () => {
     }));
   };
 
-  // Novo handler para os campos de preço usando NumericFormat
-  const handlePriceChange = (value: string, name: string) => {
+  // Handler para os campos de preço usando NumericFormat - AGORA SALVA O NÚMERO DIRETO
+  const handlePriceChange = (floatValue: number | undefined, name: string) => {
     setFormData(prevData => ({
       ...prevData,
-      [name]: value, // O valor retornado por NumericFormat já estará no formato de string desejado
+      [name]: floatValue !== undefined ? floatValue : 0, // Salva o floatValue diretamente
     }));
   };
 
@@ -220,17 +202,21 @@ const AdminDashboard: React.FC = () => {
     });
   };
 
-  const handleVariationChange = (index: number, field: keyof ProductVariationForm, value: string) => {
+  // Handler para variações - AGORA SALVA O NÚMERO DIRETO
+  const handleVariationChange = (index: number, field: keyof ProductVariationForm, value: string | number) => {
     const newVariations = [...formData.dynamicVariations];
+    // Se o campo for 'price', o 'value' já será o floatValue do NumericFormat
+    // Caso contrário, apenas atribui o valor
     (newVariations[index] as any)[field] = value;
     setFormData({ ...formData, dynamicVariations: newVariations });
   };
 
+
   const addVariation = () => {
-    setFormData({
-      ...formData,
-      dynamicVariations: [...formData.dynamicVariations, { name: '', price: '' }], // Inicializa price como string vazia
-    });
+    setFormData(prevData => ({
+      ...prevData,
+      dynamicVariations: [...prevData.dynamicVariations, { name: '', price: 0 }], // Inicializa price como número
+    }));
   };
 
   const removeVariation = (index: number) => {
@@ -243,7 +229,7 @@ const AdminDashboard: React.FC = () => {
       id: '',
       name: '',
       description: '',
-      price: '', // Resetado para string vazia
+      price: 0, // Resetado para número
       image: '',
       imageFile: null,
       category: '',
@@ -266,11 +252,10 @@ const AdminDashboard: React.FC = () => {
   const handleEditClick = (product: Product) => {
     setFormData({
       ...product,
-      // NumericFormat aceita um número diretamente ou uma string já formatada
-      price: product.price !== undefined ? product.price.toFixed(2).replace('.', ',') : '', // Formata para X.YY e substitui . por , para exibir
+      price: product.price !== undefined ? product.price : 0, // Passa o número diretamente para o estado
       dynamicVariations: product.variations ? product.variations.map(v => ({
         ...v,
-        price: v.price.toFixed(2).replace('.', ',') // Formata para X.YY e substitui . por , para exibir
+        price: v.price // Passa o número diretamente
       })) : [],
       imageFile: null,
     });
@@ -300,34 +285,32 @@ const AdminDashboard: React.FC = () => {
         const uploadFormData = new FormData();
         uploadFormData.append('image', formData.imageFile);
 
-        // ESTA LINHA DEVE USAR import.meta.env.VITE_API_UPLOAD_URL
-        const uploadResponse = await fetch(import.meta.env.VITE_API_UPLOAD_URL, {
+          const uploadResponse = await fetch('http://localhost:3001/api/upload', { // Rota de upload do seu backend
           method: 'POST',
-          body: uploadFormData,
+          body: uploadFormData, // Multer espera FormData
         });
+
 
         if (!uploadResponse.ok) {
           throw new Error('Erro no upload da imagem');
         }
         const uploadResult = await uploadResponse.json();
-        finalImageUrl = uploadResult.imageUrl;
+        finalImageUrl = uploadResult.imageUrl; // Obtém a URL do Cloudinary
         toast.success('Upload da imagem concluído!');
       }
 
       let productData: Product;
-      
+
       if (formData.dynamicVariations.length > 0) {
-        // Converte os preços das variações de string para number aqui
+        // Os preços das variações já estão como number no formData.dynamicVariations
         const parsedVariations = formData.dynamicVariations.map(v => {
-          // parseCurrency ainda é útil para garantir a limpeza do valor
-          const parsedPrice = parseCurrency(v.price as string); 
           return {
             name: v.name,
-            price: parsedPrice
+            price: v.price // Já é um número
           };
         });
 
-        const hasInvalidVariations = parsedVariations.some(v => 
+        const hasInvalidVariations = parsedVariations.some(v =>
           !v.name.trim() || isNaN(v.price) || v.price <= 0
         );
         if (hasInvalidVariations) {
@@ -345,9 +328,9 @@ const AdminDashboard: React.FC = () => {
           price: undefined
         };
       } else {
-        // Converte o preço do produto de string para number aqui
-        const priceValue = parseCurrency(formData.price);
-        
+        // O preço do produto principal já está como number em formData.price
+        const priceValue = formData.price;
+
         if (isNaN(priceValue) || priceValue <= 0) {
           toast.error('Por favor, insira um preço válido (maior que zero) para o produto.');
           return;
@@ -362,7 +345,7 @@ const AdminDashboard: React.FC = () => {
           variations: undefined
         };
       }
-      
+
       if (editingProduct) {
         await updateProduct({ ...productData, id: editingProduct.id });
         toast.success('Produto atualizado com sucesso!');
@@ -393,7 +376,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   return (
-    <AdminDashboardContainer> 
+    <AdminDashboardContainer>
       <AdminDrawerOverlay $isOpen={isDrawerOpen} onClick={() => setIsDrawerOpen(false)} />
       <AdminMobileDrawer $isOpen={isDrawerOpen} ref={drawerRef}>
         <div className="drawer-header">
@@ -429,7 +412,7 @@ const AdminDashboard: React.FC = () => {
               </SelectButton>
               {isCategoryDropdownOpen && (
                 <DropdownList>
-                  {allCategories.map((categoryName) => ( 
+                  {allCategories.map((categoryName) => (
                     <DropdownItem
                       key={categoryName}
                       className={selectedProductCategoryFilter === categoryName ? 'selected' : ''}
@@ -452,7 +435,7 @@ const AdminDashboard: React.FC = () => {
         <AdminMenuToggleButton onClick={() => setIsDrawerOpen(true)}>
           <Menu size={24} />
         </AdminMenuToggleButton>
-        <AdminNavLink 
+        <AdminNavLink
           className={currentSection === 'products' ? 'active' : ''}
           onClick={() => handleSectionChange('products')}
         >
@@ -460,7 +443,7 @@ const AdminDashboard: React.FC = () => {
         </AdminNavLink>
       </AdminNav>
 
-      <AdminContent> 
+      <AdminContent>
         <AdminHeader>
           <AdminTitle>{getAdminTitle()}</AdminTitle>
           <AdminControls>
@@ -486,7 +469,7 @@ const AdminDashboard: React.FC = () => {
             </SelectButton>
             {isCategoryDropdownOpen && (
               <DropdownList>
-                {allCategories.map((categoryName) => ( 
+                {allCategories.map((categoryName) => (
                   <DropdownItem
                     key={categoryName}
                     className={selectedProductCategoryFilter === categoryName ? 'selected' : ''}
@@ -585,8 +568,8 @@ const AdminDashboard: React.FC = () => {
                 <SelectLabel htmlFor="category-select-admin">Categoria</SelectLabel>
                 <div ref={categorySelectRef} style={{ width: '100%', position: 'relative' }}>
                     <CustomSelectContainer style={{ maxWidth: '100%' }}>
-                        <SelectButton 
-                            className={isCategoryDropdownOpen ? 'open' : ''} 
+                        <SelectButton
+                            className={isCategoryDropdownOpen ? 'open' : ''}
                             onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
                             type="button"
                         >
@@ -638,14 +621,11 @@ const AdminDashboard: React.FC = () => {
                     onChange={(e) => handleVariationChange(index, 'name', e.target.value)}
                     required
                   />
-                  {/* Substituindo InputMask por NumericFormat */}
+                  {/* NumericFormat para o preço da variação */}
                   <NumericFormat
-                    value={variation.price} // O valor pode ser numérico ou string
+                    value={variation.price} // Passa o número diretamente para o componente
                     onValueChange={(values) => {
-                      // values.formattedValue é a string formatada (R$ 1.234,56)
-                      // values.value é a string numérica limpa (1234.56)
-                      // values.floatValue é o número float (1234.56)
-                      handleVariationChange(index, 'price', values.formattedValue); // Salva a string formatada
+                      handleVariationChange(index, 'price', values.floatValue !== undefined ? values.floatValue : 0); // Salva o floatValue
                     }}
                     thousandSeparator="." // Separador de milhares
                     decimalSeparator="," // Separador decimal
@@ -658,9 +638,9 @@ const AdminDashboard: React.FC = () => {
                     className="variation-input" // Mantenha suas classes de estilo
                     required
                   />
-                  <ActionButton 
-                    className="delete" 
-                    type="button" 
+                  <ActionButton
+                    className="delete"
+                    type="button"
                     onClick={() => removeVariation(index)}
                   >
                     <Trash2 size={16} />
@@ -676,11 +656,11 @@ const AdminDashboard: React.FC = () => {
             {formData.dynamicVariations.length === 0 && (
               <FormGroup>
                 <Label htmlFor="price">Preço (R$)</Label>
-                {/* Substituindo InputMask por NumericFormat */}
+                {/* NumericFormat para o preço principal */}
                 <NumericFormat
-                  value={formData.price} // O valor pode ser numérico ou string
+                  value={formData.price} // Passa o número diretamente para o componente
                   onValueChange={(values) => {
-                    handlePriceChange(values.formattedValue, 'price'); // Salva a string formatada
+                    handlePriceChange(values.floatValue, 'price'); // Salva o floatValue
                   }}
                   thousandSeparator="."
                   decimalSeparator=","
