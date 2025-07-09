@@ -1,13 +1,15 @@
 {
     "compilerOptions": {
       "jsx": "react-jsx",
-      "lib": ["es2017", "dom"], // ou "es2017" ou "esnext"
+      "lib": ["es2020", "dom", "DOM.Iterable"], // ALTERADO: Adicionado 'es2020' (suporta import.meta) e 'DOM.Iterable'
       "strict": true,
       "esModuleInterop": true,
       "skipLibCheck": true,
-      "noImplicitAny": false
-
+      "noImplicitAny": false,
+      "module": "esnext", // NOVO: Define o sistema de módulos para 'esnext' (suporta import.meta)
+      "moduleResolution": "bundler", // NOVO: Recomendado para projetos Vite para como os módulos são resolvidos
+      "isolatedModules": true, // NOVO: Recomendado para setups com transformadores como Babel/SWC
+      "types": ["vite/client"] // NOVO: Inclui os tipos de cliente do Vite para reconhecer 'import.meta.env'
     },
     "include": ["src"]
   }
-  
