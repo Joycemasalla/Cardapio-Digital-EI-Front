@@ -7,12 +7,10 @@ export const FooterContainer = styled.footer`
   padding: 1.5rem 2rem; /* Espaçamento interno */
   text-align: center; /* Texto centralizado */
   font-size: 0.9rem; /* Tamanho da fonte */
-  margin-top: 4rem; /* Margem superior para separar do conteúdo */
   
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     padding: 1rem;
     font-size: 0.8rem;
-    margin-top: 3rem;
   }
 `;
 

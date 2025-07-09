@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 // Shared Styles (Mantidos)
 export const PageContainer = styled.div`
-  padding-bottom: 2rem;
+  padding-bottom: 0.5rem; /* Mantém o padding inferior para evitar sobreposição com o footer */
 `;
 
 export const FormGroup = styled.div`

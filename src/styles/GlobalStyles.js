@@ -13,10 +13,10 @@ const GlobalStyle = createGlobalStyle`
     background-color: ${({ theme }) => theme.colors.background};
     color: ${({ theme }) => theme.colors.text};
     min-height: 100vh;
-    padding-bottom: 60px; /* Ajuste esse valor para ser maior que a altura do seu botão flutuante + a notificação */
+    padding-bottom: 10px; /* Ajuste esse valor para ser maior que a altura do seu botão flutuante + a notificação */
 
     @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-      padding-bottom: 70px; /* Ajuste para telas menores se necessário */
+      padding-bottom: 10px; /* Ajuste para telas menores se necessário */
     }
 
   }
