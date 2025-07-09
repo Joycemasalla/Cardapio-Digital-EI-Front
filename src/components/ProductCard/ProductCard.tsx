@@ -56,7 +56,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
       // CORRIGIDO: Garante que o argumento seja do tipo CartItem (com quantity)
       const itemToAdd: CartItem = { ...product, quantity: 1 }; 
       addToCart(itemToAdd, selectedVariation); 
-      toast.success(`${product.name} (${selectedVariation.name}) adicionado ao carrinho!`);
+      // toast.success(`${product.name} (${selectedVariation.name}) adicionado ao carrinho!`);
     } else {
       if (product.price === undefined || product.price === null || product.price <= 0) {
         toast.error('Preço inválido para adicionar ao carrinho!');
@@ -65,7 +65,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
       // CORRIGIDO: Garante que o argumento seja do tipo CartItem (com quantity)
       const itemToAdd: CartItem = { ...product, quantity: 1 };
       addToCart(itemToAdd, undefined); 
-      toast.success(`${product.name} adicionado ao carrinho!`);
     }
   };
 

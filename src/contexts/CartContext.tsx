@@ -55,7 +55,7 @@ export const CartProvider: FunctionComponent<{ children: ReactNode }> = ({ child
       
       if (productToAdd.isHalfAndHalf && productToAdd.half1 && productToAdd.half2) {
           itemKey = `half-${productToAdd.half1.id}-${productToAdd.half2.id}-${selectedVariation?.name || 'no-var'}`;
-          itemName = `Pizza ${productToAdd.half1.name} / ${productToAdd.half2.name} (${selectedVariation?.name})`;
+          itemName = `Pizza ${productToAdd.half1.name}  /  ${productToAdd.half2.name} (${selectedVariation?.name})`;
           itemPrice = productToAdd.price || 0; // Já vem calculado
       } else if (selectedVariation) {
           itemKey = `${productToAdd.id}-${selectedVariation.name}`;

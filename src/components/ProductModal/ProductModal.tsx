@@ -174,7 +174,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) => {
         for (let i = 0; i < quantity; i++) {
             addToCart(halfAndHalfProduct, selectedVariation);
         }
-        toast.success(`${quantity}x Pizza ${halfAndHalfProduct.name} adicionada(s)!`); 
+        // toast.success(`${quantity}x Pizza ${halfAndHalfProduct.name} adicionada(s)!`); 
         onClose();
         return;
 
@@ -191,7 +191,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) => {
         for (let i = 0; i < quantity; i++) {
             addToCart(itemToAdd, selectedVariation);
         }
-        toast.success(`${quantity}x ${itemToAdd.name} (${selectedVariation.name}) adicionado(s)!`); 
+        // toast.success(`${quantity}x ${itemToAdd.name} (${selectedVariation.name}) adicionado(s)!`); 
         onClose();
         return;
     } else if (product) {
@@ -199,7 +199,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) => {
         for (let i = 0; i < quantity; i++) {
             addToCart(itemToAdd, undefined);
         }
-        toast.success(`${quantity}x ${itemToAdd.name} adicionado(s)!`); 
+        // toast.success(`${quantity}x ${itemToAdd.name} adicionado(s)!`); 
         onClose();
         return;
     }
