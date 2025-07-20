@@ -1,6 +1,6 @@
 // src/components/ProductModal/ProductModal.tsx
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Plus, ChevronDown } from 'lucide-react'; // ChevronDown para select customizado
+import { X, Plus, ChevronDown } from 'lucide-react'; 
 import { useCart } from '../../contexts/CartContext';
 import { Product, ProductVariation, useProducts } from '../../contexts/ProductContext';
 import { CartItem } from '../../contexts/CartContext';
@@ -26,16 +26,18 @@ import {
   PizzaModeButton,
   CuttingOptionsContainer,
   CuttingOption,
-  HalfPizzaSelectGroup, // GARANTIDO: Exportado e importado corretamente
+  HalfPizzaSelectGroup, 
 } from './ProductModalStyles';
-import { // Importa com alias para não conflitar com nomes locais
+import { 
   CustomSelectContainer as GlobalCustomSelectContainer,
   SelectButton as GlobalSelectButton,
   DropdownList as GlobalDropdownList,
   DropdownItem as GlobalDropdownItem,
   SelectLabel as GlobalSelectLabel,
-  ChevronIcon as GlobalChevronIcon // Certifique-se que ChevronIcon está importado
+  ChevronIcon as GlobalChevronIcon 
 } from '../../pages/PageStyles';
+// IMPORTADO: Para acessar o tema e usar as cores no estilo inline
+import theme from '../../styles/theme'; 
 
 
 interface ProductModalProps {
@@ -103,17 +105,28 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) => {
     }
   }, [product, isPizzaCategory, hasAvailableVariations]);
 
+  // NOVO: Lógica para controlar o modo "Meia a Meia" apenas para pizza Grande
+  const isLargePizzaSelected = isPizzaCategory && selectedVariation?.name === 'Grande';
+
   useEffect(() => {
     if (isPizzaCategory) {
       if (pizzaMode === 'normal') {
         setSelectedHalf1(product); 
         setSelectedHalf2(null);
       } else { 
-        setSelectedHalf1(null);
+        // Se a pizza não for "Grande" e o modo "meia a meia" estiver selecionado,
+        // volta para "normal" e limpa as seleções de metade
+        if (!isLargePizzaSelected) {
+          setPizzaMode('normal');
+          setSelectedHalf1(product);
+          setSelectedHalf2(null);
+          return; 
+        }
+        setSelectedHalf1(null); 
         setSelectedHalf2(null);
       }
     }
-  }, [pizzaMode, product, isPizzaCategory]);
+  }, [pizzaMode, product, isPizzaCategory, isLargePizzaSelected]); 
 
 
   const calculateHalfAndHalfPrice = (): number => {
@@ -174,7 +187,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) => {
         for (let i = 0; i < quantity; i++) {
             addToCart(halfAndHalfProduct, selectedVariation);
         }
-        // toast.success(`${quantity}x Pizza ${halfAndHalfProduct.name} adicionada(s)!`); 
         onClose();
         return;
 
@@ -191,7 +203,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) => {
         for (let i = 0; i < quantity; i++) {
             addToCart(itemToAdd, selectedVariation);
         }
-        // toast.success(`${quantity}x ${itemToAdd.name} (${selectedVariation.name}) adicionado(s)!`); 
         onClose();
         return;
     } else if (product) {
@@ -199,7 +210,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) => {
         for (let i = 0; i < quantity; i++) {
             addToCart(itemToAdd, undefined);
         }
-        // toast.success(`${quantity}x ${itemToAdd.name} adicionado(s)!`); 
         onClose();
         return;
     }
@@ -230,6 +240,19 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) => {
             <ProductName>{product.name}</ProductName>
             <ProductDescription>{product.description || 'Descrição não disponível.'}</ProductDescription>
 
+            {/* NOVO: Mensagem informativa sobre a opção Meia a Meia */}
+            {isPizzaCategory && !isLargePizzaSelected && hasAvailableVariations && (
+                <p style={{ 
+                    fontSize: '0.85rem', 
+                    color: theme.colors.textSecondary, 
+                    textAlign: 'center', 
+                    marginBottom: '1rem',
+                    padding: '0 0.5rem'
+                }}>
+                    A opção "Meia a Meia" está disponível apenas para a pizza **Grande**.
+                </p>
+            )}
+
             {isPizzaCategory && (
                 <PizzaModeSelector>
                     <PizzaModeButton 
@@ -238,17 +261,19 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) => {
                     >
                         Pizza Inteira
                     </PizzaModeButton>
-                    <PizzaModeButton 
-                        $selected={pizzaMode === 'half-and-half'} 
-                        onClick={() => setPizzaMode('half-and-half')}
-                    >
-                        Meia a Meia
-                    </PizzaModeButton>
+                    {isLargePizzaSelected && (
+                        <PizzaModeButton 
+                            $selected={pizzaMode === 'half-and-half'} 
+                            onClick={() => setPizzaMode('half-and-half')}
+                        >
+                            Meia a Meia
+                        </PizzaModeButton>
+                    )}
                 </PizzaModeSelector>
             )}
 
-            {isPizzaCategory && pizzaMode === 'half-and-half' ? (
-                <HalfPizzaSelectGroup> {/* Este é apenas um div container para os dois selects */}
+            {isPizzaCategory && pizzaMode === 'half-and-half' && isLargePizzaSelected ? (
+                <HalfPizzaSelectGroup> 
                     <GlobalCustomSelectContainer ref={half1SelectRef}>
                         <GlobalSelectLabel>1ª Metade</GlobalSelectLabel>
                         <GlobalSelectButton 
@@ -375,7 +400,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) => {
                     onClick={handleAddToCart}
                     disabled={!isAddButtonEnabled}
                 >
-                    <Plus size={20} /> {/* Ícone de adicionar no botão */}
+                    <Plus size={20} /> 
                     Adicionar R$ {finalPrice.toFixed(2).replace('.', ',')}
                 </AddButton>
             </ProductActions>
