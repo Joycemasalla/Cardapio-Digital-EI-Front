@@ -99,19 +99,19 @@ const AdminDashboard: React.FC = () => {
       'Combos',
       'Churrasco'
     ].sort((a, b) => {
-        const indexA = customAdminCategoryOrder.indexOf(a);
-        const indexB = customAdminCategoryOrder.indexOf(b);
+      const indexA = customAdminCategoryOrder.indexOf(a);
+      const indexB = customAdminCategoryOrder.indexOf(b);
 
-        if (indexA !== -1 && indexB !== -1) {
-            return indexA - indexB;
-        }
-        if (indexA !== -1) {
-            return -1;
-        }
-        if (indexB !== -1) {
-            return 1;
-        }
-        return a.localeCompare(b);
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      }
+      if (indexA !== -1) {
+        return -1;
+      }
+      if (indexB !== -1) {
+        return 1;
+      }
+      return a.localeCompare(b);
     })
   ];
 
@@ -285,10 +285,18 @@ const AdminDashboard: React.FC = () => {
         const uploadFormData = new FormData();
         uploadFormData.append('image', formData.imageFile);
 
-          const uploadResponse = await fetch('http://localhost:3001/api/upload', { // Rota de upload do seu backend
+
+        // CORREÇÃO: Usar a URL do backend hospedado no Render.com para o upload
+        const uploadResponse = await fetch('https://cardapio-digital-ei-back.onrender.com/api/upload', {
           method: 'POST',
           body: uploadFormData, // Multer espera FormData
         });
+
+
+        //   const uploadResponse = await fetch('http://localhost:3001/api/upload', { // Rota de upload do seu backend
+        //   method: 'POST',
+        //   body: uploadFormData, // Multer espera FormData
+        // });
 
 
         if (!uploadResponse.ok) {
@@ -547,9 +555,9 @@ const AdminDashboard: React.FC = () => {
               <FormTitle>
                 {editingProduct ? 'Editar Produto' : 'Adicionar Produto'}
               </FormTitle>
-            <CloseFormButton type="button" onClick={() => setShowForm(false)}>
+              <CloseFormButton type="button" onClick={() => setShowForm(false)}>
                 <X size={24} />
-            </CloseFormButton>
+              </CloseFormButton>
             </div>
 
             <FormGroup>
@@ -565,47 +573,47 @@ const AdminDashboard: React.FC = () => {
             </FormGroup>
 
             <FormGroup>
-                <SelectLabel htmlFor="category-select-admin">Categoria</SelectLabel>
-                <div ref={categorySelectRef} style={{ width: '100%', position: 'relative' }}>
-                    <CustomSelectContainer style={{ maxWidth: '100%' }}>
-                        <SelectButton
-                            className={isCategoryDropdownOpen ? 'open' : ''}
-                            onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                            type="button"
-                        >
-                            <span>{formData.category || 'Selecione uma categoria'}</span>
-                            <ChevronIcon className={isCategoryDropdownOpen ? 'rotated' : ''}>
-                                <ChevronDown size={20} />
-                            </ChevronIcon>
-                        </SelectButton>
+              <SelectLabel htmlFor="category-select-admin">Categoria</SelectLabel>
+              <div ref={categorySelectRef} style={{ width: '100%', position: 'relative' }}>
+                <CustomSelectContainer style={{ maxWidth: '100%' }}>
+                  <SelectButton
+                    className={isCategoryDropdownOpen ? 'open' : ''}
+                    onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                    type="button"
+                  >
+                    <span>{formData.category || 'Selecione uma categoria'}</span>
+                    <ChevronIcon className={isCategoryDropdownOpen ? 'rotated' : ''}>
+                      <ChevronDown size={20} />
+                    </ChevronIcon>
+                  </SelectButton>
 
-                        {isCategoryDropdownOpen && (
-                            <DropdownList>
-                                <DropdownItem
-                                    className={!formData.category ? 'selected' : ''}
-                                    onClick={() => {
-                                        setFormData({ ...formData, category: '' });
-                                        setIsCategoryDropdownOpen(false);
-                                    }}
-                                >
-                                    Selecione uma categoria
-                                </DropdownItem>
-                                {formCategories.map((category) => (
-                                    <DropdownItem
-                                        key={category}
-                                        className={formData.category === category ? 'selected' : ''}
-                                        onClick={() => {
-                                            setFormData({ ...formData, category: category });
-                                            setIsCategoryDropdownOpen(false);
-                                        }}
-                                    >
-                                        {category}
-                                    </DropdownItem>
-                                ))}
-                            </DropdownList>
-                        )}
-                    </CustomSelectContainer>
-                </div>
+                  {isCategoryDropdownOpen && (
+                    <DropdownList>
+                      <DropdownItem
+                        className={!formData.category ? 'selected' : ''}
+                        onClick={() => {
+                          setFormData({ ...formData, category: '' });
+                          setIsCategoryDropdownOpen(false);
+                        }}
+                      >
+                        Selecione uma categoria
+                      </DropdownItem>
+                      {formCategories.map((category) => (
+                        <DropdownItem
+                          key={category}
+                          className={formData.category === category ? 'selected' : ''}
+                          onClick={() => {
+                            setFormData({ ...formData, category: category });
+                            setIsCategoryDropdownOpen(false);
+                          }}
+                        >
+                          {category}
+                        </DropdownItem>
+                      ))}
+                    </DropdownList>
+                  )}
+                </CustomSelectContainer>
+              </div>
             </FormGroup>
 
             {/* Início da correção: Bloco VariationsEditor com NumericFormat */}
