@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProducts, Product, ProductVariation } from '../contexts/ProductContext';
 import { NumericFormat } from 'react-number-format'; 
+import { toast } from 'react-toastify';
 
 import { ChevronDown, Plus, Edit, Trash2, X, Menu, UploadCloud } from 'lucide-react';
 import {
@@ -31,7 +32,7 @@ import {
   ChevronIcon,
   DropdownList,
   DropdownItem,
-  AdminMenuToggleButton,
+  AdminMenuToggleButton, // <--- Importado
   AdminMobileDrawer,
   AdminDrawerOverlay,
   CustomSelectContainer,
@@ -42,10 +43,85 @@ import {
   AdminNavLink
 } from './PageStyles';
 import { FormGroup, Label, Input, Textarea, SubmitButton } from './PageStyles';
-import { toast } from 'react-toastify';
+import styled from 'styled-components'; // Importar styled para os novos componentes de estatísticas
+
+// Novos Styled Components para a seção de Estatísticas
+const StatsContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: ${({ theme }) => theme.colors.backgroundLight};
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  box-shadow: ${({ theme }) => theme.shadows.light};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    grid-template-columns: 1fr;
+    padding: 0.8rem;
+  }
+`;
+
+const StatCard = styled.div`
+  background-color: ${({ theme }) => theme.colors.backgroundCard};
+  padding: 1.2rem;
+  border-radius: ${({ theme }) => theme.borderRadius.small};
+  box-shadow: ${({ theme }) => theme.shadows.light};
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+`;
+
+const StatTitle = styled.h4`
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+const StatValue = styled.p`
+  color: ${({ theme }) => theme.colors.primary};
+  font-size: 1.8rem;
+  font-weight: 700;
+`;
+
+const CategoryStatsList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+  text-align: left;
+  max-height: 250px; /* Limita a altura para rolagem */
+  overflow-y: auto;
+`;
+
+const CategoryStatItem = styled.li`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed ${({ theme }) => theme.colors.textDark};
+  font-size: 0.9rem;
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const CategoryName = styled.span`
+  color: ${({ theme }) => theme.colors.text};
+  font-weight: 500;
+  flex: 1;
+`;
+
+const CategoryValue = styled.span`
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
 
 interface ProductVariationForm extends Omit<ProductVariation, 'price'> {
-  price: number;
+  price: number; 
 }
 
 interface ProductFormState {
@@ -63,7 +139,7 @@ const AdminDashboard: React.FC = () => {
   const { products, addProduct, updateProduct, deleteProduct, loading } = useProducts();
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [currentSection, setCurrentSection] = useState('products');
+  const [currentSection, setCurrentSection] = useState('products'); // 'products' ou 'statistics'
   const navigate = useNavigate();
 
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
@@ -75,7 +151,6 @@ const AdminDashboard: React.FC = () => {
 
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
 
-  // NOVO: Adicione 'Chapas' à ordem personalizada
   const customAdminCategoryOrder = [
     'Pizzas',
     'Pizzas Doces',
@@ -84,7 +159,7 @@ const AdminDashboard: React.FC = () => {
     'Combos',
     'Churrasco',
     'Porções',
-    'Chapas', // <--- Adicionado aqui
+    'Chapas', 
     'Bebidas'
   ];
 
@@ -99,7 +174,7 @@ const AdminDashboard: React.FC = () => {
       'Bebidas',
       'Combos',
       'Churrasco',
-      'Chapas' // <--- Adicionado aqui
+      'Chapas' 
     ].sort((a, b) => {
       const indexA = customAdminCategoryOrder.indexOf(a);
       const indexB = customAdminCategoryOrder.indexOf(b);
@@ -186,7 +261,7 @@ const AdminDashboard: React.FC = () => {
   const handlePriceChange = (floatValue: number | undefined, name: string) => {
     setFormData(prevData => ({
       ...prevData,
-      [name]: floatValue !== undefined ? floatValue : 0,
+      [name]: floatValue !== undefined ? floatValue : 0, 
     }));
   };
 
@@ -362,8 +437,40 @@ const AdminDashboard: React.FC = () => {
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const getAdminTitle = () => {
-    return `Gerenciar Produtos (${selectedProductCategoryFilter})`;
+    switch (currentSection) {
+      case 'products':
+        return `Gerenciar Produtos (${selectedProductCategoryFilter})`;
+      case 'statistics':
+        return 'Estatísticas do Cardápio';
+      default:
+        return 'Painel de Administração';
+    }
   };
+
+  // Cálculos de Estatísticas
+  const totalProductsCount = products.length;
+  const totalProductsValue = products.reduce((sum, product) => {
+    if (product.variations && product.variations.length > 0) {
+      return sum + product.variations[0].price;
+    }
+    return sum + (product.price || 0);
+  }, 0);
+
+  const categoryStats: { [key: string]: { count: number; totalValue: number } } = {};
+  products.forEach(product => {
+    if (!categoryStats[product.category]) {
+      categoryStats[product.category] = { count: 0, totalValue: 0 };
+    }
+    categoryStats[product.category].count++;
+    if (product.variations && product.variations.length > 0) {
+      categoryStats[product.category].totalValue += product.variations[0].price;
+    } else {
+      categoryStats[product.category].totalValue += (product.price || 0);
+    }
+  });
+
+  const sortedCategoryStats = Object.entries(categoryStats).sort(([, a], [, b]) => b.totalValue - a.totalValue);
+
 
   return (
     <AdminDashboardContainer>
@@ -383,6 +490,12 @@ const AdminDashboard: React.FC = () => {
               onClick={() => handleSectionChange('products')}
             >
               Produtos
+            </li>
+            <li
+              className={currentSection === 'statistics' ? 'active' : ''}
+              onClick={() => handleSectionChange('statistics')}
+            >
+              Estatísticas
             </li>
           </ul>
         </AdminSidebar>
@@ -421,6 +534,7 @@ const AdminDashboard: React.FC = () => {
         )}
       </AdminMobileDrawer>
 
+      {/* AdminNav é a navegação em abas para telas grandes */}
       <AdminNav>
         <AdminMenuToggleButton onClick={() => setIsDrawerOpen(true)}>
           <Menu size={24} />
@@ -431,105 +545,149 @@ const AdminDashboard: React.FC = () => {
         >
           Produtos
         </AdminNavLink>
+        <AdminNavLink
+          className={currentSection === 'statistics' ? 'active' : ''}
+          onClick={() => handleSectionChange('statistics')}
+        >
+          Estatísticas
+        </AdminNavLink>
       </AdminNav>
 
       <AdminContent>
+        {/* AdminHeader agora contém o botão de toggle para mobile e o título */}
         <AdminHeader>
+          {/* O AdminMenuToggleButton agora aparece aqui dentro do header do AdminContent */}
+          <AdminMenuToggleButton onClick={() => setIsDrawerOpen(true)}>
+            <Menu size={24} />
+          </AdminMenuToggleButton>
           <AdminTitle>{getAdminTitle()}</AdminTitle>
-          <AdminControls>
-            <AddButton onClick={handleAddNewClick}>
-              <Plus size={16} />
-              Adicionar Produto
-            </AddButton>
-          </AdminControls>
+          {currentSection === 'products' && (
+            <AdminControls>
+              <AddButton onClick={handleAddNewClick}>
+                <Plus size={16} />
+                Adicionar Produto
+              </AddButton>
+            </AdminControls>
+          )}
         </AdminHeader>
 
-        <div className="main-content-category-filter">
-          <SelectLabel htmlFor="product-category-filter-main">Filtrar por Categoria</SelectLabel>
-          <CustomSelectContainer style={{ maxWidth: '300px', margin: '0 auto 1.5rem auto' }}>
-            <SelectButton
-              className={isCategoryDropdownOpen ? 'open' : ''}
-              onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-              type="button"
-            >
-              <span>{selectedProductCategoryFilter}</span>
-              <ChevronIcon className={isCategoryDropdownOpen ? 'rotated' : ''}>
-                <ChevronDown size={20} />
-              </ChevronIcon>
-            </SelectButton>
-            {isCategoryDropdownOpen && (
-              <DropdownList>
-                {allCategories.map((categoryName) => (
-                  <DropdownItem
-                    key={categoryName}
-                    className={selectedProductCategoryFilter === categoryName ? 'selected' : ''}
-                    onClick={() => {
-                      setSelectedProductCategoryFilter(categoryName);
-                      setIsCategoryDropdownOpen(false);
-                    }}
-                  >
-                    {categoryName}
-                  </DropdownItem>
-                ))}
-              </DropdownList>
-            )}
-          </CustomSelectContainer>
-        </div>
+        {currentSection === 'products' && (
+          <>
+            <div className="main-content-category-filter">
+              <SelectLabel htmlFor="product-category-filter-main">Filtrar por Categoria</SelectLabel>
+              <CustomSelectContainer style={{ maxWidth: '300px', margin: '0 auto 1.5rem auto' }}>
+                <SelectButton
+                  className={isCategoryDropdownOpen ? 'open' : ''}
+                  onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                  type="button"
+                >
+                  <span>{selectedProductCategoryFilter}</span>
+                  <ChevronIcon className={isCategoryDropdownOpen ? 'rotated' : ''}>
+                    <ChevronDown size={20} />
+                  </ChevronIcon>
+                </SelectButton>
+                {isCategoryDropdownOpen && (
+                  <DropdownList>
+                    {allCategories.map((categoryName) => (
+                      <DropdownItem
+                        key={categoryName}
+                        className={selectedProductCategoryFilter === categoryName ? 'selected' : ''}
+                        onClick={() => {
+                          setSelectedProductCategoryFilter(categoryName);
+                          setIsCategoryDropdownOpen(false);
+                        }}
+                      >
+                        {categoryName}
+                      </DropdownItem>
+                    ))}
+                  </DropdownList>
+                )}
+              </CustomSelectContainer>
+            </div>
 
-        {loading ? (
-          <div>Carregando...</div>
-        ) : products.length === 0 ? (
-          <NoProducts>
-            <p>Nenhum produto cadastrado</p>
-            <AddButton onClick={handleAddNewClick}>
-              <Plus size={16} />
-              Adicionar Produto
-            </AddButton>
-          </NoProducts>
-        ) : (
-          <ProductsTable>
-            <thead>
-              <TableRow>
-                <TableHeader>Imagem</TableHeader>
-                <TableHeader>Nome</TableHeader>
-                <TableHeader>Categoria</TableHeader>
-                <TableHeader>Preço/Variações</TableHeader>
-                <TableHeader>Ações</TableHeader>
-              </TableRow>
-            </thead>
-            <tbody>
-              {filteredProducts.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell data-label="Imagem">
-                    <TableImage src={product.image || 'https://via.placeholder.com/60'} alt={product.name} />
-                  </TableCell>
-                  <TableCell data-label="Nome">{product.name}</TableCell>
-                  <TableCell data-label="Categoria">{product.category}</TableCell>
-                  <TableCell data-label="Preço/Variações">
-                    {product.variations && product.variations.length > 0 ? (
-                      product.variations.map((v, i) => (
-                        <div key={i}>{v.name}: {formatCurrency(v.price)}</div>
-                      ))
-                    ) : (
-                      formatCurrency(product.price)
-                    )}
-                  </TableCell>
-                  <TableCell data-label="Ações" className="actions">
-                    <ActionButton onClick={() => handleEditClick(product)}>
-                      <Edit size={16} />
-                    </ActionButton>
-                    <ActionButton
-                      className="delete"
-                      onClick={() => handleDeleteClick(product.id)}
-                    >
-                      <Trash2 size={16} />
-                    </ActionButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </tbody>
-          </ProductsTable>
+            {loading ? (
+              <div>Carregando...</div>
+            ) : products.length === 0 ? (
+              <NoProducts>
+                <p>Nenhum produto cadastrado</p>
+                <AddButton onClick={handleAddNewClick}>
+                  <Plus size={16} />
+                  Adicionar Produto
+                </AddButton>
+              </NoProducts>
+            ) : (
+              <ProductsTable>
+                <thead>
+                  <TableRow>
+                    <TableHeader>Imagem</TableHeader>
+                    <TableHeader>Nome</TableHeader>
+                    <TableHeader>Categoria</TableHeader>
+                    <TableHeader>Preço/Variações</TableHeader>
+                    <TableHeader>Ações</TableHeader>
+                  </TableRow>
+                </thead>
+                <tbody>
+                  {filteredProducts.map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell data-label="Imagem">
+                        <TableImage src={product.image || 'https://via.placeholder.com/60'} alt={product.name} />
+                      </TableCell>
+                      <TableCell data-label="Nome">{product.name}</TableCell>
+                      <TableCell data-label="Categoria">{product.category}</TableCell>
+                      <TableCell data-label="Preço/Variações">
+                        {product.variations && product.variations.length > 0 ? (
+                          product.variations.map((v, i) => (
+                            <div key={i}>{v.name}: {formatCurrency(v.price)}</div>
+                          ))
+                        ) : (
+                          formatCurrency(product.price)
+                        )}
+                      </TableCell>
+                      <TableCell data-label="Ações" className="actions">
+                        <ActionButton onClick={() => handleEditClick(product)}>
+                          <Edit size={16} />
+                        </ActionButton>
+                        <ActionButton
+                          className="delete"
+                          onClick={() => handleDeleteClick(product.id)}
+                        >
+                          <Trash2 size={16} />
+                        </ActionButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </tbody>
+              </ProductsTable>
+            )}
+          </>
         )}
+
+        {currentSection === 'statistics' && (
+          <StatsContainer>
+            <StatCard>
+              <StatTitle>Total de Produtos</StatTitle>
+              <StatValue>{totalProductsCount}</StatValue>
+            </StatCard>
+            <StatCard>
+              <StatTitle>Valor Total do Cardápio</StatTitle>
+              <StatValue>{formatCurrency(totalProductsValue)}</StatValue>
+            </StatCard>
+            <StatCard style={{ gridColumn: 'span 2' }}> {/* Ocupa 2 colunas em telas maiores */}
+              <StatTitle>Produtos por Categoria</StatTitle>
+              <CategoryStatsList>
+                {sortedCategoryStats.map(([categoryName, stats]) => (
+                  <CategoryStatItem key={categoryName}>
+                    <CategoryName>{categoryName}</CategoryName>
+                    <CategoryValue>
+                      {stats.count} itens - {formatCurrency(stats.totalValue)}
+                    </CategoryValue>
+                  </CategoryStatItem>
+                ))}
+              </CategoryStatsList>
+            </StatCard>
+          </StatsContainer>
+        )}
+
 
         {showForm && (
           <ProductForm onSubmit={handleSubmit}>
