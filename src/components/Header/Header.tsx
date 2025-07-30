@@ -24,10 +24,10 @@ const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { cartItems, toggleCart } = useCart();
-  const { currentUser } = useAuth(); // Obtém o usuário logado
+  const { currentUser } = useAuth();
   const location = useLocation();
 
-  const isAdminPage = location.pathname.includes('/admin'); // Verifica se a página atual é de admin
+  const isAdminPage = location.pathname.includes('/admin');
   const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   useEffect(() => {
@@ -55,9 +55,6 @@ const Header: React.FC = () => {
     }
   };
 
-  // LÓGICA ALTERADA: O ícone do Admin só aparece se houver um usuário logado E não estivermos já em uma página de admin.
-  // Se o admin já está no dashboard, o ícone não precisa aparecer na barra de navegação principal.
-  // Se o usuário não está logado, ele não vê o ícone em nenhuma página pública.
   const shouldShowAdminIcon = currentUser && !isAdminPage;
 
   return (
@@ -68,7 +65,7 @@ const Header: React.FC = () => {
         </Logo>
       </LogoContainer>
 
-      {!isAdminPage && ( // A navegação principal é escondida nas páginas de admin
+      {!isAdminPage && (
         <Nav>
           <NavLink onClick={() => handleCategoryClick('hamburgueres-tradicionais')}>
             Hambúrgueres Tradicionais
@@ -91,6 +88,9 @@ const Header: React.FC = () => {
           <NavLink onClick={() => handleCategoryClick('churrasco')}>
             Churrasco
           </NavLink>
+          <NavLink onClick={() => handleCategoryClick('chapas')}> {/* NOVO: Link para Chapas */}
+            Chapas
+          </NavLink>
           <NavLink onClick={() => handleCategoryClick('combos')}>
             Combos
           </NavLink>
@@ -98,28 +98,27 @@ const Header: React.FC = () => {
       )}
 
       <HeaderActions>
-        {!isAdminPage && ( // O botão do carrinho é escondido nas páginas de admin
+        {!isAdminPage && (
           <CartButton onClick={toggleCart}>
             <ShoppingCart size={24} />
             {itemCount > 0 && <ItemCount>{itemCount}</ItemCount>}
           </CartButton>
         )}
 
-        {/* CONDIÇÃO MODIFICADA AQUI: */}
         {shouldShowAdminIcon && ( 
           <AdminLink to="/admin/dashboard">
             <User size={24} />
           </AdminLink>
         )}
 
-        {!isAdminPage && ( // O botão do menu mobile é escondido nas páginas de admin
+        {!isAdminPage && (
           <MobileMenuButton onClick={toggleMobileMenu}>
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </MobileMenuButton>
         )}
       </HeaderActions>
 
-      {mobileMenuOpen && !isAdminPage && ( // A navegação mobile é escondida nas páginas de admin
+      {mobileMenuOpen && !isAdminPage && (
         <MobileNav>
           <NavLink onClick={() => handleCategoryClick('hamburgueres-tradicionais')}>
             Hambúrgueres Tradicionais
@@ -141,6 +140,9 @@ const Header: React.FC = () => {
           </NavLink>
           <NavLink onClick={() => handleCategoryClick('churrasco')}>
             Churrasco
+          </NavLink>
+          <NavLink onClick={() => handleCategoryClick('chapas')}> {/* NOVO: Link para Chapas no Mobile */}
+            Chapas
           </NavLink>
           <NavLink onClick={() => handleCategoryClick('combos')}>
             Combos
