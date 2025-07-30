@@ -1,8 +1,7 @@
-// src/pages/AdminDashboard.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProducts, Product, ProductVariation } from '../contexts/ProductContext';
-import { NumericFormat } from 'react-number-format'; 
+import { NumericFormat } from 'react-number-format';
 import { toast } from 'react-toastify';
 
 import { ChevronDown, Plus, Edit, Trash2, X, Menu, UploadCloud } from 'lucide-react';
@@ -32,7 +31,7 @@ import {
   ChevronIcon,
   DropdownList,
   DropdownItem,
-  AdminMenuToggleButton, // <--- Importado
+  AdminMenuToggleButton,
   AdminMobileDrawer,
   AdminDrawerOverlay,
   CustomSelectContainer,
@@ -121,7 +120,7 @@ const CategoryValue = styled.span`
 
 
 interface ProductVariationForm extends Omit<ProductVariation, 'price'> {
-  price: number; 
+  price: number;
 }
 
 interface ProductFormState {
@@ -159,7 +158,7 @@ const AdminDashboard: React.FC = () => {
     'Combos',
     'Churrasco',
     'Porções',
-    'Chapas', 
+    'Chapas',
     'Bebidas'
   ];
 
@@ -174,7 +173,7 @@ const AdminDashboard: React.FC = () => {
       'Bebidas',
       'Combos',
       'Churrasco',
-      'Chapas' 
+      'Chapas'
     ].sort((a, b) => {
       const indexA = customAdminCategoryOrder.indexOf(a);
       const indexB = customAdminCategoryOrder.indexOf(b);
@@ -193,16 +192,36 @@ const AdminDashboard: React.FC = () => {
   ];
 
   useEffect(() => {
-    const handleClickOutsideFormDropdown = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Fechar dropdown de categoria se clicar fora
       if (categorySelectRef.current && !categorySelectRef.current.contains(event.target as Node)) {
         setIsCategoryDropdownOpen(false);
       }
+
+      // Fechar drawer se clicar fora (só se não for no formulário)
+      if (drawerRef.current &&
+        !drawerRef.current.contains(event.target as Node) &&
+        !showForm) {
+        setIsDrawerOpen(false);
+      }
     };
-    document.addEventListener('mousedown', handleClickOutsideFormDropdown);
+
+    if (isCategoryDropdownOpen || isDrawerOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
     return () => {
-      document.removeEventListener('mousedown', handleClickOutsideFormDropdown);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [categorySelectRef]);
+  }, [isCategoryDropdownOpen, isDrawerOpen, showForm]);
+
+  // 6. Função para resetar todos os estados quando necessário
+  const resetAllStates = () => {
+    setShowForm(false);
+    setIsDrawerOpen(false);
+    setIsCategoryDropdownOpen(false);
+    resetForm();
+  };
 
   useEffect(() => {
     const handleClickOutsideDrawer = (event: MouseEvent) => {
@@ -261,7 +280,7 @@ const AdminDashboard: React.FC = () => {
   const handlePriceChange = (floatValue: number | undefined, name: string) => {
     setFormData(prevData => ({
       ...prevData,
-      [name]: floatValue !== undefined ? floatValue : 0, 
+      [name]: floatValue !== undefined ? floatValue : 0,
     }));
   };
 
@@ -330,6 +349,47 @@ const AdminDashboard: React.FC = () => {
     setEditingProduct(product);
     setShowForm(true);
   };
+
+
+  //1. Adicionar useEffect para controlar scroll quando modais estão abertos
+  useEffect(() => {
+    if (showForm || isDrawerOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup quando o componente é desmontado
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showForm, isDrawerOpen]);
+
+
+
+  // 2. Função para fechar todos os modais com ESC
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (showForm) {
+          setShowForm(false);
+          resetForm();
+        }
+        if (isDrawerOpen) {
+          setIsDrawerOpen(false);
+        }
+        if (isCategoryDropdownOpen) {
+          setIsCategoryDropdownOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [showForm, isDrawerOpen, isCategoryDropdownOpen]);
+
 
   const handleDeleteClick = async (productId: string) => {
     if (window.confirm('Tem certeza que deseja excluir este produto?')) {
@@ -474,8 +534,11 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <AdminDashboardContainer>
-      <AdminDrawerOverlay $isOpen={isDrawerOpen} onClick={() => setIsDrawerOpen(false)} />
-      <AdminMobileDrawer $isOpen={isDrawerOpen} ref={drawerRef}>
+      <AdminDrawerOverlay
+        $isOpen={isDrawerOpen && !showForm}
+        onClick={() => setIsDrawerOpen(false)}
+      />
+      <AdminMobileDrawer $isOpen={isDrawerOpen && !showForm} ref={drawerRef}>
         <div className="drawer-header">
           <span className="drawer-title">Menu de Administração</span>
           <CloseFormButton onClick={() => setIsDrawerOpen(false)}>
@@ -556,16 +619,25 @@ const AdminDashboard: React.FC = () => {
       <AdminContent>
         {/* AdminHeader agora contém o botão de toggle para mobile e o título */}
         <AdminHeader>
-          {/* O AdminMenuToggleButton agora aparece aqui dentro do header do AdminContent */}
           <AdminMenuToggleButton onClick={() => setIsDrawerOpen(true)}>
             <Menu size={24} />
           </AdminMenuToggleButton>
-          <AdminTitle>{getAdminTitle()}</AdminTitle>
+
+          <AdminTitle style={{
+            textAlign: 'center',
+            flex: 1, // Permite que o título ocupe o espaço disponível
+            margin: '0 1rem' // Margem para não colar nos botões
+          }}>
+            {getAdminTitle()}
+          </AdminTitle>
+
           {currentSection === 'products' && (
             <AdminControls>
               <AddButton onClick={handleAddNewClick}>
                 <Plus size={16} />
-                Adicionar Produto
+                <span style={{ display: window.innerWidth > 600 ? 'inline' : 'none' }}>
+                  Adicionar Produto
+                </span>
               </AddButton>
             </AdminControls>
           )}
@@ -690,88 +762,127 @@ const AdminDashboard: React.FC = () => {
 
 
         {showForm && (
-          <ProductForm onSubmit={handleSubmit}>
-            <div className="form-header">
-              <FormTitle>
-                {editingProduct ? 'Editar Produto' : 'Adicionar Produto'}
-              </FormTitle>
-              <CloseFormButton type="button" onClick={() => setShowForm(false)}>
-                <X size={24} />
-              </CloseFormButton>
-            </div>
+          <>
+            <AdminDrawerOverlay $isOpen={true} onClick={resetAllStates} />
 
-            <FormGroup>
-              <Label htmlFor="name">Nome do Produto</Label>
-              <Input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-              />
-            </FormGroup>
+            <ProductForm onSubmit={handleSubmit}>
+              <div className="form-header">
+                <FormTitle>
+                  {editingProduct ? 'Editar Produto' : 'Adicionar Produto'}
+                </FormTitle>
+                <CloseFormButton type="button" onClick={() => {
+                  setShowForm(false);
+                  resetForm();
+                }}>
+                  <X size={24} />
+                </CloseFormButton>
+              </div>
 
-            <FormGroup>
-              <SelectLabel htmlFor="category-select-admin">Categoria</SelectLabel>
-              <div ref={categorySelectRef} style={{ width: '100%', position: 'relative' }}>
-                <CustomSelectContainer style={{ maxWidth: '100%' }}>
-                  <SelectButton
-                    className={isCategoryDropdownOpen ? 'open' : ''}
-                    onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                    type="button"
-                  >
-                    <span>{formData.category || 'Selecione uma categoria'}</span>
-                    <ChevronIcon className={isCategoryDropdownOpen ? 'rotated' : ''}>
-                      <ChevronDown size={20} />
-                    </ChevronIcon>
-                  </SelectButton>
+              <FormGroup>
+                <Label htmlFor="name">Nome do Produto</Label>
+                <Input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                />
+              </FormGroup>
 
-                  {isCategoryDropdownOpen && (
-                    <DropdownList>
-                      <DropdownItem
-                        className={!formData.category ? 'selected' : ''}
-                        onClick={() => {
-                          setFormData({ ...formData, category: '' });
-                          setIsCategoryDropdownOpen(false);
-                        }}
-                      >
-                        Selecione uma categoria
-                      </DropdownItem>
-                      {formCategories.map((category) => (
+              <FormGroup>
+                <SelectLabel htmlFor="category-select-admin">Categoria</SelectLabel>
+                <div ref={categorySelectRef} style={{ width: '100%', position: 'relative' }}>
+                  <CustomSelectContainer style={{ maxWidth: '100%' }}>
+                    <SelectButton
+                      className={isCategoryDropdownOpen ? 'open' : ''}
+                      onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                      type="button"
+                    >
+                      <span>{formData.category || 'Selecione uma categoria'}</span>
+                      <ChevronIcon className={isCategoryDropdownOpen ? 'rotated' : ''}>
+                        <ChevronDown size={20} />
+                      </ChevronIcon>
+                    </SelectButton>
+
+                    {isCategoryDropdownOpen && (
+                      <DropdownList>
                         <DropdownItem
-                          key={category}
-                          className={formData.category === category ? 'selected' : ''}
+                          className={!formData.category ? 'selected' : ''}
                           onClick={() => {
-                            setFormData({ ...formData, category: category });
+                            setFormData({ ...formData, category: '' });
                             setIsCategoryDropdownOpen(false);
                           }}
                         >
-                          {category}
+                          Selecione uma categoria
                         </DropdownItem>
-                      ))}
-                    </DropdownList>
-                  )}
-                </CustomSelectContainer>
-              </div>
-            </FormGroup>
+                        {formCategories.map((category) => (
+                          <DropdownItem
+                            key={category}
+                            className={formData.category === category ? 'selected' : ''}
+                            onClick={() => {
+                              setFormData({ ...formData, category: category });
+                              setIsCategoryDropdownOpen(false);
+                            }}
+                          >
+                            {category}
+                          </DropdownItem>
+                        ))}
+                      </DropdownList>
+                    )}
+                  </CustomSelectContainer>
+                </div>
+              </FormGroup>
 
-            <VariationsEditor>
-              <Label>Variações do Produto</Label>
-              {formData.dynamicVariations.map((variation, index) => (
-                <VariationItem key={index}>
-                  <Input
-                    className="variation-input"
-                    type="text"
-                    placeholder="Nome da Variação (ex: Pequena)"
-                    value={variation.name}
-                    onChange={(e) => handleVariationChange(index, 'name', e.target.value)}
-                    required
-                  />
+              <VariationsEditor>
+                <Label>Variações do Produto</Label>
+                {formData.dynamicVariations.map((variation, index) => (
+                  <VariationItem key={index}>
+                    <Input
+                      className="variation-input"
+                      type="text"
+                      placeholder="Nome da Variação (ex: Pequena)"
+                      value={variation.name}
+                      onChange={(e) => handleVariationChange(index, 'name', e.target.value)}
+                      required
+                    />
+                    <NumericFormat
+                      value={variation.price}
+                      onValueChange={(values) => {
+                        handleVariationChange(index, 'price', values.floatValue !== undefined ? values.floatValue : 0);
+                      }}
+                      thousandSeparator="."
+                      decimalSeparator=","
+                      prefix="R$ "
+                      decimalScale={2}
+                      fixedDecimalScale={true}
+                      allowNegative={false}
+                      placeholder="R$ 0,00"
+                      customInput={Input}
+                      className="variation-input"
+                      required
+                    />
+                    <ActionButton
+                      className="delete"
+                      type="button"
+                      onClick={() => removeVariation(index)}
+                    >
+                      <Trash2 size={16} />
+                    </ActionButton>
+                  </VariationItem>
+                ))}
+                <AddVariationButton type="button" onClick={addVariation}>
+                  <Plus size={16} /> Adicionar Variação
+                </AddVariationButton>
+              </VariationsEditor>
+
+              {formData.dynamicVariations.length === 0 && (
+                <FormGroup>
+                  <Label htmlFor="price">Preço (R$)</Label>
                   <NumericFormat
-                    value={variation.price}
+                    value={formData.price}
                     onValueChange={(values) => {
-                      handleVariationChange(index, 'price', values.floatValue !== undefined ? values.floatValue : 0);
+                      handlePriceChange(values.floatValue, 'price');
                     }}
                     thousandSeparator="."
                     decimalSeparator=","
@@ -781,89 +892,57 @@ const AdminDashboard: React.FC = () => {
                     allowNegative={false}
                     placeholder="R$ 0,00"
                     customInput={Input}
-                    className="variation-input"
+                    id="price"
+                    name="price"
                     required
                   />
-                  <ActionButton
-                    className="delete"
-                    type="button"
-                    onClick={() => removeVariation(index)}
-                  >
-                    <Trash2 size={16} />
-                  </ActionButton>
-                </VariationItem>
-              ))}
-              <AddVariationButton type="button" onClick={addVariation}>
-                <Plus size={16} /> Adicionar Variação
-              </AddVariationButton>
-            </VariationsEditor>
+                </FormGroup>
+              )}
 
-            {formData.dynamicVariations.length === 0 && (
               <FormGroup>
-                <Label htmlFor="price">Preço (R$)</Label>
-                <NumericFormat
-                  value={formData.price}
-                  onValueChange={(values) => {
-                    handlePriceChange(values.floatValue, 'price');
-                  }}
-                  thousandSeparator="."
-                  decimalSeparator=","
-                  prefix="R$ "
-                  decimalScale={2}
-                  fixedDecimalScale={true}
-                  allowNegative={false}
-                  placeholder="R$ 0,00"
-                  customInput={Input}
-                  id="price"
-                  name="price"
+                <Label htmlFor="description">Descrição</Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
                   required
                 />
               </FormGroup>
-            )}
 
-            <FormGroup>
-              <Label htmlFor="description">Descrição</Label>
-              <Textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                required
-              />
-            </FormGroup>
-
-            <FormGroup>
-              <Label htmlFor="image">URL da Imagem</Label>
-              <InputFileContainer>
-                <Input
-                  type="file"
-                  id="imageFile"
-                  name="imageFile"
-                  accept="image/*"
-                  onChange={handleImageFileChange}
-                  style={{ display: 'none' }}
-                />
-                <UploadButton htmlFor="imageFile">
-                  <UploadCloud size={20} /> Selecionar Imagem
-                </UploadButton>
-                {formData.imageFile && (
-                  <InputFileName>{formData.imageFile.name}</InputFileName>
+              <FormGroup>
+                <Label htmlFor="image">URL da Imagem</Label>
+                <InputFileContainer>
+                  <Input
+                    type="file"
+                    id="imageFile"
+                    name="imageFile"
+                    accept="image/*"
+                    onChange={handleImageFileChange}
+                    style={{ display: 'none' }}
+                  />
+                  <UploadButton htmlFor="imageFile">
+                    <UploadCloud size={20} /> Selecionar Imagem
+                  </UploadButton>
+                  {formData.imageFile && (
+                    <InputFileName>{formData.imageFile.name}</InputFileName>
+                  )}
+                  {(imagePreviewUrl && !formData.imageFile) && (
+                    <InputFileName>{formData.image}</InputFileName>
+                  )}
+                </InputFileContainer>
+                {imagePreviewUrl && (
+                  <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                    <img src={imagePreviewUrl} alt="Pré-visualização" style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '8px', objectFit: 'contain' }} />
+                  </div>
                 )}
-                {(imagePreviewUrl && !formData.imageFile) && (
-                  <InputFileName>{formData.image}</InputFileName>
-                )}
-              </InputFileContainer>
-              {imagePreviewUrl && (
-                <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-                  <img src={imagePreviewUrl} alt="Pré-visualização" style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '8px', objectFit: 'contain' }} />
-                </div>
-              )}
-            </FormGroup>
+              </FormGroup>
 
-            <SubmitButton type="submit">
-              {editingProduct ? 'Atualizar Produto' : 'Adicionar Produto'}
-            </SubmitButton>
-          </ProductForm>
+              <SubmitButton type="submit">
+                {editingProduct ? 'Atualizar Produto' : 'Adicionar Produto'}
+              </SubmitButton>
+            </ProductForm>
+          </>
         )}
       </AdminContent>
     </AdminDashboardContainer>
