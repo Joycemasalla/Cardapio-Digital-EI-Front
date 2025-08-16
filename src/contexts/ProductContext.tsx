@@ -28,7 +28,7 @@ type ProductContextType = {
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-const API_BASE_URL = 'https://cardapio-digital-ei-front.vercel.app/'; // URL do seu backend, substitua conforme necessário
+const API_BASE_URL ='https://cardapio-digital-ei-back.vercel.app/'
 // 'https://cardapio-digital-ei-back.onrender.com/api/products'; 
 //const API_BASE_URL = 'http://localhost:3001/api/products'; // ou a porta do seu backend local
 
