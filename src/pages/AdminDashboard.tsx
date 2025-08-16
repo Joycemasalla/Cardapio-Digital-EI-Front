@@ -413,7 +413,7 @@ const AdminDashboard: React.FC = () => {
         const uploadFormData = new FormData();
         uploadFormData.append('image', formData.imageFile);
 
-        const uploadResponse = await fetch('https://cardapio-digital-ei-back.vercel.app/', {
+        const uploadResponse = await fetch('https://cardapio-digital-ei-back.vercel.app/api/upload', {
           // https://cardapio-digital-ei-back.onrender.com/api/upload
           method: 'POST',
           body: uploadFormData,
