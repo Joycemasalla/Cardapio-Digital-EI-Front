@@ -88,10 +88,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
       // Adiciona pizza inteira diretamente ao carrinho
       const itemToAdd: CartItem = { ...product, quantity: 1 };
       addToCart(itemToAdd, selectedVariation!);
+      toast.success(`Pizza ${product.name} (${selectedVariation?.name}) adicionada ao carrinho!`);
     } else {
-      // Abre o modal com modo meia a meia
+      // CORRIGIDO: Cria uma versão "fake" da pizza já configurada como Grande
+      const pizzaGrandeProduct = {
+        ...product,
+        // Força a variação Grande para abrir o modal já configurado
+        defaultVariation: 'Grande'
+      };
+      
       if (onProductClick) {
-        onProductClick(product, 'half-and-half');
+        // Abre o modal já no modo meia a meia, com pizza Grande pré-selecionada
+        onProductClick(pizzaGrandeProduct, 'half-and-half');
       }
     }
   };
