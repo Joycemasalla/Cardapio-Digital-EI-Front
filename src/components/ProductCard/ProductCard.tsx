@@ -15,7 +15,6 @@ import {
 import { Plus } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { Product, ProductVariation } from '../../contexts/ProductContext';
-// NOVO: Importa CartItem para tipagem correta
 import { CartItem } from '../../contexts/CartContext';
 import { toast } from 'react-toastify';
 
@@ -23,7 +22,7 @@ import { toast } from 'react-toastify';
 interface ProductCardProps {
   product: Product;
   isListView?: boolean;
-  onProductClick?: (product: Product) => void;
+  onProductClick?: (product: Product, initialPizzaMode?: 'normal' | 'half-and-half') => void;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, onProductClick }) => {
@@ -47,9 +46,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
     e.preventDefault();
     e.stopPropagation();
 
-    // Lógica para abrir o modal para pizza grande
+    // Lógica para abrir o modal para pizza grande, já no modo meia a meia
     if (isPizzaCategory && selectedVariation?.name === 'Grande' && onProductClick) {
-        onProductClick(product);
+        onProductClick(product, 'half-and-half');
         return;
     }
     
@@ -58,16 +57,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
         toast.error('Por favor, selecione um tamanho para a pizza!');
         return;
       }
-      // CORRIGIDO: Garante que o argumento seja do tipo CartItem (com quantity)
       const itemToAdd: CartItem = { ...product, quantity: 1 }; 
       addToCart(itemToAdd, selectedVariation); 
-      // toast.success(`${product.name} (${selectedVariation.name}) adicionado ao carrinho!`);
     } else {
       if (product.price === undefined || product.price === null || product.price <= 0) {
         toast.error('Preço inválido para adicionar ao carrinho!');
         return;
       }
-      // CORRIGIDO: Garante que o argumento seja do tipo CartItem (com quantity)
       const itemToAdd: CartItem = { ...product, quantity: 1 };
       addToCart(itemToAdd, undefined); 
     }
@@ -75,7 +71,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
 
   const handleCardClick = () => {
     if (onProductClick) {
-      onProductClick(product);
+      onProductClick(product, 'normal'); // Alterado para abrir o modal no modo "normal" por padrão
     }
   };
 
