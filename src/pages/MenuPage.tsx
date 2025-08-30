@@ -17,12 +17,11 @@ type CategoryType = {
 const MenuPage = () => {
   const { products, loading } = useProducts();
   const [categories, setCategories] = useState<CategoryType[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>(''); 
-  const [isListView, setIsListView] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [isListView, setIsListView] = useState(true); // Alterado para 'true'
   const [selectedProductForModal, setSelectedProductForModal] = useState<Product | null>(null);
 
-  // NOVO: Define a ordem customizada das categorias
-  // As categorias não listadas aqui aparecerão depois, em ordem alfabética (ou a ordem natural dos objetos)
+  // Define a ordem customizada das categorias
   const customCategoryOrder = [
     'Pizzas',
     'Pizzas Doces',
@@ -32,8 +31,6 @@ const MenuPage = () => {
     'Bebidas',
     'Combos',
     'Churrasco',
-    // Adicione outras categorias aqui se você quiser uma ordem específica para elas também
-    // Ex: 'Porções', 'Bebidas', 'Pizzas Doces'
   ];
 
   useEffect(() => {
@@ -55,30 +52,26 @@ const MenuPage = () => {
         })
       );
 
-      // NOVO: Aplica a ordenação customizada
+      // Aplica a ordenação customizada
       categoriesArray.sort((a, b) => {
         const indexA = customCategoryOrder.indexOf(a.name);
         const indexB = customCategoryOrder.indexOf(b.name);
 
-        // Se ambos estão na ordem customizada, ordena pela posição na lista customizada
         if (indexA !== -1 && indexB !== -1) {
           return indexA - indexB;
         }
-        // Se apenas 'a' está na ordem customizada, 'a' vem primeiro
         if (indexA !== -1) {
           return -1;
         }
-        // Se apenas 'b' está na ordem customizada, 'b' vem primeiro
         if (indexB !== -1) {
           return 1;
         }
-        // Se nenhum está na ordem customizada, mantém a ordem alfabética pelo nome
         return a.name.localeCompare(b.name);
       });
 
       setCategories(categoriesArray);
     }
-  }, [products]); // A dependência é `products` para que a ordem seja recalculada quando os produtos mudam
+  }, [products]);
 
   const normalizeId = (text: string): string => {
     return text
@@ -114,14 +107,7 @@ const MenuPage = () => {
         </HeroContent>
       </HeroSection>
 
-      <ViewToggleContainer>
-        <ViewToggleButton $active={!isListView} onClick={() => setIsListView(false)}>
-          <Grid size={20} /> Grade
-        </ViewToggleButton>
-        <ViewToggleButton $active={isListView} onClick={() => setIsListView(true)}>
-          <List size={20} /> Lista
-        </ViewToggleButton>
-      </ViewToggleContainer>
+      {/* Botões de alternância de visualização removidos */}
 
       <CategoryQuickLinks onCategoryClick={handleCategoryScroll} />
 
@@ -146,9 +132,9 @@ const MenuPage = () => {
           ))
       )}
 
-      <ProductModal 
-        product={selectedProductForModal} 
-        onClose={handleCloseModal} 
+      <ProductModal
+        product={selectedProductForModal}
+        onClose={handleCloseModal}
       />
     </PageContainer>
   );
