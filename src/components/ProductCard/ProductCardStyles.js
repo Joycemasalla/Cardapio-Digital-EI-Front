@@ -158,13 +158,12 @@ export const ProductDescription = styled.p`
 
 export const VariationsContainer = styled.div`
   display: flex;
-  flex-wrap: wrap; /* Permite que as opções de variação quebrem a linha */
-  justify-content: flex-start; /* Alinha as opções à esquerda */
-  gap: 0.4rem; /* Espaçamento entre as opções de variação */
-  margin-top: 0.4rem; /* Margem superior */
-  margin-bottom: 0.4rem; /* Margem inferior */
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
   overflow: hidden; 
-  /* max-height: unset; */ /* Remove max-height para permitir todas as opções visíveis */
 
   ${CardContainer}.list-view & {
     gap: 0.3rem; 
@@ -173,7 +172,6 @@ export const VariationsContainer = styled.div`
   }
 `;
 
-// NOVO: Estilo para as "pílulas" de variação no card (P, M, G)
 export const VariationOption = styled.label`
   background-color: ${({ theme, $selected }) => 
     $selected ? theme.colors.primary : theme.colors.backgroundCard};
@@ -260,7 +258,6 @@ export const AddButton = styled.button`
   justify-content: center;
   margin-left: auto; 
 
-
   &:hover {
     background-color: ${({ theme }) => theme.colors.primaryDark};
   }
@@ -273,6 +270,128 @@ export const AddButton = styled.button`
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     font-size: 0.7rem;
     padding: 0.25rem 0.5rem;
+  }
+`;
+
+// NOVO: Componentes para o modal de escolha de pizza
+export const PizzaChoiceOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1999; /* Menor que o ProductModal para não conflitar */
+  animation: fadeIn 0.2s ease;
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+`;
+
+export const PizzaChoiceContainer = styled.div`
+  background-color: ${({ theme }) => theme.colors.backgroundLight};
+  border-radius: ${({ theme }) => theme.borderRadius.large};
+  padding: 2rem;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: ${({ theme }) => theme.shadows.strong};
+  position: relative;
+  animation: slideUp 0.3s ease;
+
+  @keyframes slideUp {
+    from { 
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to { 
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    width: 95%;
+    padding: 1.5rem;
+  }
+`;
+
+export const PizzaChoiceTitle = styled.h3`
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    font-size: 1.2rem;
+    margin-bottom: 1.2rem;
+  }
+`;
+
+export const PizzaChoiceButtons = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    gap: 0.8rem;
+  }
+`;
+
+export const PizzaChoiceButton = styled.button`
+  background-color: ${({ theme }) => theme.colors.backgroundCard};
+  border: 2px solid ${({ theme }) => theme.colors.textDark};
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  padding: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+    background-color: ${({ theme }) => theme.colors.primary}15;
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    
+    strong {
+      color: ${({ theme }) => theme.colors.text};
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    
+    span {
+      color: ${({ theme }) => theme.colors.textSecondary};
+      font-size: 0.9rem;
+    }
+  }
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    padding: 1rem;
+    
+    div {
+      strong {
+        font-size: 1rem;
+      }
+      
+      span {
+        font-size: 0.85rem;
+      }
+    }
   }
 `;
 
