@@ -3,11 +3,10 @@ import React, { useEffect, useState } from 'react';
 import CategorySection from '../components/CategorySection/CategorySection';
 import { PageContainer, HeroSection, HeroContent, HeroTitle, HeroSubtitle } from './PageStyles';
 import { useProducts, Product } from '../contexts/ProductContext';
+import { ViewToggleContainer, ViewToggleButton } from '../components/ProductCard/ProductCardStyles';
 import { Grid, List } from 'lucide-react';
 import CategoryQuickLinks from '../components/CategoryQuickLinks/CategoryQuickLinks';
 import ProductModal from '../components/ProductModal/ProductModal';
-import { ViewToggleContainer, ViewToggleButton } from '../components/ProductCard/ProductCardStyles';
-
 
 type CategoryType = {
   id: string;
@@ -18,17 +17,11 @@ type CategoryType = {
 const MenuPage = () => {
   const { products, loading } = useProducts();
   const [categories, setCategories] = useState<CategoryType[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>(''); 
-  const [isListView, setIsListView] = useState(false);
-  
-  // NOVO: estado para o modal, agora armazena também o modo inicial
-  const [modalState, setModalState] = useState<{
-    product: Product | null;
-    initialPizzaMode: 'normal' | 'half-and-half';
-  }>({ product: null, initialPizzaMode: 'normal' });
-  
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [isListView, setIsListView] = useState(true); // Alterado para 'true'
+  const [selectedProductForModal, setSelectedProductForModal] = useState<Product | null>(null);
 
-  // NOVO: Define a ordem customizada das categorias
+  // Define a ordem customizada das categorias
   const customCategoryOrder = [
     'Pizzas',
     'Pizzas Doces',
@@ -38,8 +31,6 @@ const MenuPage = () => {
     'Bebidas',
     'Combos',
     'Churrasco',
-    // Adicione outras categorias aqui se você quiser uma ordem específica para elas também
-    // Ex: 'Porções', 'Bebidas', 'Pizzas Doces'
   ];
 
   useEffect(() => {
@@ -61,30 +52,26 @@ const MenuPage = () => {
         })
       );
 
-      // NOVO: Aplica a ordenação customizada
+      // Aplica a ordenação customizada
       categoriesArray.sort((a, b) => {
         const indexA = customCategoryOrder.indexOf(a.name);
         const indexB = customCategoryOrder.indexOf(b.name);
 
-        // Se ambos estão na ordem customizada, ordena pela posição na lista customizada
         if (indexA !== -1 && indexB !== -1) {
           return indexA - indexB;
         }
-        // Se apenas 'a' está na ordem customizada, 'a' vem primeiro
         if (indexA !== -1) {
           return -1;
         }
-        // Se apenas 'b' está na ordem customizada, 'b' vem primeiro
         if (indexB !== -1) {
           return 1;
         }
-        // Se nenhum está na ordem customizada, mantém a ordem alfabética pelo nome
         return a.name.localeCompare(b.name);
       });
 
       setCategories(categoriesArray);
     }
-  }, [products]); // A dependência é `products` para que a ordem seja recalculada quando os produtos mudam
+  }, [products]);
 
   const normalizeId = (text: string): string => {
     return text
@@ -102,13 +89,12 @@ const MenuPage = () => {
     }
   };
 
-  // NOVO: Agora a função recebe o modo inicial do modal
-  const handleProductClick = (product: Product, initialPizzaMode: 'normal' | 'half-and-half' = 'normal') => {
-    setModalState({ product, initialPizzaMode });
+  const handleProductClick = (product: Product) => {
+    setSelectedProductForModal(product);
   };
-  
+
   const handleCloseModal = () => {
-    setModalState({ product: null, initialPizzaMode: 'normal' });
+    setSelectedProductForModal(null);
   };
   
 
@@ -121,14 +107,7 @@ const MenuPage = () => {
         </HeroContent>
       </HeroSection>
 
-      <ViewToggleContainer>
-        <ViewToggleButton $active={!isListView} onClick={() => setIsListView(false)}>
-          <Grid size={20} /> Grade
-        </ViewToggleButton>
-        <ViewToggleButton $active={isListView} onClick={() => setIsListView(true)}>
-          <List size={20} /> Lista
-        </ViewToggleButton>
-      </ViewToggleContainer>
+      {/* Botões de alternância de visualização removidos */}
 
       <CategoryQuickLinks onCategoryClick={handleCategoryScroll} />
 
@@ -153,11 +132,9 @@ const MenuPage = () => {
           ))
       )}
 
-      {/* NOVO: Passa o estado do modal para o ProductModal */}
       <ProductModal
-        product={modalState.product}
+        product={selectedProductForModal}
         onClose={handleCloseModal}
-        initialPizzaMode={modalState.initialPizzaMode}
       />
     </PageContainer>
   );
