@@ -43,9 +43,10 @@ import theme from '../../styles/theme';
 interface ProductModalProps {
   product: Product | null;
   onClose: () => void;
+  initialPizzaMode?: 'normal' | 'half-and-half'; // NOVO: Adiciona prop para definir o modo inicial
 }
 
-const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) => {
+const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialPizzaMode }) => {
   const { addToCart } = useCart();
   const { products: allProducts } = useProducts();
   
@@ -88,7 +89,8 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) => {
     if (product) {
       setQuantity(1);
       if (isPizzaCategory) {
-        setPizzaMode('normal'); 
+        // AQUI: Define o modo inicial da pizza
+        setPizzaMode(initialPizzaMode || 'normal'); 
         setSelectedHalf1(product); 
         setSelectedHalf2(null); 
         setCuttingStyle('normal');
@@ -103,7 +105,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) => {
         }
       }
     }
-  }, [product, isPizzaCategory, hasAvailableVariations]);
+  }, [product, isPizzaCategory, hasAvailableVariations, initialPizzaMode]); // Adiciona initialPizzaMode como dependência
 
   // NOVO: Lógica para controlar o modo "Meia a Meia" apenas para pizza Grande
   const isLargePizzaSelected = isPizzaCategory && selectedVariation?.name === 'Grande';
@@ -146,7 +148,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) => {
   const currentItemPrice = isPizzaCategory && pizzaMode === 'half-and-half'
     ? calculateHalfAndHalfPrice() 
     : (selectedVariation?.price || product?.price || 0); 
-
+  
   const finalPrice = currentItemPrice * quantity;
 
   let isAddButtonEnabled = false;

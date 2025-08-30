@@ -31,6 +31,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
   const { addToCart } = useCart();
 
   const hasAvailableVariations = product.variations && product.variations.length > 0;
+  const isPizzaCategory = product.category === 'Pizzas' || product.category === 'Pizzas Doces';
 
   useEffect(() => {
     if (product) {
@@ -46,8 +47,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
     e.preventDefault();
     e.stopPropagation();
 
-    console.log('Botão "Add" clicado para o produto:', product.name);
-
+    // Lógica para abrir o modal para pizza grande
+    if (isPizzaCategory && selectedVariation?.name === 'Grande' && onProductClick) {
+        onProductClick(product);
+        return;
+    }
+    
     if (hasAvailableVariations) {
       if (!selectedVariation) {
         toast.error('Por favor, selecione um tamanho para a pizza!');
