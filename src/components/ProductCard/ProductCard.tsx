@@ -11,7 +11,7 @@ import {
 } from './ProductCardStyles';
 import { Plus } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
-import { Product, ProductVariation } from '../../contexts/ProductContext';
+import { Product, ProductVariation, ProductAdditional } from '../../contexts/ProductContext';
 import { toast } from 'react-toastify';
 
 interface ProductCardProps {
@@ -24,7 +24,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
   const { addToCart } = useCart();
   const [selectedVariation, setSelectedVariation] = useState<ProductVariation | null>(null);
 
-  // CORRIGIDO: Referência a 'additionals'
   const hasOptions = (product.variations && product.variations.length > 0) || (product.additionals && product.additionals.length > 0);
   const hasMultipleVariations = product.variations && product.variations.length > 1;
 
