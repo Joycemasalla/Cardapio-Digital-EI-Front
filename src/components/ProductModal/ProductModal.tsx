@@ -41,10 +41,10 @@ import theme from '../../styles/theme';
 interface ProductModalProps {
   product: Product | null;
   onClose: () => void;
-  initialPizzaMode?: 'normal' | 'half-and-half';
+  initialMode?: 'normal' | 'half-and-half'; // Adiciona a propriedade initialMode
 }
 
-const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialPizzaMode }) => {
+const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMode }) => {
   const { addToCart } = useCart();
   const { products: allProducts } = useProducts();
 
@@ -60,7 +60,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialPi
   const availablePizzaFlavors = allProducts.filter(p => p.category === 'Pizzas' || p.category === 'Pizzas Doces');
   const hasAvailableVariations = product?.variations && product.variations.length > 0;
   
-  // CORRIGIDO: Definindo a variável isLargePizzaSelected
   const isLargePizzaSelected = isPizzaCategory && selectedVariation?.name === 'Grande';
 
   const half1SelectRef = useRef<HTMLDivElement>(null);
@@ -84,30 +83,21 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialPi
     };
   }, []);
 
-  // CORRIGIDO: useEffect principal para configuração inicial
+  // UseEffect para configuração inicial do modal
   useEffect(() => {
-    console.log('🍕 ProductModal useEffect - initialPizzaMode:', initialPizzaMode);
-    console.log('🍕 ProductModal useEffect - product:', product?.name);
-    
     if (product) {
       setQuantity(1);
       if (isPizzaCategory) {
-        // Se vier com modo meia a meia, configura direto para esse modo
-        if (initialPizzaMode === 'half-and-half') {
-          console.log('🎯 Configurando modo MEIA A MEIA direto!');
+        if (initialMode === 'half-and-half') {
+          setPizzaMode('half-and-half');
           const grandeVariation = product.variations?.find(v => v.name === 'Grande');
-          console.log('🍕 Variação Grande encontrada:', grandeVariation);
-          
           if (grandeVariation) {
             setSelectedVariation(grandeVariation);
           }
-          setPizzaMode('half-and-half');
           setSelectedHalf1(null);
           setSelectedHalf2(null);
           setCuttingStyle('normal');
         } else {
-          console.log('🍕 Configurando modo NORMAL');
-          // Comportamento normal
           setPizzaMode('normal');
           setSelectedHalf1(product);
           setSelectedHalf2(null);
@@ -117,7 +107,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialPi
           }
         }
       } else {
-        // Para produtos que não são pizza
+        setPizzaMode('normal');
+        setSelectedHalf1(null);
+        setSelectedHalf2(null);
         if (hasAvailableVariations) {
           setSelectedVariation(product.variations![0]);
         } else {
@@ -125,21 +117,21 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialPi
         }
       }
     }
-  }, [product, isPizzaCategory, hasAvailableVariations, initialPizzaMode]);
+  }, [product, isPizzaCategory, hasAvailableVariations, initialMode]);
 
-  // CORRIGIDO: useEffect simplificado para controle do modo
+  // useEffect simplificado para controle do modo
   useEffect(() => {
     if (isPizzaCategory && pizzaMode === 'normal') {
       setSelectedHalf1(product);
       setSelectedHalf2(null);
     } else if (isPizzaCategory && pizzaMode === 'half-and-half') {
       // Se não estiver vindo do modo inicial, limpa as seleções
-      if (initialPizzaMode !== 'half-and-half') {
+      if (initialMode !== 'half-and-half') {
         setSelectedHalf1(null);
         setSelectedHalf2(null);
       }
     }
-  }, [pizzaMode, product, isPizzaCategory, initialPizzaMode]);
+  }, [pizzaMode, product, isPizzaCategory, initialMode]);
 
   const getPriceForVariation = (item: Product, variationName: string): number => {
     const variation = item.variations?.find(v => v.name === variationName);
@@ -261,14 +253,24 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialPi
               <PizzaModeSelector>
                 <PizzaModeButton
                   $selected={pizzaMode === 'normal'}
-                  onClick={() => setPizzaMode('normal')}
+                  onClick={() => {
+                    setPizzaMode('normal');
+                    const defaultVariation = product.variations?.length ? product.variations[0] : null;
+                    setSelectedVariation(defaultVariation);
+                  }}
                 >
                   Pizza Inteira
                 </PizzaModeButton>
                 {(isLargePizzaSelected || pizzaMode === 'half-and-half') && (
                   <PizzaModeButton
                     $selected={pizzaMode === 'half-and-half'}
-                    onClick={() => setPizzaMode('half-and-half')}
+                    onClick={() => {
+                      setPizzaMode('half-and-half');
+                      const grandeVariation = product.variations?.find(v => v.name === 'Grande');
+                      if (grandeVariation) {
+                        setSelectedVariation(grandeVariation);
+                      }
+                    }}
                   >
                     Meia a Meia
                   </PizzaModeButton>

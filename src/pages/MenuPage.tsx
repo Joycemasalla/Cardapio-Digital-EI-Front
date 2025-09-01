@@ -3,8 +3,6 @@ import React, { useEffect, useState } from 'react';
 import CategorySection from '../components/CategorySection/CategorySection';
 import { PageContainer, HeroSection, HeroContent, HeroTitle, HeroSubtitle } from './PageStyles';
 import { useProducts, Product } from '../contexts/ProductContext';
-import { ViewToggleContainer, ViewToggleButton } from '../components/ProductCard/ProductCardStyles';
-import { Grid, List } from 'lucide-react';
 import CategoryQuickLinks from '../components/CategoryQuickLinks/CategoryQuickLinks';
 import ProductModal from '../components/ProductModal/ProductModal';
 
@@ -18,8 +16,9 @@ const MenuPage = () => {
   const { products, loading } = useProducts();
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [isListView, setIsListView] = useState(true); // Alterado para 'true'
+  const [isListView, setIsListView] = useState(true);
   const [selectedProductForModal, setSelectedProductForModal] = useState<Product | null>(null);
+  const [initialModeForModal, setInitialModeForModal] = useState<'normal' | 'half-and-half' | undefined>(undefined);
 
   // Define a ordem customizada das categorias
   const customCategoryOrder = [
@@ -89,14 +88,15 @@ const MenuPage = () => {
     }
   };
 
-  const handleProductClick = (product: Product) => {
+  const handleProductClick = (product: Product, initialMode?: 'normal' | 'half-and-half') => {
     setSelectedProductForModal(product);
+    setInitialModeForModal(initialMode);
   };
 
   const handleCloseModal = () => {
     setSelectedProductForModal(null);
+    setInitialModeForModal(undefined);
   };
-  
 
   return (
     <PageContainer>
@@ -106,8 +106,6 @@ const MenuPage = () => {
           <HeroSubtitle>Sabores que conquistam</HeroSubtitle>
         </HeroContent>
       </HeroSection>
-
-      {/* Botões de alternância de visualização removidos */}
 
       <CategoryQuickLinks onCategoryClick={handleCategoryScroll} />
 
@@ -135,6 +133,7 @@ const MenuPage = () => {
       <ProductModal
         product={selectedProductForModal}
         onClose={handleCloseModal}
+        initialMode={initialModeForModal}
       />
     </PageContainer>
   );
