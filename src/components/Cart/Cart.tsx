@@ -1,4 +1,3 @@
-// src/components/Cart/Cart.tsx
 import React, { useState, useEffect } from 'react';
 import { X, ShoppingCart, Send, Trash2, Copy } from 'lucide-react';
 import { useCart, CartItem } from '../../contexts/CartContext';
@@ -45,6 +44,9 @@ import {
 } from './CartStyles';
 import { formatCurrency } from '../../utils/formatCurrency';
 
+// ** CORRIGIDO: Define a URL base do backend para evitar erros de CORS e rotas não encontradas **
+const API_BASE_URL = '[https://cardapio-digital-ei-back.vercel.app](https://cardapio-digital-ei-back.vercel.app)';
+
 const Cart: React.FC = () => {
   const {
     cartItems,
@@ -68,6 +70,7 @@ const Cart: React.FC = () => {
     notes: ''
   });
 
+  // Carrega os dados do cliente do localStorage quando o componente é montado
   useEffect(() => {
     const savedInfo = localStorage.getItem('customerInfo');
     if (savedInfo) {
@@ -89,6 +92,7 @@ const Cart: React.FC = () => {
     }
   }, []);
 
+  // Salva os dados do cliente no localStorage sempre que houver uma alteração
   useEffect(() => {
     if (customerInfo.name || customerInfo.phone || customerInfo.address || customerInfo.notes || customerInfo.paymentMethod !== 'money' || deliveryOption !== 'pickup') {
       localStorage.setItem('customerInfo', JSON.stringify({ ...customerInfo, deliveryOption }));
@@ -154,11 +158,8 @@ const Cart: React.FC = () => {
     }
 
     try {
-      // ** CORRIGIDO **: Use a URL completa do seu backend.
-      // Substitua pela URL da sua API no Vercel (https://cardapio-digital-ei-back.vercel.app)
-      //const API_BASE_URL = 'https://cardapio-digital-ei-back.vercel.app';
-      
-       const response = await fetch('/api/users',{
+      // ** CORRIGIDO **: A requisição agora aponta para o backend, não para o frontend.
+      const response = await fetch(`${API_BASE_URL}/api/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
