@@ -15,8 +15,6 @@ const GlobalStyles = createGlobalStyle`
     font-family: ${({ theme }) => theme.fonts.main};
     background-color: ${({ theme }) => theme.colors.background};
     color: ${({ theme }) => theme.colors.text};
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     /* Aumento sutil no tamanho da fonte base para 17px */
     font-size: 17px;
   }
