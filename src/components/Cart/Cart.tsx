@@ -1,3 +1,4 @@
+// src/components/Cart/Cart.tsx
 import React, { useState, useEffect } from 'react';
 import { X, ShoppingCart, Send, Trash2, Copy } from 'lucide-react';
 import { useCart, CartItem } from '../../contexts/CartContext';
@@ -57,7 +58,7 @@ const Cart: React.FC = () => {
 
   const [activeStep, setActiveStep] = useState(0);
   const [deliveryOption, setDeliveryOption] = useState<'pickup' | 'local' | 'delivery'>('pickup');
-
+  
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     phone: '',
@@ -145,7 +146,7 @@ const Cart: React.FC = () => {
       setActiveStep(activeStep - 1);
     }
   };
-
+  
   const handleSubmitOrder = async () => {
     if (!customerInfo.name || !customerInfo.phone || (deliveryOption === 'delivery' && !customerInfo.address)) {
       toast.error('Por favor, preencha todos os dados necessários antes de finalizar o pedido.');
@@ -153,8 +154,11 @@ const Cart: React.FC = () => {
     }
 
     try {
-      // Salva ou atualiza os dados do cliente no banco de dados
-      const response = await fetch('/api/users', {
+      // ** CORRIGIDO **: Use a URL completa do seu backend.
+      // Substitua pela URL da sua API no Vercel (https://cardapio-digital-ei-back.vercel.app)
+      const API_BASE_URL = 'https://cardapio-digital-ei-back.vercel.app';
+      
+      const response = await fetch(`${API_BASE_URL}/api/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -163,13 +167,15 @@ const Cart: React.FC = () => {
           address: customerInfo.address
         }),
       });
-      // NOVO: Log para verificar a resposta do servidor
+
       console.log('Status da resposta do servidor:', response.status);
       console.log('Texto do status:', response.statusText);
+      
       if (!response.ok) {
-        throw new Error('Falha ao salvar dados do cliente.');
+        const errorData = await response.json();
+        throw new Error(`Falha ao salvar dados do cliente. Status: ${response.status}. Mensagem: ${errorData.message}`);
       }
-
+      
       // Monta a mensagem do WhatsApp
       let message = `*Novo Pedido - Espaço Imperial*\n\n`;
       message += `*Itens do Pedido:*\n`;
@@ -223,9 +229,9 @@ const Cart: React.FC = () => {
 
       const encodedMessage = encodeURIComponent(message);
       window.open(`https://wa.me/5532988949994?text=${encodedMessage}`, '_blank');
-
+      
       localStorage.setItem('customerInfo', JSON.stringify({ ...customerInfo, deliveryOption }));
-
+      
       clearCart();
       toggleCart();
       toast.success('Pedido enviado com sucesso! Entraremos em contato via WhatsApp.');
