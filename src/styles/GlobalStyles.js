@@ -15,7 +15,8 @@ const GlobalStyles = createGlobalStyle`
     font-family: ${({ theme }) => theme.fonts.main};
     background-color: ${({ theme }) => theme.colors.background};
     color: ${({ theme }) => theme.colors.text};
-    /* Aumento sutil no tamanho da fonte base para 17px */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     font-size: 17px;
   }
   
@@ -44,6 +45,12 @@ const GlobalStyles = createGlobalStyle`
 
   button {
     cursor: pointer;
+    // Removendo a borda de todos os botões para um visual mais limpo
+    border: none; 
+    // Garante que o contorno de foco não adicione uma borda indesejada
+    outline: none;
+    // Opcional: Remove qualquer sombra que possa parecer uma borda
+    box-shadow: none;
   }
 
   img {
