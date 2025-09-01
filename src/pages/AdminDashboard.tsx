@@ -302,7 +302,7 @@ const AdminDashboard: React.FC = () => {
     const newVariations = formData.dynamicVariations.filter((_, i) => i !== index);
     setFormData({ ...formData, dynamicVariations: newVariations });
   };
-  
+
   // NOVO: Funções para manipular a lista de opcionais
   const handleOptionalChange = (index: number, field: keyof ProductOptional, value: string | number) => {
     const newOptionals = [...formData.dynamicOptionals];
@@ -348,7 +348,7 @@ const AdminDashboard: React.FC = () => {
     resetForm();
     setShowForm(true);
   };
-  
+
   // NOVO: Adaptação de handleEditClick para popular o campo de opcionais
   const handleEditClick = (product: Product) => {
     setFormData({
@@ -875,7 +875,7 @@ const AdminDashboard: React.FC = () => {
                 </AddVariationButton>
               </VariationsEditor>
 
-              {/* Seção de Opcionais (NOVA) */}
+              {/* NOVO: Seção de Opcionais (adicione este bloco aqui) */}
               <VariationsEditor>
                 <Label>Opcionais do Produto</Label>
                 {formData.dynamicOptionals.map((optional, index) => (
@@ -918,6 +918,7 @@ const AdminDashboard: React.FC = () => {
                 </AddVariationButton>
               </VariationsEditor>
 
+              {/* Se o produto não tiver variações, mostramos o preço único */}
               {formData.dynamicVariations.length === 0 && (
                 <FormGroup>
                   <Label htmlFor="price">Preço (R$)</Label>
