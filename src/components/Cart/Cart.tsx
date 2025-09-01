@@ -57,7 +57,7 @@ const Cart: React.FC = () => {
 
   const [activeStep, setActiveStep] = useState(0);
   const [deliveryOption, setDeliveryOption] = useState<'pickup' | 'local' | 'delivery'>('pickup');
-  
+
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     phone: '',
@@ -145,7 +145,7 @@ const Cart: React.FC = () => {
       setActiveStep(activeStep - 1);
     }
   };
-  
+
   const handleSubmitOrder = async () => {
     if (!customerInfo.name || !customerInfo.phone || (deliveryOption === 'delivery' && !customerInfo.address)) {
       toast.error('Por favor, preencha todos os dados necessários antes de finalizar o pedido.');
@@ -163,11 +163,13 @@ const Cart: React.FC = () => {
           address: customerInfo.address
         }),
       });
-
+      // NOVO: Log para verificar a resposta do servidor
+      console.log('Status da resposta do servidor:', response.status);
+      console.log('Texto do status:', response.statusText);
       if (!response.ok) {
         throw new Error('Falha ao salvar dados do cliente.');
       }
-      
+
       // Monta a mensagem do WhatsApp
       let message = `*Novo Pedido - Espaço Imperial*\n\n`;
       message += `*Itens do Pedido:*\n`;
@@ -221,9 +223,9 @@ const Cart: React.FC = () => {
 
       const encodedMessage = encodeURIComponent(message);
       window.open(`https://wa.me/5532988949994?text=${encodedMessage}`, '_blank');
-      
+
       localStorage.setItem('customerInfo', JSON.stringify({ ...customerInfo, deliveryOption }));
-      
+
       clearCart();
       toggleCart();
       toast.success('Pedido enviado com sucesso! Entraremos em contato via WhatsApp.');
