@@ -1,3 +1,4 @@
+// src/components/ProductCard/ProductCardStyles.js
 import styled from 'styled-components';
 
 export const CardContainer = styled.div`
@@ -10,7 +11,7 @@ export const CardContainer = styled.div`
   flex-direction: column;
   height: auto; 
   min-height: 200px; 
-  cursor: pointer;
+  cursor: ${({ $clickable }) => ($clickable ? 'pointer' : 'default')};
 
   &:hover {
     transform: translateY(-5px);
@@ -21,12 +22,13 @@ export const CardContainer = styled.div`
     min-height: 180px;
   }
 
+  /* Estilos para o modo de lista (horizontal) */
   &.list-view {
-    flex-direction: row;
+    flex-direction: row-reverse;
     min-height: unset;
     height: auto; 
     padding: 0.6rem;
-    align-items: center; 
+    align-items: flex-start; 
     gap: 0.6rem;
     
     @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
@@ -156,12 +158,13 @@ export const ProductDescription = styled.p`
 
 export const VariationsContainer = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  gap: 0.4rem;
-  margin-top: 0.4rem;
-  margin-bottom: 0.4rem;
+  flex-wrap: wrap; /* Permite que as opções de variação quebrem a linha */
+  justify-content: flex-start; /* Alinha as opções à esquerda */
+  gap: 0.4rem; /* Espaçamento entre as opções de variação */
+  margin-top: 0.4rem; /* Margem superior */
+  margin-bottom: 0.4rem; /* Margem inferior */
   overflow: hidden; 
+  /* max-height: unset; */ /* Remove max-height para permitir todas as opções visíveis */
 
   ${CardContainer}.list-view & {
     gap: 0.3rem; 
@@ -170,6 +173,7 @@ export const VariationsContainer = styled.div`
   }
 `;
 
+// NOVO: Estilo para as "pílulas" de variação no card (P, M, G)
 export const VariationOption = styled.label`
   background-color: ${({ theme, $selected }) => 
     $selected ? theme.colors.primary : theme.colors.backgroundCard};
@@ -207,7 +211,7 @@ export const VariationOption = styled.label`
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     font-size: 0.7rem;
-    padding: 0.25rem 0.5rem;
+    padding: 0.2rem 0.5rem;
     min-width: 25px;
   }
 `;
@@ -256,6 +260,7 @@ export const AddButton = styled.button`
   justify-content: center;
   margin-left: auto; 
 
+
   &:hover {
     background-color: ${({ theme }) => theme.colors.primaryDark};
   }
@@ -268,5 +273,41 @@ export const AddButton = styled.button`
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     font-size: 0.7rem;
     padding: 0.25rem 0.5rem;
+  }
+`;
+
+export const ViewToggleContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  gap: 0.8rem;
+  padding: 0 1rem;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    margin-bottom: 1rem;
+  }
+`;
+
+export const ViewToggleButton = styled.button`
+  background-color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.background};
+  border: 1px solid ${({ theme }) => theme.colors.primary};
+  padding: 0.6rem 1rem;
+  border-radius: ${({ theme }) => theme.borderRadius.small};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: ${({ theme }) => theme.transition};
+  font-size: 0.9rem;
+  font-weight: 500;
+
+  &:hover:not(:disabled) {
+    background-color: ${({ theme }) => theme.colors.primaryDark};
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 `;
