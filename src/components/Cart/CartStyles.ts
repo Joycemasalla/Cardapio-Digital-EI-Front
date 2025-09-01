@@ -1,11 +1,13 @@
+// src/components/Cart/CartStyles.ts
 import styled from 'styled-components';
+import InputMask from 'react-input-mask';
 
 interface CartContainerProps {
   $isOpen: boolean; // Alterado para transient prop
 }
 
 interface StepIndicatorProps {
-  $active: boolean;    // Alterado para transient prop
+  $active: boolean;    // Alterado para transient prop
   $completed: boolean; // Alterado para transient prop
 }
 
@@ -126,7 +128,7 @@ export const QuantityButton = styled.button`
   color: ${({ theme }) => theme.colors.primary};
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.primary};
+    background-color: ${({ theme }) => theme.colors.primaryDark};
     color: ${({ theme }) => theme.colors.background};
   }
 `;
@@ -260,15 +262,19 @@ export const Label = styled.label`
 `;
 
 export const Input = styled.input`
+  width: 100%;
   padding: 0.75rem;
   border: 1px solid ${({ theme }) => theme.colors.backgroundCard};
   border-radius: 4px;
-  background-color: ${({ theme }) => theme.colors.backgroundCard};
+  background-color: ${({ theme }) => theme.colors.background};
   color: ${({ theme }) => theme.colors.text};
+  font-size: 1rem;
+  box-sizing: border-box;
 
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 0 5px rgba(197, 157, 95, 0.5);
   }
 `;
 
@@ -280,10 +286,29 @@ export const Textarea = styled.textarea`
   resize: vertical;
   background-color: ${({ theme }) => theme.colors.backgroundCard};
   color: ${({ theme }) => theme.colors.text};
+  font-size: 1rem;
 
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+
+export const StyledInputMask = styled(InputMask)`
+  background-color: ${({ theme }) => theme.colors.backgroundCard};
+  border: 1px solid ${({ theme }) => theme.colors.backgroundCard};
+  color: ${({ theme }) => theme.colors.text};
+  padding: 0.75rem;
+  border-radius: 4px;
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.primary};
+    outline: none;
+  }
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.textDark};
   }
 `;
 
@@ -303,19 +328,19 @@ export const StepIndicator = styled.div<StepIndicatorProps>`
   align-items: center;
   justify-content: center;
   font-weight: 500;
-  background-color: ${({ $active, $completed, theme }) => /* Usando $active e $completed */
+  background-color: ${({ $active, $completed, theme }) =>
     $active ? theme.colors.primary :
     $completed ? theme.colors.primaryDark :
     theme.colors.backgroundCard
   };
-  color: ${({ $active, $completed, theme }) => /* Usando $active e $completed */
+  color: ${({ $active, $completed, theme }) =>
     $active || $completed ? theme.colors.background : theme.colors.textSecondary
   };
-  cursor: ${({ $completed }) => $completed ? 'pointer' : 'default'}; /* Usando $completed */
+  cursor: ${({ $completed }) => $completed ? 'pointer' : 'default'};
   transition: all 0.2s ease-in-out;
 
   &:hover {
-    background-color: ${({ $completed, theme }) => /* Usando $completed */
+    background-color: ${({ $completed, theme }) =>
       $completed ? theme.colors.primaryDark : ''
     };
   }
@@ -347,21 +372,4 @@ export const RadioInput = styled.input`
 export const RadioLabel = styled.label`
   cursor: pointer;
   color: ${({ theme }) => theme.colors.text};
-`;
-
-export const StyledInputMask = styled.input`
-  background-color: ${({ theme }) => theme.colors.backgroundCard};
-  border: 1px solid ${({ theme }) => theme.colors.backgroundCard};
-  color: ${({ theme }) => theme.colors.text};
-  padding: 0.75rem;
-  border-radius: 4px;
-
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.primary};
-    outline: none;
-  }
-
-  &::placeholder {
-    color: ${({ theme }) => theme.colors.textDark};
-  }
 `;
