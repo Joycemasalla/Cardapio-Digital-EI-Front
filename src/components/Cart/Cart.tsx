@@ -1,4 +1,3 @@
-// src/components/Cart/Cart.tsx
 import React, { useState, useEffect } from 'react';
 import { X, ShoppingCart, Send, Trash2, Copy } from 'lucide-react';
 import { useCart, CartItem } from '../../contexts/CartContext';
@@ -68,7 +67,6 @@ const Cart: React.FC = () => {
     notes: ''
   });
 
-  // Carrega os dados do cliente do localStorage quando o componente é montado
   useEffect(() => {
     const savedInfo = localStorage.getItem('customerInfo');
     if (savedInfo) {
@@ -90,7 +88,6 @@ const Cart: React.FC = () => {
     }
   }, []);
 
-  // Salva os dados do cliente no localStorage sempre que houver uma alteração
   useEffect(() => {
     if (customerInfo.name || customerInfo.phone || customerInfo.address || customerInfo.notes || customerInfo.paymentMethod !== 'money' || deliveryOption !== 'pickup') {
       localStorage.setItem('customerInfo', JSON.stringify({ ...customerInfo, deliveryOption }));
@@ -225,7 +222,6 @@ const Cart: React.FC = () => {
       const encodedMessage = encodeURIComponent(message);
       window.open(`https://wa.me/5532988949994?text=${encodedMessage}`, '_blank');
       
-      // Salva os dados do cliente no localStorage após o sucesso
       localStorage.setItem('customerInfo', JSON.stringify({ ...customerInfo, deliveryOption }));
       
       clearCart();
