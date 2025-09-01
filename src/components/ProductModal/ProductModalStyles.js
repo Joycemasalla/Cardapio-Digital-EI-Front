@@ -23,11 +23,11 @@ export const ModalContainer = styled.div`
   overflow-y: auto; 
   position: relative;
   box-shadow: ${({ theme }) => theme.shadows.strong};
-  padding: 1.8rem; /* AJUSTADO: Mais padding geral no modal para mais espaço */
+  padding: 1.8rem;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     width: 95%;
-    padding: 1.2rem; /* AJUSTADO: Mais padding em mobile */
+    padding: 1.2rem;
     border-radius: ${({ theme }) => theme.borderRadius.medium};
   }
 `;
@@ -52,19 +52,19 @@ export const ModalContent = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem; /* AJUSTADO: Aumenta o gap geral entre seções para mais "respiro" */
+  gap: 1.5rem;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    gap: 1rem; /* Menor gap em mobile */
+    gap: 1rem;
   }
 `;
 
 export const ProductImage = styled.img`
   width: 100%;
-  max-height: 200px; /* AJUSTADO: Imagem um pouco menor para mais compactação */
+  max-height: 200px;
   object-fit: contain; 
   border-radius: ${({ theme }) => theme.borderRadius.medium};
-  margin-bottom: 0.8rem; /* AJUSTADO: Margem inferior da imagem */
+  margin-bottom: 0.8rem;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     max-height: 160px;
@@ -77,7 +77,7 @@ export const ProductInfo = styled.div`
   text-align: center; 
   display: flex;
   flex-direction: column;
-  gap: 1.2rem; /* AJUSTADO: Mais espaçamento entre blocos principais de info */
+  gap: 1.2rem;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     gap: 1rem;
@@ -114,21 +114,20 @@ export const ProductDescription = styled.p`
 export const PizzaModeSelector = styled.div`
     display: flex;
     width: 100%;
-    margin-bottom: 1rem; /* AJUSTADO: Mais espaço abaixo */
+    margin-bottom: 1rem;
     border-radius: ${({ theme }) => theme.borderRadius.small};
     overflow: hidden;
     border: 1px solid ${({ theme }) => theme.colors.textDark};
 `;
 
-// botao pizza inteira e meia pizza
 export const PizzaModeButton = styled.button`
     flex: 1;
-    padding: 0.7rem 0.5rem; /* AJUSTADO: Mais padding vertical para botões mais altos */
+    padding: 0.7rem 0.5rem;
     background-color: ${({ theme, $selected }) => $selected ? theme.colors.primary : theme.colors.backgroundCard};
     color: ${({ theme, $selected }) => $selected ? theme.colors.background : theme.colors.textSecondary}; 
     border: none;
     font-weight: 600;
-    font-size: 0.9rem; /* AJUSTADO: Fonte um pouco maior */
+    font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.2s ease;
 
@@ -150,8 +149,8 @@ export const PizzaModeButton = styled.button`
 export const HalfPizzaSelectGroup = styled.div`
     display: flex;
     flex-direction: row;
-    gap: 1rem; /* AJUSTADO: Mais gap entre os selects de metade */
-    margin-bottom: 1rem; /* AJUSTADO: Margem inferior */
+    gap: 1rem;
+    margin-bottom: 1rem;
     width: 100%;
     flex-wrap: wrap; 
 `;
@@ -160,9 +159,7 @@ export const CuttingOptionsContainer = styled.div`
   display: flex;
   flex-direction: column; 
   width: 100%;
-  /* margin-top: 1.5rem;  */
-  padding: 0 0.5rem; 
-
+  padding: 0 0.5rem;
 
   h3 {
     font-size: 0.95rem; 
@@ -182,17 +179,17 @@ export const CuttingOptionsContainer = styled.div`
 
 export const CuttingOption = styled.label`
   flex: 1; 
-  min-width: 140px; /* AJUSTADO: Largura mínima maior para cada botão de corte */
+  min-width: 140px;
   max-width: calc(50% - 0.4rem); 
   background-color: ${({ theme, $selected }) => 
     $selected ? theme.colors.primary : theme.colors.backgroundCard};
   color: ${({ theme, $selected }) => 
     $selected ? theme.colors.background : theme.colors.textSecondary};
   border: 1px solid ${({ theme }) => theme.colors.textDark};
-  padding: 0.8rem 1rem; /* AJUSTADO: Mais padding para o botão de corte */
+  padding: 0.8rem 1rem;
   border-radius: ${({ theme }) => theme.borderRadius.small};
   cursor: pointer;
-  font-size: 0.9rem; /* AJUSTADO: Fonte maior */
+  font-size: 0.9rem;
   font-weight: 600; 
   transition: all 0.2s ease;
   white-space: nowrap; 
@@ -225,10 +222,9 @@ export const VariationsContainer = styled.div`
   display: flex;
   flex-wrap: wrap; 
   justify-content: center; 
-  gap: 0.8rem; /* AJUSTADO: Mais gap entre as opções de variação (P,M,G) */
-  margin-top: 0.4rem; /* AJUSTADO: Mais margem superior */
-  margin-bottom: 1.1rem; /* AJUSTADO: Mais margem inferior */
-  overflow: hidden; 
+  gap: 0.8rem;
+  margin-top: 0.4rem;
+  margin-bottom: 1.1rem;
 
   ${HalfPizzaSelectGroup} + & { 
     margin-top: 1.5rem;
@@ -239,14 +235,14 @@ export const VariationOption = styled.label`
   background-color: ${({ theme }) => theme.colors.backgroundCard};
   color: ${({ theme }) => theme.colors.textSecondary};
   border: 1px solid ${({ theme }) => theme.colors.textDark};
-  padding: 0.4rem 0.8rem; /* AJUSTADO: Mais padding para PMG */
+  padding: 0.4rem 0.8rem;
   border-radius: ${({ theme }) => theme.borderRadius.small};
   cursor: pointer;
-  font-size: 0.9rem; /* AJUSTADO: Fonte ligeiramente maior para PMG */
+  font-size: 0.9rem;
   font-weight: 600; 
   transition: all 0.2s ease;
   white-space: nowrap;
-  min-width: 40px; /* AJUSTADO: Largura mínima maior para as opções */
+  min-width: 40px;
   text-align: center; 
   display: flex; 
   justify-content: center; 
@@ -263,7 +259,7 @@ export const VariationOption = styled.label`
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    font-size: 0.94rem; /* AJUSTADO: Fonte para PMG em mobile */
+    font-size: 0.94rem;
     padding: 0.35rem 0.7rem;
     min-width: 35px;
   }
@@ -274,7 +270,7 @@ export const ProductActions = styled.div`
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin-top: 2rem; /* AJUSTADO: Mais espaço acima dos controles de quantidade/botão */
+  margin-top: 2rem;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     flex-direction: column;
@@ -285,24 +281,24 @@ export const ProductActions = styled.div`
 export const QuantityControl = styled.div`
   display: flex;
   align-items: center;
-  gap: 1rem; /* AJUSTADO: Mais gap nos controles de quantidade */
+  gap: 1rem;
   border: 1px solid ${({ theme }) => theme.colors.textDark};
   border-radius: ${({ theme }) => theme.borderRadius.small};
-  padding: 0.5rem; /* AJUSTADO: Padding maior para o controle */
+  padding: 0.5rem;
 `;
 
 export const QuantityButton = styled.button`
   background-color: ${({ theme }) => theme.colors.backgroundCard};
   border: none;
-  width: 40px; /* AJUSTADO: Botões maiores */
-  height: 40px; /* AJUSTADO: Botões maiores */
+  width: 40px;
+  height: 40px;
   border-radius: 4px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   color: ${({ theme }) => theme.colors.primary};
-  font-size: 1.5rem; /* AJUSTADO: Tamanho da fonte do símbolo */
+  font-size: 1.5rem;
   font-weight: 700;
 
   &:hover {
@@ -312,10 +308,10 @@ export const QuantityButton = styled.button`
 `;
 
 export const QuantityDisplay = styled.span`
-  min-width: 32px; /* AJUSTADO: Largura maior para display de quantidade */
+  min-width: 32px;
   text-align: center;
   color: ${({ theme }) => theme.colors.text};
-  font-size: 1.2rem; /* AJUSTADO: Fonte maior */
+  font-size: 1.2rem;
   font-weight: 500;
 `;
 
