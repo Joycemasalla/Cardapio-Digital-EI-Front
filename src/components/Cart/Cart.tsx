@@ -45,7 +45,6 @@ import {
 } from './CartStyles';
 import { formatCurrency } from '../../utils/formatCurrency';
 
-// ** CORREÇÃO: Define a URL base do backend para evitar erros de CORS e rotas não encontradas **
 const API_BASE_URL = 'https://cardapio-digital-ei-back.vercel.app';
 
 const Cart: React.FC = () => {
@@ -102,9 +101,13 @@ const Cart: React.FC = () => {
     }
   }, [customerInfo, deliveryOption]);
 
-
+  // ** CORRIGIDO: Lógica para calcular o preço total do carrinho, incluindo opcionais **
   const totalAmount = cartItems.reduce(
-    (sum: number, item: CartItem) => sum + (item.selectedVariation?.price || item.price || 0) * item.quantity,
+    (sum: number, item: CartItem) => {
+      const basePrice = item.selectedVariation?.price || item.price || 0;
+      const optionalsPrice = item.selectedOptionals?.reduce((optSum, optional) => optSum + optional.price, 0) || 0;
+      return sum + (basePrice + optionalsPrice) * item.quantity;
+    },
     0
   );
 
@@ -159,7 +162,6 @@ const Cart: React.FC = () => {
     }
 
     try {
-      // ** CORREÇÃO **: A requisição agora aponta para o backend, não para o frontend.
       const response = await fetch(`${API_BASE_URL}/api/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -178,7 +180,6 @@ const Cart: React.FC = () => {
         throw new Error(`Falha ao salvar dados do cliente. Status: ${response.status}. Mensagem: ${errorData.message}`);
       }
       
-      // Monta a mensagem do WhatsApp
       let message = `*Novo Pedido - Espaço Imperial*\n\n`;
       message += `*Itens do Pedido:*\n`;
 
@@ -196,6 +197,12 @@ const Cart: React.FC = () => {
         }
         itemLine += ` - ${formatCurrency((item.selectedVariation?.price || item.price || 0) * item.quantity)}\n`;
         message += itemLine;
+
+        // ** NOVO: Adiciona os opcionais na mensagem do WhatsApp **
+        if (item.selectedOptionals && item.selectedOptionals.length > 0) {
+          const optionalsText = item.selectedOptionals.map(opt => `${opt.name} (+${formatCurrency(opt.price)})`).join(', ');
+          message += `  - Opcionais: ${optionalsText}\n`;
+        }
       });
 
       message += `\n*Subtotal:* ${formatCurrency(totalAmount)}\n`;
@@ -292,9 +299,19 @@ const Cart: React.FC = () => {
                                 ? `${item.name} (${item.selectedVariation.name})`
                                 : item.name}
                             {item.cuttingStyle && ` (Corte: ${item.cuttingStyle === 'normal' ? 'Normal' : 'Francesinha'})`}
+                            
+                            {/* ** CORRIGIDO: Exibe os opcionais no carrinho ** */}
+                            {item.selectedOptionals && item.selectedOptionals.length > 0 && (
+                              <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#ccc' }}>
+                                Opcionais: {item.selectedOptionals.map(opt => opt.name).join(', ')}
+                              </div>
+                            )}
                           </ItemName>
                           <ItemPrice>
-                            {formatCurrency((item.selectedVariation?.price || item.price || 0) * item.quantity)}
+                            {formatCurrency((
+                              (item.selectedVariation?.price || item.price || 0) + 
+                              (item.selectedOptionals?.reduce((optSum, opt) => optSum + opt.price, 0) || 0)
+                            ) * item.quantity)}
                           </ItemPrice>
                         </ItemInfo>
 
