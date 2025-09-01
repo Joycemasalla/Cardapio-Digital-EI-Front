@@ -86,12 +86,18 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialPi
 
   // CORRIGIDO: useEffect principal para configuração inicial
   useEffect(() => {
+    console.log('🍕 ProductModal useEffect - initialPizzaMode:', initialPizzaMode);
+    console.log('🍕 ProductModal useEffect - product:', product?.name);
+    
     if (product) {
       setQuantity(1);
       if (isPizzaCategory) {
         // Se vier com modo meia a meia, configura direto para esse modo
         if (initialPizzaMode === 'half-and-half') {
+          console.log('🎯 Configurando modo MEIA A MEIA direto!');
           const grandeVariation = product.variations?.find(v => v.name === 'Grande');
+          console.log('🍕 Variação Grande encontrada:', grandeVariation);
+          
           if (grandeVariation) {
             setSelectedVariation(grandeVariation);
           }
@@ -100,6 +106,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialPi
           setSelectedHalf2(null);
           setCuttingStyle('normal');
         } else {
+          console.log('🍕 Configurando modo NORMAL');
           // Comportamento normal
           setPizzaMode('normal');
           setSelectedHalf1(product);

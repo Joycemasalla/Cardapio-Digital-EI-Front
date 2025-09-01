@@ -82,6 +82,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
 
   // NOVO: Função para lidar com a escolha do tipo de pizza
   const handlePizzaChoice = (choice: 'normal' | 'half-and-half') => {
+    console.log('🍕 ProductCard - escolha:', choice);
     setShowPizzaChoice(false);
     
     if (choice === 'normal') {
@@ -91,15 +92,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
       toast.success(`Pizza ${product.name} (${selectedVariation?.name}) adicionada ao carrinho!`);
     } else {
       // CORRIGIDO: Cria uma versão "fake" da pizza já configurada como Grande
-      const pizzaGrandeProduct = {
-        ...product,
-        // Força a variação Grande para abrir o modal já configurado
-        defaultVariation: 'Grande'
-      };
+      console.log('🎯 Chamando onProductClick com modo half-and-half');
       
       if (onProductClick) {
         // Abre o modal já no modo meia a meia, com pizza Grande pré-selecionada
-        onProductClick(pizzaGrandeProduct, 'half-and-half');
+        onProductClick(product, 'half-and-half');
       }
     }
   };
