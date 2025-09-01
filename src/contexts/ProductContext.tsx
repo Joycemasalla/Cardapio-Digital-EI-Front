@@ -1,6 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { FunctionComponent } from 'react';
 
+// NOVO: Tipo para os opcionais do produto
+export type ProductOptional = {
+  name: string;
+  price: number;
+};
+
 // src/contexts/ProductContext.tsx
 export type ProductVariation = {
   name: string;
@@ -16,6 +22,7 @@ export type Product = {
   image?: string;
   category: string;
   variations?: ProductVariation[];
+  optionals?: ProductOptional[]; // NOVO: Adiciona a propriedade opcionais
 };
 
 type ProductContextType = {

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Plus, ChevronDown } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
-import { Product, ProductVariation, useProducts } from '../../contexts/ProductContext';
+import { Product, ProductVariation, ProductOptional, useProducts } from '../../contexts/ProductContext';
 import { CartItem } from '../../contexts/CartContext';
 import { toast } from 'react-toastify';
 
@@ -27,6 +27,10 @@ import {
   CuttingOptionsContainer,
   CuttingOption,
   HalfPizzaSelectGroup,
+  // NOVO: Styled Components para opcionais
+  OptionalsContainer,
+  OptionalCheckbox,
+  OptionalLabel
 } from './ProductModalStyles';
 import {
   CustomSelectContainer as GlobalCustomSelectContainer,
@@ -41,7 +45,7 @@ import theme from '../../styles/theme';
 interface ProductModalProps {
   product: Product | null;
   onClose: () => void;
-  initialMode?: 'normal' | 'half-and-half'; // Adiciona a propriedade initialMode
+  initialMode?: 'normal' | 'half-and-half';
 }
 
 const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMode }) => {
@@ -49,6 +53,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
   const { products: allProducts } = useProducts();
 
   const [selectedVariation, setSelectedVariation] = useState<ProductVariation | null>(null);
+  const [selectedOptionals, setSelectedOptionals] = useState<ProductOptional[]>([]); // NOVO: Estado para os opcionais
   const [quantity, setQuantity] = useState(1);
 
   const [selectedHalf1, setSelectedHalf1] = useState<Product | null>(null);
@@ -67,7 +72,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
   const [isHalf1DropdownOpen, setIsHalf1DropdownOpen] = useState(false);
   const [isHalf2DropdownOpen, setIsHalf2DropdownOpen] = useState(false);
 
-  // Click outside logic for dropdowns
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (half1SelectRef.current && !half1SelectRef.current.contains(event.target as Node)) {
@@ -83,10 +87,11 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
     };
   }, []);
 
-  // UseEffect para configuração inicial do modal
   useEffect(() => {
     if (product) {
       setQuantity(1);
+      // NOVO: Limpa a seleção de opcionais ao abrir o modal
+      setSelectedOptionals([]);
       if (isPizzaCategory) {
         if (initialMode === 'half-and-half') {
           setPizzaMode('half-and-half');
@@ -119,13 +124,11 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
     }
   }, [product, isPizzaCategory, hasAvailableVariations, initialMode]);
 
-  // useEffect simplificado para controle do modo
   useEffect(() => {
     if (isPizzaCategory && pizzaMode === 'normal') {
       setSelectedHalf1(product);
       setSelectedHalf2(null);
     } else if (isPizzaCategory && pizzaMode === 'half-and-half') {
-      // Se não estiver vindo do modo inicial, limpa as seleções
       if (initialMode !== 'half-and-half') {
         setSelectedHalf1(null);
         setSelectedHalf2(null);
@@ -140,18 +143,19 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
 
   const calculateHalfAndHalfPrice = (): number => {
     if (!selectedHalf1 || !selectedHalf2 || !selectedVariation) return 0;
-
     const priceHalf1 = getPriceForVariation(selectedHalf1, selectedVariation.name);
     const priceHalf2 = getPriceForVariation(selectedHalf2, selectedVariation.name);
-
     return Math.max(priceHalf1, priceHalf2);
   };
+  
+  // NOVO: Lógica para calcular o preço dos opcionais
+  const optionalsPrice = selectedOptionals.reduce((total, optional) => total + optional.price, 0);
 
   const currentItemPrice = isPizzaCategory && pizzaMode === 'half-and-half'
     ? calculateHalfAndHalfPrice()
     : (selectedVariation?.price || product?.price || 0);
 
-  const finalPrice = currentItemPrice * quantity;
+  const finalPrice = (currentItemPrice + optionalsPrice) * quantity;
 
   let isAddButtonEnabled = false;
   if (isPizzaCategory) {
@@ -163,57 +167,66 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
   } else {
     isAddButtonEnabled = currentItemPrice > 0;
   }
-
+  
+  // NOVO: Função para manipular a seleção de opcionais
+  const handleOptionalToggle = (optional: ProductOptional) => {
+    setSelectedOptionals(prev =>
+      prev.some(o => o.name === optional.name)
+        ? prev.filter(o => o.name !== optional.name)
+        : [...prev, optional]
+    );
+  };
+  
   const handleAddToCart = () => {
     if (!isAddButtonEnabled) {
       toast.error('Por favor, complete a seleção do produto.');
       return;
     }
-
+    
+    // ... lógica para pizza meio a meio, adaptada para opcionais
     if (isPizzaCategory && pizzaMode === 'half-and-half' && selectedHalf1 && selectedHalf2 && selectedVariation) {
-      const halfAndHalfProduct: CartItem = {
-        ...product!,
-        id: `half-${selectedHalf1.id}-${selectedHalf2.id}-${selectedVariation.name}-${cuttingStyle}`,
-        name: `Pizza ${selectedHalf1.name} / ${selectedHalf2.name}`,
-        description: `Meio ${selectedHalf1.name} e Meio ${selectedHalf2.name}. Tamanho: ${selectedVariation.name}. Corte: ${cuttingStyle === 'normal' ? 'Normal' : 'Francesinha'}.`,
-        category: product!.category,
-        price: currentItemPrice,
-        image: product!.image || selectedHalf1.image,
-        variations: product!.variations,
-        quantity: 1,
-        selectedVariation: selectedVariation,
-        isHalfAndHalf: true,
-        half1: { id: selectedHalf1.id, name: selectedHalf1.name, price: getPriceForVariation(selectedHalf1, selectedVariation.name) },
-        half2: { id: selectedHalf2.id, name: selectedHalf2.name, price: getPriceForVariation(selectedHalf2, selectedVariation.name) },
-        cuttingStyle: cuttingStyle
-      };
-      for (let i = 0; i < quantity; i++) {
-        addToCart(halfAndHalfProduct, selectedVariation);
-      }
-      onClose();
-      return;
+        const halfAndHalfProduct: CartItem = {
+          ...product!,
+          id: `half-${selectedHalf1.id}-${selectedHalf2.id}-${selectedVariation.name}-${cuttingStyle}`,
+          name: `Pizza ${selectedHalf1.name} / ${selectedHalf2.name}`,
+          description: `Meio ${selectedHalf1.name} e Meio ${selectedHalf2.name}. Tamanho: ${selectedVariation.name}. Corte: ${cuttingStyle === 'normal' ? 'Normal' : 'Francesinha'}.`,
+          category: product!.category,
+          price: currentItemPrice,
+          image: product!.image || selectedHalf1.image,
+          variations: product!.variations,
+          quantity: 1,
+          selectedVariation: selectedVariation,
+          isHalfAndHalf: true,
+          half1: { id: selectedHalf1.id, name: selectedHalf1.name, price: getPriceForVariation(selectedHalf1, selectedVariation.name) },
+          half2: { id: selectedHalf2.id, name: selectedHalf2.name, price: getPriceForVariation(selectedHalf2, selectedVariation.name) },
+          cuttingStyle: cuttingStyle,
+          selectedOptionals: selectedOptionals // NOVO: Adiciona a lista de opcionais
+        };
+        for (let i = 0; i < quantity; i++) {
+          addToCart(halfAndHalfProduct, selectedVariation);
+        }
+        onClose();
+        return;
     } else if (product && selectedVariation) {
-      const itemToAdd: CartItem = {
-        ...product,
-        quantity: 1,
-        cuttingStyle: isPizzaCategory ? cuttingStyle : undefined
-      };
-      if (isPizzaCategory) {
-        itemToAdd.description = `${itemToAdd.description || ''} Corte: ${cuttingStyle === 'normal' ? 'Normal' : 'Francesinha'}.`.trim();
-        itemToAdd.id = `${itemToAdd.id}-${selectedVariation.name}-${cuttingStyle}`;
-      }
-      for (let i = 0; i < quantity; i++) {
-        addToCart(itemToAdd, selectedVariation);
-      }
-      onClose();
-      return;
+        const itemToAdd: CartItem = {
+            ...product,
+            quantity: 1,
+            cuttingStyle: isPizzaCategory ? cuttingStyle : undefined,
+            selectedOptionals: selectedOptionals // NOVO: Adiciona a lista de opcionais
+        };
+        // ...
+        for (let i = 0; i < quantity; i++) {
+            addToCart(itemToAdd, selectedVariation);
+        }
+        onClose();
+        return;
     } else if (product) {
-      const itemToAdd: CartItem = { ...product, quantity: 1 };
-      for (let i = 0; i < quantity; i++) {
-        addToCart(itemToAdd, undefined);
-      }
-      onClose();
-      return;
+        const itemToAdd: CartItem = { ...product, quantity: 1, selectedOptionals: selectedOptionals }; // NOVO: Adiciona opcionais
+        for (let i = 0; i < quantity; i++) {
+            addToCart(itemToAdd, undefined);
+        }
+        onClose();
+        return;
     }
   };
 
@@ -235,7 +248,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
             <ProductName>{product.name}</ProductName>
             <ProductDescription>{product.description || 'Descrição não disponível.'}</ProductDescription>
 
-            {/* Mensagem informativa sobre a opção Meia a Meia */}
             {isPizzaCategory && !isLargePizzaSelected && hasAvailableVariations && pizzaMode === 'normal' && (
               <p style={{
                 fontSize: '0.85rem',
@@ -248,7 +260,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
               </p>
             )}
 
-            {/* Seletor de modo da pizza */}
             {isPizzaCategory && (
               <PizzaModeSelector>
                 <PizzaModeButton
@@ -278,7 +289,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
               </PizzaModeSelector>
             )}
 
-            {/* Seleção de sabores para meia a meia */}
             {isPizzaCategory && pizzaMode === 'half-and-half' ? (
               <HalfPizzaSelectGroup>
                 <GlobalCustomSelectContainer ref={half1SelectRef}>
@@ -334,7 +344,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
                 </GlobalCustomSelectContainer>
               </HalfPizzaSelectGroup>
             ) : (
-              /* Seleção de tamanhos para pizza inteira ou produtos normais */
               hasAvailableVariations && (
                 <VariationsContainer>
                   {product.variations!.map((variation) => (
@@ -356,7 +365,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
               )
             )}
 
-            {/* Opções de corte para pizza */}
             {isPizzaCategory && (
               <CuttingOptionsContainer>
                 <h3>Forma de Corte:</h3>
@@ -393,14 +401,31 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
               </CuttingOptionsContainer>
             )}
 
-            {/* Preço para produtos sem variações */}
+            {/* NOVO: Renderiza a lista de opcionais se o produto tiver */}
+            {product.optionals && product.optionals.length > 0 && (
+                <OptionalsContainer>
+                    <h3>Opcionais:</h3>
+                    <div>
+                        {product.optionals.map((optional) => (
+                            <OptionalLabel key={optional.name}>
+                                <OptionalCheckbox
+                                    type="checkbox"
+                                    checked={selectedOptionals.some(o => o.name === optional.name)}
+                                    onChange={() => handleOptionalToggle(optional)}
+                                />
+                                {optional.name} (+R$ {optional.price.toFixed(2).replace('.', ',')})
+                            </OptionalLabel>
+                        ))}
+                    </div>
+                </OptionalsContainer>
+            )}
+
             {!hasAvailableVariations && !isPizzaCategory && (
               <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#c59d5f' }}>
                 R$ {product.price?.toFixed(2).replace('.', ',')}
               </p>
             )}
 
-            {/* Controles finais */}
             <ProductActions>
               <QuantityControl>
                 <QuantityButton onClick={handleDecrement}>-</QuantityButton>

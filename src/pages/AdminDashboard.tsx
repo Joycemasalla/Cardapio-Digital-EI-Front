@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useProducts, Product, ProductVariation } from '../contexts/ProductContext';
+import { useProducts, Product, ProductVariation, ProductOptional } from '../contexts/ProductContext';
 import { NumericFormat } from 'react-number-format';
 import { toast } from 'react-toastify';
 
@@ -42,7 +42,7 @@ import {
   AdminNavLink
 } from './PageStyles';
 import { FormGroup, Label, Input, Textarea, SubmitButton } from './PageStyles';
-import styled from 'styled-components'; // Importar styled para os novos componentes de estatísticas
+import styled from 'styled-components';
 
 // Novos Styled Components para a seção de Estatísticas
 const StatsContainer = styled.div`
@@ -91,7 +91,7 @@ const CategoryStatsList = styled.ul`
   padding: 0;
   margin-top: 1rem;
   text-align: left;
-  max-height: 250px; /* Limita a altura para rolagem */
+  max-height: 250px;
   overflow-y: auto;
 `;
 
@@ -119,10 +119,7 @@ const CategoryValue = styled.span`
 `;
 
 
-interface ProductVariationForm extends Omit<ProductVariation, 'price'> {
-  price: number;
-}
-
+// NOVO: Interface para o estado do formulário
 interface ProductFormState {
   id: string;
   name: string;
@@ -131,14 +128,15 @@ interface ProductFormState {
   image?: string;
   imageFile: File | null;
   category: string;
-  dynamicVariations: ProductVariationForm[];
+  dynamicVariations: ProductVariation[];
+  dynamicOptionals: ProductOptional[]; // NOVO: Estado para os opcionais
 }
 
 const AdminDashboard: React.FC = () => {
   const { products, addProduct, updateProduct, deleteProduct, loading } = useProducts();
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [currentSection, setCurrentSection] = useState('products'); // 'products' ou 'statistics'
+  const [currentSection, setCurrentSection] = useState('products');
   const navigate = useNavigate();
 
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
@@ -193,29 +191,21 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Fechar dropdown de categoria se clicar fora
       if (categorySelectRef.current && !categorySelectRef.current.contains(event.target as Node)) {
         setIsCategoryDropdownOpen(false);
       }
-
-      // Fechar drawer se clicar fora (só se não for no formulário)
-      if (drawerRef.current &&
-        !drawerRef.current.contains(event.target as Node) &&
-        !showForm) {
+      if (drawerRef.current && !drawerRef.current.contains(event.target as Node) && !showForm) {
         setIsDrawerOpen(false);
       }
     };
-
     if (isCategoryDropdownOpen || isDrawerOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
-
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isCategoryDropdownOpen, isDrawerOpen, showForm]);
 
-  // 6. Função para resetar todos os estados quando necessário
   const resetAllStates = () => {
     setShowForm(false);
     setIsDrawerOpen(false);
@@ -237,6 +227,7 @@ const AdminDashboard: React.FC = () => {
     };
   }, [isDrawerOpen, drawerRef]);
 
+  // NOVO: Adiciona o campo dynamicOptionals ao estado inicial do formulário
   const [formData, setFormData] = useState<ProductFormState>({
     id: '',
     name: '',
@@ -246,6 +237,7 @@ const AdminDashboard: React.FC = () => {
     imageFile: null,
     category: '',
     dynamicVariations: [],
+    dynamicOptionals: [], // NOVO
   });
 
   useEffect(() => {
@@ -292,7 +284,7 @@ const AdminDashboard: React.FC = () => {
     });
   };
 
-  const handleVariationChange = (index: number, field: keyof ProductVariationForm, value: string | number) => {
+  const handleVariationChange = (index: number, field: keyof ProductVariation, value: string | number) => {
     const newVariations = [...formData.dynamicVariations];
     (newVariations[index] as any)[field] = value;
     setFormData({ ...formData, dynamicVariations: newVariations });
@@ -310,6 +302,26 @@ const AdminDashboard: React.FC = () => {
     const newVariations = formData.dynamicVariations.filter((_, i) => i !== index);
     setFormData({ ...formData, dynamicVariations: newVariations });
   };
+  
+  // NOVO: Funções para manipular a lista de opcionais
+  const handleOptionalChange = (index: number, field: keyof ProductOptional, value: string | number) => {
+    const newOptionals = [...formData.dynamicOptionals];
+    (newOptionals[index] as any)[field] = value;
+    setFormData({ ...formData, dynamicOptionals: newOptionals });
+  };
+
+  const addOptional = () => {
+    setFormData(prevData => ({
+      ...prevData,
+      dynamicOptionals: [...prevData.dynamicOptionals, { name: '', price: 0 }],
+    }));
+  };
+
+  const removeOptional = (index: number) => {
+    const newOptionals = formData.dynamicOptionals.filter((_, i) => i !== index);
+    setFormData({ ...formData, dynamicOptionals: newOptionals });
+  };
+  // FIM DAS NOVAS FUNÇÕES PARA OPCIONAIS
 
   const resetForm = () => {
     setFormData({
@@ -321,6 +333,7 @@ const AdminDashboard: React.FC = () => {
       imageFile: null,
       category: '',
       dynamicVariations: [],
+      dynamicOptionals: [], // NOVO: Resetando o estado dos opcionais
     });
     setEditingProduct(null);
   };
@@ -335,15 +348,14 @@ const AdminDashboard: React.FC = () => {
     resetForm();
     setShowForm(true);
   };
-
+  
+  // NOVO: Adaptação de handleEditClick para popular o campo de opcionais
   const handleEditClick = (product: Product) => {
     setFormData({
       ...product,
       price: product.price !== undefined ? product.price : 0,
-      dynamicVariations: product.variations ? product.variations.map(v => ({
-        ...v,
-        price: v.price
-      })) : [],
+      dynamicVariations: product.variations || [],
+      dynamicOptionals: product.optionals || [], // NOVO: Popula o estado com os opcionais existentes
       imageFile: null,
     });
     setEditingProduct(product);
@@ -351,23 +363,17 @@ const AdminDashboard: React.FC = () => {
   };
 
 
-  //1. Adicionar useEffect para controlar scroll quando modais estão abertos
   useEffect(() => {
     if (showForm || isDrawerOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
     }
-
-    // Cleanup quando o componente é desmontado
     return () => {
       document.body.style.overflow = 'unset';
     };
   }, [showForm, isDrawerOpen]);
 
-
-
-  // 2. Função para fechar todos os modais com ESC
   useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -383,7 +389,6 @@ const AdminDashboard: React.FC = () => {
         }
       }
     };
-
     document.addEventListener('keydown', handleEscapeKey);
     return () => {
       document.removeEventListener('keydown', handleEscapeKey);
@@ -414,7 +419,6 @@ const AdminDashboard: React.FC = () => {
         uploadFormData.append('image', formData.imageFile);
 
         const uploadResponse = await fetch('https://cardapio-digital-ei-back.vercel.app/api/upload', {
-          // https://cardapio-digital-ei-back.onrender.com/api/upload
           method: 'POST',
           body: uploadFormData,
         });
@@ -452,7 +456,8 @@ const AdminDashboard: React.FC = () => {
           image: finalImageUrl,
           category: formData.category,
           variations: parsedVariations,
-          price: undefined
+          price: undefined,
+          optionals: formData.dynamicOptionals // NOVO: Adiciona os opcionais aqui
         };
       } else {
         const priceValue = formData.price;
@@ -468,7 +473,8 @@ const AdminDashboard: React.FC = () => {
           price: priceValue,
           image: finalImageUrl,
           category: formData.category,
-          variations: undefined
+          variations: undefined,
+          optionals: formData.dynamicOptionals // NOVO: Adiciona os opcionais aqui
         };
       }
 
@@ -508,7 +514,6 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  // Cálculos de Estatísticas
   const totalProductsCount = products.length;
   const totalProductsValue = products.reduce((sum, product) => {
     if (product.variations && product.variations.length > 0) {
@@ -598,7 +603,6 @@ const AdminDashboard: React.FC = () => {
         )}
       </AdminMobileDrawer>
 
-      {/* AdminNav é a navegação em abas para telas grandes */}
       <AdminNav>
         <AdminMenuToggleButton onClick={() => setIsDrawerOpen(true)}>
           <Menu size={24} />
@@ -618,20 +622,17 @@ const AdminDashboard: React.FC = () => {
       </AdminNav>
 
       <AdminContent>
-        {/* AdminHeader agora contém o botão de toggle para mobile e o título */}
         <AdminHeader>
           <AdminMenuToggleButton onClick={() => setIsDrawerOpen(true)}>
             <Menu size={24} />
           </AdminMenuToggleButton>
-
           <AdminTitle style={{
             textAlign: 'center',
-            flex: 1, // Permite que o título ocupe o espaço disponível
-            margin: '0 1rem' // Margem para não colar nos botões
+            flex: 1,
+            margin: '0 1rem'
           }}>
             {getAdminTitle()}
           </AdminTitle>
-
           {currentSection === 'products' && (
             <AdminControls>
               <AddButton onClick={handleAddNewClick}>
@@ -643,7 +644,6 @@ const AdminDashboard: React.FC = () => {
             </AdminControls>
           )}
         </AdminHeader>
-
         {currentSection === 'products' && (
           <>
             <div className="main-content-category-filter">
@@ -677,7 +677,6 @@ const AdminDashboard: React.FC = () => {
                 )}
               </CustomSelectContainer>
             </div>
-
             {loading ? (
               <div>Carregando...</div>
             ) : products.length === 0 ? (
@@ -745,7 +744,7 @@ const AdminDashboard: React.FC = () => {
               <StatTitle>Valor Total do Cardápio</StatTitle>
               <StatValue>{formatCurrency(totalProductsValue)}</StatValue>
             </StatCard>
-            <StatCard style={{ gridColumn: 'span 2' }}> {/* Ocupa 2 colunas em telas maiores */}
+            <StatCard style={{ gridColumn: 'span 2' }}>
               <StatTitle>Produtos por Categoria</StatTitle>
               <CategoryStatsList>
                 {sortedCategoryStats.map(([categoryName, stats]) => (
@@ -761,11 +760,9 @@ const AdminDashboard: React.FC = () => {
           </StatsContainer>
         )}
 
-
         {showForm && (
           <>
             <AdminDrawerOverlay $isOpen={true} onClick={resetAllStates} />
-
             <ProductForm onSubmit={handleSubmit}>
               <div className="form-header">
                 <FormTitle>
@@ -835,6 +832,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </FormGroup>
 
+              {/* Seção de Variações (existente) */}
               <VariationsEditor>
                 <Label>Variações do Produto</Label>
                 {formData.dynamicVariations.map((variation, index) => (
@@ -874,6 +872,49 @@ const AdminDashboard: React.FC = () => {
                 ))}
                 <AddVariationButton type="button" onClick={addVariation}>
                   <Plus size={16} /> Adicionar Variação
+                </AddVariationButton>
+              </VariationsEditor>
+
+              {/* Seção de Opcionais (NOVA) */}
+              <VariationsEditor>
+                <Label>Opcionais do Produto</Label>
+                {formData.dynamicOptionals.map((optional, index) => (
+                  <VariationItem key={index}>
+                    <Input
+                      className="variation-input"
+                      type="text"
+                      placeholder="Nome do Opcional (ex: Picles Extra)"
+                      value={optional.name}
+                      onChange={(e) => handleOptionalChange(index, 'name', e.target.value)}
+                      required
+                    />
+                    <NumericFormat
+                      value={optional.price}
+                      onValueChange={(values) => {
+                        handleOptionalChange(index, 'price', values.floatValue !== undefined ? values.floatValue : 0);
+                      }}
+                      thousandSeparator="."
+                      decimalSeparator=","
+                      prefix="R$ "
+                      decimalScale={2}
+                      fixedDecimalScale={true}
+                      allowNegative={false}
+                      placeholder="R$ 0,00"
+                      customInput={Input}
+                      className="variation-input"
+                      required
+                    />
+                    <ActionButton
+                      className="delete"
+                      type="button"
+                      onClick={() => removeOptional(index)}
+                    >
+                      <Trash2 size={16} />
+                    </ActionButton>
+                  </VariationItem>
+                ))}
+                <AddVariationButton type="button" onClick={addOptional} style={{ backgroundColor: '#25D366' }}>
+                  <Plus size={16} /> Adicionar Opcional
                 </AddVariationButton>
               </VariationsEditor>
 
