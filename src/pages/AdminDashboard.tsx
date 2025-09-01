@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useProducts, Product, ProductVariation, ProductOptional } from '../contexts/ProductContext';
+// Renomeado 'ProductOptional' para 'ProductAdditional'
+import { useProducts, Product, ProductVariation, ProductAdditional } from '../contexts/ProductContext';
 import { NumericFormat } from 'react-number-format';
 import { toast } from 'react-toastify';
 
@@ -118,8 +119,6 @@ const CategoryValue = styled.span`
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
-
-// NOVO: Interface para o estado do formulário
 interface ProductFormState {
   id: string;
   name: string;
@@ -129,7 +128,7 @@ interface ProductFormState {
   imageFile: File | null;
   category: string;
   dynamicVariations: ProductVariation[];
-  dynamicOptionals: ProductOptional[]; // NOVO: Estado para os opcionais
+  dynamicAdditionals: ProductAdditional[]; // Renomeado 'dynamicOptionals' para 'dynamicAdditionals'
 }
 
 const AdminDashboard: React.FC = () => {
@@ -227,7 +226,7 @@ const AdminDashboard: React.FC = () => {
     };
   }, [isDrawerOpen, drawerRef]);
 
-  // NOVO: Adiciona o campo dynamicOptionals ao estado inicial do formulário
+  // Renomeado o estado do formulário para 'dynamicAdditionals'
   const [formData, setFormData] = useState<ProductFormState>({
     id: '',
     name: '',
@@ -237,7 +236,7 @@ const AdminDashboard: React.FC = () => {
     imageFile: null,
     category: '',
     dynamicVariations: [],
-    dynamicOptionals: [], // NOVO
+    dynamicAdditionals: [], // Renomeado aqui
   });
 
   useEffect(() => {
@@ -302,27 +301,26 @@ const AdminDashboard: React.FC = () => {
     const newVariations = formData.dynamicVariations.filter((_, i) => i !== index);
     setFormData({ ...formData, dynamicVariations: newVariations });
   };
-
-  // NOVO: Funções para manipular a lista de opcionais
-  const handleOptionalChange = (index: number, field: keyof ProductOptional, value: string | number) => {
-    const newOptionals = [...formData.dynamicOptionals];
-    (newOptionals[index] as any)[field] = value;
-    setFormData({ ...formData, dynamicOptionals: newOptionals });
+  
+  // NOVO: Funções para manipular a lista de adicionais
+  const handleAdditionalChange = (index: number, field: keyof ProductAdditional, value: string | number) => {
+    const newAdditionals = [...formData.dynamicAdditionals];
+    (newAdditionals[index] as any)[field] = value;
+    setFormData({ ...formData, dynamicAdditionals: newAdditionals });
   };
 
-  const addOptional = () => {
+  const addAdditional = () => {
     setFormData(prevData => ({
       ...prevData,
-      dynamicOptionals: [...prevData.dynamicOptionals, { name: '', price: 0 }],
+      dynamicAdditionals: [...prevData.dynamicAdditionals, { name: '', price: 0 }],
     }));
   };
 
-  const removeOptional = (index: number) => {
-    const newOptionals = formData.dynamicOptionals.filter((_, i) => i !== index);
-    setFormData({ ...formData, dynamicOptionals: newOptionals });
+  const removeAdditional = (index: number) => {
+    const newAdditionals = formData.dynamicAdditionals.filter((_, i) => i !== index);
+    setFormData({ ...formData, dynamicAdditionals: newAdditionals });
   };
-  // FIM DAS NOVAS FUNÇÕES PARA OPCIONAIS
-
+  
   const resetForm = () => {
     setFormData({
       id: '',
@@ -333,7 +331,7 @@ const AdminDashboard: React.FC = () => {
       imageFile: null,
       category: '',
       dynamicVariations: [],
-      dynamicOptionals: [], // NOVO: Resetando o estado dos opcionais
+      dynamicAdditionals: [], // Renomeado aqui
     });
     setEditingProduct(null);
   };
@@ -348,14 +346,13 @@ const AdminDashboard: React.FC = () => {
     resetForm();
     setShowForm(true);
   };
-
-  // NOVO: Adaptação de handleEditClick para popular o campo de opcionais
+  
   const handleEditClick = (product: Product) => {
     setFormData({
       ...product,
       price: product.price !== undefined ? product.price : 0,
       dynamicVariations: product.variations || [],
-      dynamicOptionals: product.optionals || [], // NOVO: Popula o estado com os opcionais existentes
+      dynamicAdditionals: product.additionals || [], // Renomeado aqui
       imageFile: null,
     });
     setEditingProduct(product);
@@ -457,7 +454,7 @@ const AdminDashboard: React.FC = () => {
           category: formData.category,
           variations: parsedVariations,
           price: undefined,
-          optionals: formData.dynamicOptionals // NOVO: Adiciona os opcionais aqui
+          additionals: formData.dynamicAdditionals // Renomeado aqui
         };
       } else {
         const priceValue = formData.price;
@@ -474,7 +471,7 @@ const AdminDashboard: React.FC = () => {
           image: finalImageUrl,
           category: formData.category,
           variations: undefined,
-          optionals: formData.dynamicOptionals // NOVO: Adiciona os opcionais aqui
+          additionals: formData.dynamicAdditionals // Renomeado aqui
         };
       }
 
@@ -832,7 +829,6 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </FormGroup>
 
-              {/* Seção de Variações (existente) */}
               <VariationsEditor>
                 <Label>Variações do Produto</Label>
                 {formData.dynamicVariations.map((variation, index) => (
@@ -875,23 +871,23 @@ const AdminDashboard: React.FC = () => {
                 </AddVariationButton>
               </VariationsEditor>
 
-              {/* NOVO: Seção de Opcionais (adicione este bloco aqui) */}
+              {/* NOVO: Seção de Adicionais (renomeado de 'Opcionais') */}
               <VariationsEditor>
-                <Label>Opcionais do Produto</Label>
-                {formData.dynamicOptionals.map((optional, index) => (
+                <Label>Adicionais do Produto</Label>
+                {formData.dynamicAdditionals.map((additional, index) => (
                   <VariationItem key={index}>
                     <Input
                       className="variation-input"
                       type="text"
-                      placeholder="Nome do Opcional (ex: Picles Extra)"
-                      value={optional.name}
-                      onChange={(e) => handleOptionalChange(index, 'name', e.target.value)}
+                      placeholder="Nome do Adicional (ex: Picles Extra)"
+                      value={additional.name}
+                      onChange={(e) => handleAdditionalChange(index, 'name', e.target.value)}
                       required
                     />
                     <NumericFormat
-                      value={optional.price}
+                      value={additional.price}
                       onValueChange={(values) => {
-                        handleOptionalChange(index, 'price', values.floatValue !== undefined ? values.floatValue : 0);
+                        handleAdditionalChange(index, 'price', values.floatValue !== undefined ? values.floatValue : 0);
                       }}
                       thousandSeparator="."
                       decimalSeparator=","
@@ -907,18 +903,17 @@ const AdminDashboard: React.FC = () => {
                     <ActionButton
                       className="delete"
                       type="button"
-                      onClick={() => removeOptional(index)}
+                      onClick={() => removeAdditional(index)}
                     >
                       <Trash2 size={16} />
                     </ActionButton>
                   </VariationItem>
                 ))}
-                <AddVariationButton type="button" onClick={addOptional} style={{ backgroundColor: '#25D366' }}>
-                  <Plus size={16} /> Adicionar Opcional
+                <AddVariationButton type="button" onClick={addAdditional} style={{ backgroundColor: '#25D366' }}>
+                  <Plus size={16} /> Adicionar Adicional
                 </AddVariationButton>
               </VariationsEditor>
 
-              {/* Se o produto não tiver variações, mostramos o preço único */}
               {formData.dynamicVariations.length === 0 && (
                 <FormGroup>
                   <Label htmlFor="price">Preço (R$)</Label>

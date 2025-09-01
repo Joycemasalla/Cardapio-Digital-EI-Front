@@ -1,6 +1,7 @@
 // src/components/Cart/Cart.tsx
 import React, { useState, useEffect } from 'react';
 import { X, ShoppingCart, Send, Trash2, Copy } from 'lucide-react';
+// CORRIGIDO: Agora importa 'useCart' e 'CartItem' do arquivo de contexto
 import { useCart, CartItem } from '../../contexts/CartContext';
 import { toast } from 'react-toastify';
 import InputMask from 'react-input-mask';
@@ -45,6 +46,7 @@ import {
 } from './CartStyles';
 import { formatCurrency } from '../../utils/formatCurrency';
 
+// Define a URL base do backend para evitar erros de CORS e rotas não encontradas
 const API_BASE_URL = 'https://cardapio-digital-ei-back.vercel.app';
 
 const Cart: React.FC = () => {
@@ -70,7 +72,6 @@ const Cart: React.FC = () => {
     notes: ''
   });
 
-  // Carrega os dados do cliente do localStorage quando o componente é montado
   useEffect(() => {
     const savedInfo = localStorage.getItem('customerInfo');
     if (savedInfo) {
@@ -92,7 +93,6 @@ const Cart: React.FC = () => {
     }
   }, []);
 
-  // Salva os dados do cliente no localStorage sempre que houver uma alteração
   useEffect(() => {
     if (customerInfo.name || customerInfo.phone || customerInfo.address || customerInfo.notes || customerInfo.paymentMethod !== 'money' || deliveryOption !== 'pickup') {
       localStorage.setItem('customerInfo', JSON.stringify({ ...customerInfo, deliveryOption }));
@@ -101,12 +101,12 @@ const Cart: React.FC = () => {
     }
   }, [customerInfo, deliveryOption]);
 
-  // ** CORRIGIDO: Lógica para calcular o preço total do carrinho, incluindo opcionais **
+
   const totalAmount = cartItems.reduce(
     (sum: number, item: CartItem) => {
       const basePrice = item.selectedVariation?.price || item.price || 0;
-      const optionalsPrice = item.selectedOptionals?.reduce((optSum, optional) => optSum + optional.price, 0) || 0;
-      return sum + (basePrice + optionalsPrice) * item.quantity;
+      const additionalsPrice = item.selectedAdditionals?.reduce((addSum, additional) => addSum + additional.price, 0) || 0;
+      return sum + (basePrice + additionalsPrice) * item.quantity;
     },
     0
   );
@@ -195,13 +195,15 @@ const Cart: React.FC = () => {
         if (item.cuttingStyle) {
           itemLine += ` (Corte: ${item.cuttingStyle === 'normal' ? 'Normal' : 'Francesinha'})`;
         }
-        itemLine += ` - ${formatCurrency((item.selectedVariation?.price || item.price || 0) * item.quantity)}\n`;
+        itemLine += ` - ${formatCurrency((
+          (item.selectedVariation?.price || item.price || 0) + 
+          (item.selectedAdditionals?.reduce((addSum, add) => addSum + add.price, 0) || 0)
+        ) * item.quantity)}\n`;
         message += itemLine;
 
-        // ** NOVO: Adiciona os opcionais na mensagem do WhatsApp **
-        if (item.selectedOptionals && item.selectedOptionals.length > 0) {
-          const optionalsText = item.selectedOptionals.map(opt => `${opt.name} (+${formatCurrency(opt.price)})`).join(', ');
-          message += `  - Opcionais: ${optionalsText}\n`;
+        if (item.selectedAdditionals && item.selectedAdditionals.length > 0) {
+          const additionalsText = item.selectedAdditionals.map(add => `${add.name} (+${formatCurrency(add.price)})`).join(', ');
+          message += `  - Adicionais: ${additionalsText}\n`;
         }
       });
 
@@ -300,17 +302,16 @@ const Cart: React.FC = () => {
                                 : item.name}
                             {item.cuttingStyle && ` (Corte: ${item.cuttingStyle === 'normal' ? 'Normal' : 'Francesinha'})`}
                             
-                            {/* ** CORRIGIDO: Exibe os opcionais no carrinho ** */}
-                            {item.selectedOptionals && item.selectedOptionals.length > 0 && (
+                            {item.selectedAdditionals && item.selectedAdditionals.length > 0 && (
                               <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#ccc' }}>
-                                Opcionais: {item.selectedOptionals.map(opt => opt.name).join(', ')}
+                                Adicionais: {item.selectedAdditionals.map(add => add.name).join(', ')}
                               </div>
                             )}
                           </ItemName>
                           <ItemPrice>
                             {formatCurrency((
                               (item.selectedVariation?.price || item.price || 0) + 
-                              (item.selectedOptionals?.reduce((optSum, opt) => optSum + opt.price, 0) || 0)
+                              (item.selectedAdditionals?.reduce((addSum, add) => addSum + add.price, 0) || 0)
                             ) * item.quantity)}
                           </ItemPrice>
                         </ItemInfo>

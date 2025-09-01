@@ -1,9 +1,8 @@
-// src/components/ProductModal/ProductModal.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Plus, ChevronDown } from 'lucide-react';
-import { useCart } from '../../contexts/CartContext';
-import { Product, ProductVariation, ProductOptional, useProducts } from '../../contexts/ProductContext';
-import { CartItem } from '../../contexts/CartContext';
+// CORRIGIDO: Importa 'useCart' e 'CartItem' do arquivo de contexto
+import { useCart, CartItem } from '../../contexts/CartContext';
+import { Product, ProductVariation, ProductAdditional, useProducts } from '../../contexts/ProductContext';
 import { toast } from 'react-toastify';
 
 import {
@@ -27,10 +26,9 @@ import {
   CuttingOptionsContainer,
   CuttingOption,
   HalfPizzaSelectGroup,
-  // NOVO: Importa os novos styled components para opcionais
-  OptionalsContainer,
-  OptionalCheckbox,
-  OptionalLabel
+  AdditionalsContainer,
+  AdditionalCheckbox,
+  AdditionalLabel
 } from './ProductModalStyles';
 import {
   CustomSelectContainer as GlobalCustomSelectContainer,
@@ -53,7 +51,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
   const { products: allProducts } = useProducts();
 
   const [selectedVariation, setSelectedVariation] = useState<ProductVariation | null>(null);
-  const [selectedOptionals, setSelectedOptionals] = useState<ProductOptional[]>([]);
+  const [selectedAdditionals, setSelectedAdditionals] = useState<ProductAdditional[]>([]);
   const [quantity, setQuantity] = useState(1);
 
   const [selectedHalf1, setSelectedHalf1] = useState<Product | null>(null);
@@ -90,7 +88,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
   useEffect(() => {
     if (product) {
       setQuantity(1);
-      setSelectedOptionals([]);
+      setSelectedAdditionals([]);
       if (isPizzaCategory) {
         if (initialMode === 'half-and-half') {
           setPizzaMode('half-and-half');
@@ -147,13 +145,13 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
     return Math.max(priceHalf1, priceHalf2);
   };
   
-  const optionalsPrice = selectedOptionals.reduce((total, optional) => total + optional.price, 0);
+  const additionalsPrice = selectedAdditionals.reduce((total, additional) => total + additional.price, 0);
 
   const currentItemPrice = isPizzaCategory && pizzaMode === 'half-and-half'
     ? calculateHalfAndHalfPrice()
     : (selectedVariation?.price || product?.price || 0);
 
-  const finalPrice = (currentItemPrice + optionalsPrice) * quantity;
+  const finalPrice = (currentItemPrice + additionalsPrice) * quantity;
 
   let isAddButtonEnabled = false;
   if (isPizzaCategory) {
@@ -166,11 +164,11 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
     isAddButtonEnabled = currentItemPrice > 0;
   }
   
-  const handleOptionalToggle = (optional: ProductOptional) => {
-    setSelectedOptionals(prev =>
-      prev.some(o => o.name === optional.name)
-        ? prev.filter(o => o.name !== optional.name)
-        : [...prev, optional]
+  const handleAdditionalToggle = (additional: ProductAdditional) => {
+    setSelectedAdditionals(prev =>
+      prev.some(a => a.name === additional.name)
+        ? prev.filter(a => a.name !== additional.name)
+        : [...prev, additional]
     );
   };
   
@@ -196,7 +194,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
           half1: { id: selectedHalf1.id, name: selectedHalf1.name, price: getPriceForVariation(selectedHalf1, selectedVariation.name) },
           half2: { id: selectedHalf2.id, name: selectedHalf2.name, price: getPriceForVariation(selectedHalf2, selectedVariation.name) },
           cuttingStyle: cuttingStyle,
-          selectedOptionals: selectedOptionals
+          selectedAdditionals: selectedAdditionals
         };
         for (let i = 0; i < quantity; i++) {
           addToCart(halfAndHalfProduct, selectedVariation);
@@ -208,7 +206,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
             ...product,
             quantity: 1,
             cuttingStyle: isPizzaCategory ? cuttingStyle : undefined,
-            selectedOptionals: selectedOptionals
+            selectedAdditionals: selectedAdditionals
         };
         for (let i = 0; i < quantity; i++) {
             addToCart(itemToAdd, selectedVariation);
@@ -216,7 +214,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
         onClose();
         return;
     } else if (product) {
-        const itemToAdd: CartItem = { ...product, quantity: 1, selectedOptionals: selectedOptionals };
+        const itemToAdd: CartItem = { ...product, quantity: 1, selectedAdditionals: selectedAdditionals };
         for (let i = 0; i < quantity; i++) {
             addToCart(itemToAdd, undefined);
         }
@@ -396,22 +394,22 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
               </CuttingOptionsContainer>
             )}
 
-            {product.optionals && product.optionals.length > 0 && (
-                <OptionalsContainer>
-                    <h3>Opcionais:</h3>
+            {product.additionals && product.additionals.length > 0 && (
+                <AdditionalsContainer>
+                    <h3>Adicionais:</h3>
                     <div>
-                        {product.optionals.map((optional) => (
-                            <OptionalLabel key={optional.name}>
-                                <OptionalCheckbox
+                        {product.additionals.map((additional) => (
+                            <AdditionalLabel key={additional.name}>
+                                <AdditionalCheckbox
                                     type="checkbox"
-                                    checked={selectedOptionals.some(o => o.name === optional.name)}
-                                    onChange={() => handleOptionalToggle(optional)}
+                                    checked={selectedAdditionals.some(a => a.name === additional.name)}
+                                    onChange={() => handleAdditionalToggle(additional)}
                                 />
-                                {optional.name} (+R$ {optional.price.toFixed(2).replace('.', ',')})
-                            </OptionalLabel>
+                                {additional.name} (+R$ {additional.price.toFixed(2).replace('.', ',')})
+                            </AdditionalLabel>
                         ))}
                     </div>
-                </OptionalsContainer>
+                </AdditionalsContainer>
             )}
 
             {!hasAvailableVariations && !isPizzaCategory && (

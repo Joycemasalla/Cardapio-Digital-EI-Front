@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { FunctionComponent } from 'react';
 
-// NOVO: Tipo para os opcionais do produto
-export type ProductOptional = {
+// NOVO: Tipo para os adicionais do produto (renomeado de 'ProductOptional')
+export type ProductAdditional = {
   name: string;
   price: number;
 };
@@ -14,15 +14,15 @@ export type ProductVariation = {
 };
 
 export type Product = {
-  id: string; // O ID do frontend
-  _id?: string; // NOVO: Adicionado _id do MongoDB, tornando-o opcional
+  id: string;
+  _id?: string;
   name: string;
   description: string;
   price?: number;
   image?: string;
   category: string;
   variations?: ProductVariation[];
-  optionals?: ProductOptional[]; // NOVO: Adiciona a propriedade opcionais
+  additionals?: ProductAdditional[]; // NOVO: Adiciona a propriedade 'additionals'
 };
 
 type ProductContextType = {
@@ -36,8 +36,6 @@ type ProductContextType = {
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
 const API_BASE_URL = 'https://cardapio-digital-ei-back.vercel.app/api/products';
-// 'https://cardapio-digital-ei-back.onrender.com/api/products'; 
-//const API_BASE_URL = 'http://localhost:3001/api/products'; // ou a porta do seu backend local
 
 export const ProductProvider: FunctionComponent<{ children: ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
