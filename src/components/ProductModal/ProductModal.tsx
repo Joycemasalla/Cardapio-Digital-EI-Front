@@ -27,7 +27,7 @@ import {
   CuttingOptionsContainer,
   CuttingOption,
   HalfPizzaSelectGroup,
-  // NOVO: Styled Components para opcionais
+  // NOVO: Importa os novos styled components para opcionais
   OptionalsContainer,
   OptionalCheckbox,
   OptionalLabel
@@ -53,7 +53,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
   const { products: allProducts } = useProducts();
 
   const [selectedVariation, setSelectedVariation] = useState<ProductVariation | null>(null);
-  const [selectedOptionals, setSelectedOptionals] = useState<ProductOptional[]>([]); // NOVO: Estado para os opcionais
+  const [selectedOptionals, setSelectedOptionals] = useState<ProductOptional[]>([]);
   const [quantity, setQuantity] = useState(1);
 
   const [selectedHalf1, setSelectedHalf1] = useState<Product | null>(null);
@@ -90,7 +90,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
   useEffect(() => {
     if (product) {
       setQuantity(1);
-      // NOVO: Limpa a seleção de opcionais ao abrir o modal
       setSelectedOptionals([]);
       if (isPizzaCategory) {
         if (initialMode === 'half-and-half') {
@@ -148,7 +147,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
     return Math.max(priceHalf1, priceHalf2);
   };
   
-  // NOVO: Lógica para calcular o preço dos opcionais
   const optionalsPrice = selectedOptionals.reduce((total, optional) => total + optional.price, 0);
 
   const currentItemPrice = isPizzaCategory && pizzaMode === 'half-and-half'
@@ -168,7 +166,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
     isAddButtonEnabled = currentItemPrice > 0;
   }
   
-  // NOVO: Função para manipular a seleção de opcionais
   const handleOptionalToggle = (optional: ProductOptional) => {
     setSelectedOptionals(prev =>
       prev.some(o => o.name === optional.name)
@@ -183,7 +180,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
       return;
     }
     
-    // ... lógica para pizza meio a meio, adaptada para opcionais
     if (isPizzaCategory && pizzaMode === 'half-and-half' && selectedHalf1 && selectedHalf2 && selectedVariation) {
         const halfAndHalfProduct: CartItem = {
           ...product!,
@@ -200,7 +196,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
           half1: { id: selectedHalf1.id, name: selectedHalf1.name, price: getPriceForVariation(selectedHalf1, selectedVariation.name) },
           half2: { id: selectedHalf2.id, name: selectedHalf2.name, price: getPriceForVariation(selectedHalf2, selectedVariation.name) },
           cuttingStyle: cuttingStyle,
-          selectedOptionals: selectedOptionals // NOVO: Adiciona a lista de opcionais
+          selectedOptionals: selectedOptionals
         };
         for (let i = 0; i < quantity; i++) {
           addToCart(halfAndHalfProduct, selectedVariation);
@@ -212,16 +208,15 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
             ...product,
             quantity: 1,
             cuttingStyle: isPizzaCategory ? cuttingStyle : undefined,
-            selectedOptionals: selectedOptionals // NOVO: Adiciona a lista de opcionais
+            selectedOptionals: selectedOptionals
         };
-        // ...
         for (let i = 0; i < quantity; i++) {
             addToCart(itemToAdd, selectedVariation);
         }
         onClose();
         return;
     } else if (product) {
-        const itemToAdd: CartItem = { ...product, quantity: 1, selectedOptionals: selectedOptionals }; // NOVO: Adiciona opcionais
+        const itemToAdd: CartItem = { ...product, quantity: 1, selectedOptionals: selectedOptionals };
         for (let i = 0; i < quantity; i++) {
             addToCart(itemToAdd, undefined);
         }
@@ -401,7 +396,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
               </CuttingOptionsContainer>
             )}
 
-            {/* NOVO: Renderiza a lista de opcionais se o produto tiver */}
             {product.optionals && product.optionals.length > 0 && (
                 <OptionalsContainer>
                     <h3>Opcionais:</h3>

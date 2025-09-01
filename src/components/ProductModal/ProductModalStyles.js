@@ -323,14 +323,14 @@ export const AddButton = styled.button`
   background-color: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.background};
   border: none;
-  padding: 1rem 2rem; /* AJUSTADO: Mais padding para o botão Add */
+  padding: 1rem 2rem;
   border-radius: ${({ theme }) => theme.borderRadius.small};
   font-weight: 600;
-  font-size: 1.1rem; /* AJUSTADO: Fonte ligeiramente maior */
+  font-size: 1.1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.8rem; /* AJUSTADO: Mais gap para o ícone Plus */
+  gap: 0.8rem;
   cursor: pointer;
   transition: ${({ theme }) => theme.transition};
 
@@ -346,7 +346,61 @@ export const AddButton = styled.button`
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     width: 100%;
     justify-content: center;
-    font-size: 1rem; /* AJUSTADO: Fonte para mobile */
-    padding: 0.9rem 1.8rem; /* AJUSTADO: Padding mobile */
+    font-size: 1rem;
+    padding: 0.9rem 1.8rem;
+  }
+`;
+
+// NOVO: Styled Components para a seção de opcionais
+export const OptionalsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0 0.5rem;
+  
+  h3 {
+    font-size: 0.95rem;
+    color: ${({ theme }) => theme.colors.text};
+    margin-bottom: 0.6rem;
+    text-align: left;
+    font-weight: 500;
+  }
+
+  div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+`;
+
+export const OptionalCheckbox = styled.input`
+  /* Estiliza o checkbox nativo para ser mais visível */
+  accent-color: ${({ theme }) => theme.colors.primary};
+  margin-right: 0.5rem;
+`;
+
+export const OptionalLabel = styled.label`
+  display: flex;
+  align-items: center;
+  background-color: ${({ theme }) => theme.colors.backgroundCard};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  border: 1px solid ${({ theme }) => theme.colors.textDark};
+  padding: 0.5rem 0.8rem;
+  border-radius: ${({ theme }) => theme.borderRadius.small};
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Estilo quando o checkbox está marcado */
+  ${OptionalCheckbox}:checked + & {
+    background-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.background};
+    border-color: ${({ theme }) => theme.colors.primary};
   }
 `;
