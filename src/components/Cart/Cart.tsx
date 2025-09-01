@@ -156,9 +156,9 @@ const Cart: React.FC = () => {
     try {
       // ** CORRIGIDO **: Use a URL completa do seu backend.
       // Substitua pela URL da sua API no Vercel (https://cardapio-digital-ei-back.vercel.app)
-      const API_BASE_URL = 'https://cardapio-digital-ei-back.vercel.app';
+      //const API_BASE_URL = 'https://cardapio-digital-ei-back.vercel.app';
       
-      const response = await fetch(`${API_BASE_URL}/api/users`, {
+       const response = await fetch('/api/users',{
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
