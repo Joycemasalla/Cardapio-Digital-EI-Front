@@ -10,7 +10,7 @@ export const CardContainer = styled.div`
   flex-direction: column;
   height: auto; 
   min-height: 200px; 
-  cursor: pointer; // Cursor de clique para indicar que o card é interativo
+  cursor: pointer;
 
   &:hover {
     transform: translateY(-5px);
@@ -21,7 +21,6 @@ export const CardContainer = styled.div`
     min-height: 180px;
   }
 
-  /* Estilos para o modo de lista (horizontal) */
   &.list-view {
     flex-direction: row;
     min-height: unset;
@@ -208,7 +207,7 @@ export const VariationOption = styled.label`
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     font-size: 0.7rem;
-    padding: 0.2rem 0.5rem;
+    padding: 0.25rem 0.5rem;
     min-width: 25px;
   }
 `;
