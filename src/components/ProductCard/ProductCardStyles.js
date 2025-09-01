@@ -1,4 +1,3 @@
-// src/components/ProductCard/ProductCardStyles.js
 import styled from 'styled-components';
 
 export const CardContainer = styled.div`
@@ -11,7 +10,7 @@ export const CardContainer = styled.div`
   flex-direction: column;
   height: auto; 
   min-height: 200px; 
-  cursor: ${({ $clickable }) => ($clickable ? 'pointer' : 'default')};
+  cursor: pointer; // Cursor de clique para indicar que o card é interativo
 
   &:hover {
     transform: translateY(-5px);
@@ -24,11 +23,11 @@ export const CardContainer = styled.div`
 
   /* Estilos para o modo de lista (horizontal) */
   &.list-view {
-    flex-direction: row-reverse;
+    flex-direction: row;
     min-height: unset;
     height: auto; 
     padding: 0.6rem;
-    align-items: flex-start; 
+    align-items: center; 
     gap: 0.6rem;
     
     @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
@@ -270,163 +269,5 @@ export const AddButton = styled.button`
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     font-size: 0.7rem;
     padding: 0.25rem 0.5rem;
-  }
-`;
-
-// NOVO: Componentes para o modal de escolha de pizza
-export const PizzaChoiceOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1999; /* Menor que o ProductModal para não conflitar */
-  animation: fadeIn 0.2s ease;
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-`;
-
-export const PizzaChoiceContainer = styled.div`
-  background-color: ${({ theme }) => theme.colors.backgroundLight};
-  border-radius: ${({ theme }) => theme.borderRadius.large};
-  padding: 2rem;
-  width: 90%;
-  max-width: 400px;
-  box-shadow: ${({ theme }) => theme.shadows.strong};
-  position: relative;
-  animation: slideUp 0.3s ease;
-
-  @keyframes slideUp {
-    from { 
-      transform: translateY(20px);
-      opacity: 0;
-    }
-    to { 
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    width: 95%;
-    padding: 1.5rem;
-  }
-`;
-
-export const PizzaChoiceTitle = styled.h3`
-  color: ${({ theme }) => theme.colors.text};
-  font-size: 1.4rem;
-  font-weight: 600;
-  text-align: center;
-  margin-bottom: 1.5rem;
-  
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    font-size: 1.2rem;
-    margin-bottom: 1.2rem;
-  }
-`;
-
-export const PizzaChoiceButtons = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    gap: 0.8rem;
-  }
-`;
-
-export const PizzaChoiceButton = styled.button`
-  background-color: ${({ theme }) => theme.colors.backgroundCard};
-  border: 2px solid ${({ theme }) => theme.colors.textDark};
-  border-radius: ${({ theme }) => theme.borderRadius.medium};
-  padding: 1.2rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.primary};
-    background-color: ${({ theme }) => theme.colors.primary}15;
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-
-  div {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    
-    strong {
-      color: ${({ theme }) => theme.colors.text};
-      font-size: 1.1rem;
-      font-weight: 600;
-    }
-    
-    span {
-      color: ${({ theme }) => theme.colors.textSecondary};
-      font-size: 0.9rem;
-    }
-  }
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    padding: 1rem;
-    
-    div {
-      strong {
-        font-size: 1rem;
-      }
-      
-      span {
-        font-size: 0.85rem;
-      }
-    }
-  }
-`;
-
-export const ViewToggleContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1.5rem;
-  gap: 0.8rem;
-  padding: 0 1rem;
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    margin-bottom: 1rem;
-  }
-`;
-
-export const ViewToggleButton = styled.button`
-  background-color: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.background};
-  border: 1px solid ${({ theme }) => theme.colors.primary};
-  padding: 0.6rem 1rem;
-  border-radius: ${({ theme }) => theme.borderRadius.small};
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: ${({ theme }) => theme.transition};
-  font-size: 0.9rem;
-  font-weight: 500;
-
-  &:hover:not(:disabled) {
-    background-color: ${({ theme }) => theme.colors.primaryDark};
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
   }
 `;
