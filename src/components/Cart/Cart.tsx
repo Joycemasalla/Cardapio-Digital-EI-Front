@@ -1,3 +1,4 @@
+// src/components/Cart/Cart.tsx
 import React, { useState, useEffect } from 'react';
 import { X, ShoppingCart, Send, Trash2, Copy } from 'lucide-react';
 import { useCart, CartItem } from '../../contexts/CartContext';
@@ -43,9 +44,6 @@ import {
   StyledInputMask
 } from './CartStyles';
 import { formatCurrency } from '../../utils/formatCurrency';
-
-// ** CORRIGIDO: Define a URL base do backend para evitar erros de CORS e rotas não encontradas **
-const API_BASE_URL = '[https://cardapio-digital-ei-back.vercel.app](https://cardapio-digital-ei-back.vercel.app)';
 
 const Cart: React.FC = () => {
   const {
@@ -158,8 +156,8 @@ const Cart: React.FC = () => {
     }
 
     try {
-      // ** CORRIGIDO **: A requisição agora aponta para o backend, não para o frontend.
-      const response = await fetch(`${API_BASE_URL}/api/users`, {
+      // Salva ou atualiza os dados do cliente no banco de dados
+      const response = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -169,12 +167,8 @@ const Cart: React.FC = () => {
         }),
       });
 
-      console.log('Status da resposta do servidor:', response.status);
-      console.log('Texto do status:', response.statusText);
-      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Falha ao salvar dados do cliente. Status: ${response.status}. Mensagem: ${errorData.message}`);
+        throw new Error('Falha ao salvar dados do cliente.');
       }
       
       // Monta a mensagem do WhatsApp
@@ -231,6 +225,7 @@ const Cart: React.FC = () => {
       const encodedMessage = encodeURIComponent(message);
       window.open(`https://wa.me/5532988949994?text=${encodedMessage}`, '_blank');
       
+      // Salva os dados do cliente no localStorage após o sucesso
       localStorage.setItem('customerInfo', JSON.stringify({ ...customerInfo, deliveryOption }));
       
       clearCart();
