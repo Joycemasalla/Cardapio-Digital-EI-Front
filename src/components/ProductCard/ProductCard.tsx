@@ -11,8 +11,7 @@ import {
 } from './ProductCardStyles';
 import { Plus } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
-// Renomeado 'ProductOptional' para 'ProductAdditional'
-import { Product, ProductVariation, ProductAdditional } from '../../contexts/ProductContext';
+import { Product, ProductVariation } from '../../contexts/ProductContext';
 import { toast } from 'react-toastify';
 
 interface ProductCardProps {
@@ -25,8 +24,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
   const { addToCart } = useCart();
   const [selectedVariation, setSelectedVariation] = useState<ProductVariation | null>(null);
 
-  // NOVO: Condição para determinar se o produto tem variações ou adicionais
+  // CORRIGIDO: Referência a 'additionals'
   const hasOptions = (product.variations && product.variations.length > 0) || (product.additionals && product.additionals.length > 0);
+  const hasMultipleVariations = product.variations && product.variations.length > 1;
 
   useEffect(() => {
     if (product.variations && product.variations.length > 0) {
@@ -43,14 +43,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
   };
   
   const handleAddToCardClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Impede que o clique no botão ative o clique no card
+    e.stopPropagation();
     if (hasOptions) {
       if (onProductClick) {
         onProductClick(product);
       }
     } else {
       if (product.price !== undefined && product.price !== null && product.price > 0) {
-        // CORRIGIDO: Agora chamamos addToCart com a estrutura correta para produtos sem variações ou adicionais.
         addToCart({
             ...product,
             quantity: 1,

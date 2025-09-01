@@ -1,4 +1,3 @@
-// src/contexts/CartContext.tsx
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { toast } from 'react-toastify';
 import { FunctionComponent } from 'react';
@@ -33,8 +32,6 @@ type CartContextType = {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const API_BASE_URL = 'https://cardapio-digital-ei-back.vercel.app/api/products';
-
 export const CartProvider: FunctionComponent<{ children: ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -42,7 +39,7 @@ export const CartProvider: FunctionComponent<{ children: ReactNode }> = ({ child
   const toggleCart = () => {
     setIsCartOpen(!isCartOpen);
   };
-
+  
   const getCompositeKey = (productId: string, selectedVariationName?: string, additionalNames?: string): string => {
     return selectedVariationName ? `${productId}-${selectedVariationName}-${additionalNames}` : `${productId}-${additionalNames}`;
   };

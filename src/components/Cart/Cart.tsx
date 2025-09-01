@@ -1,7 +1,6 @@
 // src/components/Cart/Cart.tsx
 import React, { useState, useEffect } from 'react';
 import { X, ShoppingCart, Send, Trash2, Copy } from 'lucide-react';
-// CORRIGIDO: Agora importa 'useCart' e 'CartItem' do arquivo de contexto
 import { useCart, CartItem } from '../../contexts/CartContext';
 import { toast } from 'react-toastify';
 import InputMask from 'react-input-mask';
@@ -46,7 +45,6 @@ import {
 } from './CartStyles';
 import { formatCurrency } from '../../utils/formatCurrency';
 
-// Define a URL base do backend para evitar erros de CORS e rotas não encontradas
 const API_BASE_URL = 'https://cardapio-digital-ei-back.vercel.app';
 
 const Cart: React.FC = () => {
@@ -317,10 +315,10 @@ const Cart: React.FC = () => {
                         </ItemInfo>
 
                         <QuantityControl>
-                          <QuantityButton onClick={() => decrementQuantity(item.id)}>-</QuantityButton>
+                          <QuantityButton onClick={() => incrementQuantity(item.id, item.selectedVariation?.name, item.selectedAdditionals ? item.selectedAdditionals.map(a => a.name).sort().join(',') : '')}>-</QuantityButton>
                           <QuantityDisplay>{item.quantity}</QuantityDisplay>
-                          <QuantityButton onClick={() => incrementQuantity(item.id)}>+</QuantityButton>
-                          <RemoveButton onClick={() => removeFromCart(item.id)}>
+                          <QuantityButton onClick={() => decrementQuantity(item.id, item.selectedVariation?.name, item.selectedAdditionals ? item.selectedAdditionals.map(a => a.name).sort().join(',') : '')}>+</QuantityButton>
+                          <RemoveButton onClick={() => removeFromCart(item.id, item.selectedVariation?.name, item.selectedAdditionals ? item.selectedAdditionals.map(a => a.name).sort().join(',') : '')}>
                             <Trash2 size={16} />
                           </RemoveButton>
                         </QuantityControl>

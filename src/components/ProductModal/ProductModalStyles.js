@@ -1,4 +1,3 @@
-// src/components/ProductModal/ProductModalStyles.js
 import styled from 'styled-components';
 
 export const ModalOverlay = styled.div`
@@ -258,6 +257,12 @@ export const VariationOption = styled.label`
     display: none;
   }
 
+  ${CardContainer}.list-view & {
+    padding: 0.15rem 0.4rem;
+    font-size: 0.65rem;
+    min-width: 20px;
+  }
+
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     font-size: 0.94rem;
     padding: 0.35rem 0.7rem;
@@ -347,8 +352,8 @@ export const AddButton = styled.button`
   }
 `;
 
-// NOVO: Styled Components para a seção de opcionais
-export const OptionalsContainer = styled.div`
+// Corrigido: Renomeado os styled components para 'adicionais'
+export const AdditionalsContainer = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -369,13 +374,12 @@ export const OptionalsContainer = styled.div`
   }
 `;
 
-export const OptionalCheckbox = styled.input`
-  /* Estiliza o checkbox nativo para ser mais visível */
+export const AdditionalCheckbox = styled.input`
   accent-color: ${({ theme }) => theme.colors.primary};
   margin-right: 0.5rem;
 `;
 
-export const OptionalLabel = styled.label`
+export const AdditionalLabel = styled.label`
   display: flex;
   align-items: center;
   background-color: ${({ theme }) => theme.colors.backgroundCard};
@@ -393,8 +397,7 @@ export const OptionalLabel = styled.label`
     background-color: rgba(255, 255, 255, 0.1);
   }
 
-  /* Estilo quando o checkbox está marcado */
-  ${OptionalCheckbox}:checked + & {
+  ${AdditionalCheckbox}:checked + & {
     background-color: ${({ theme }) => theme.colors.primary};
     color: ${({ theme }) => theme.colors.background};
     border-color: ${({ theme }) => theme.colors.primary};

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Plus, ChevronDown } from 'lucide-react';
-// CORRIGIDO: Importa 'useCart' e 'CartItem' do arquivo de contexto
 import { useCart, CartItem } from '../../contexts/CartContext';
 import { Product, ProductVariation, ProductAdditional, useProducts } from '../../contexts/ProductContext';
 import { toast } from 'react-toastify';
