@@ -24,7 +24,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isListView = false, 
   const { addToCart } = useCart();
   const [selectedVariation, setSelectedVariation] = useState<ProductVariation | null>(null);
 
-  // CORRIGIDO: Referência a 'additionals'
   const hasOptions = (product.variations && product.variations.length > 0) || (product.additionals && product.additionals.length > 0);
   const hasMultipleVariations = product.variations && product.variations.length > 1;
 
