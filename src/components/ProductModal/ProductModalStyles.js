@@ -216,6 +216,7 @@ export const CuttingOption = styled.label`
   }
 `;
 
+
 export const VariationsContainer = styled.div`
   display: flex;
   flex-wrap: wrap; 

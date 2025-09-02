@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Renomeado 'ProductOptional' para 'ProductAdditional'
 import { useProducts, Product, ProductVariation, ProductAdditional } from '../contexts/ProductContext';
 import { NumericFormat } from 'react-number-format';
 import { toast } from 'react-toastify';
@@ -45,7 +44,6 @@ import {
 import { FormGroup, Label, Input, Textarea, SubmitButton } from './PageStyles';
 import styled from 'styled-components';
 
-// Novos Styled Components para a seção de Estatísticas
 const StatsContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -119,6 +117,7 @@ const CategoryValue = styled.span`
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
+
 interface ProductFormState {
   id: string;
   name: string;
@@ -128,7 +127,7 @@ interface ProductFormState {
   imageFile: File | null;
   category: string;
   dynamicVariations: ProductVariation[];
-  dynamicAdditionals: ProductAdditional[]; // Renomeado 'dynamicOptionals' para 'dynamicAdditionals'
+  dynamicAdditionals: ProductAdditional[];
 }
 
 const AdminDashboard: React.FC = () => {
@@ -226,7 +225,6 @@ const AdminDashboard: React.FC = () => {
     };
   }, [isDrawerOpen, drawerRef]);
 
-  // Renomeado o estado do formulário para 'dynamicAdditionals'
   const [formData, setFormData] = useState<ProductFormState>({
     id: '',
     name: '',
@@ -236,7 +234,7 @@ const AdminDashboard: React.FC = () => {
     imageFile: null,
     category: '',
     dynamicVariations: [],
-    dynamicAdditionals: [], // Renomeado aqui
+    dynamicAdditionals: [],
   });
 
   useEffect(() => {
@@ -302,7 +300,7 @@ const AdminDashboard: React.FC = () => {
     setFormData({ ...formData, dynamicVariations: newVariations });
   };
   
-  // NOVO: Funções para manipular a lista de adicionais
+  // CORRIGIDO: Funções para manipular a lista de adicionais
   const handleAdditionalChange = (index: number, field: keyof ProductAdditional, value: string | number) => {
     const newAdditionals = [...formData.dynamicAdditionals];
     (newAdditionals[index] as any)[field] = value;
@@ -331,7 +329,7 @@ const AdminDashboard: React.FC = () => {
       imageFile: null,
       category: '',
       dynamicVariations: [],
-      dynamicAdditionals: [], // Renomeado aqui
+      dynamicAdditionals: [],
     });
     setEditingProduct(null);
   };
@@ -352,7 +350,7 @@ const AdminDashboard: React.FC = () => {
       ...product,
       price: product.price !== undefined ? product.price : 0,
       dynamicVariations: product.variations || [],
-      dynamicAdditionals: product.additionals || [], // Renomeado aqui
+      dynamicAdditionals: product.additionals || [],
       imageFile: null,
     });
     setEditingProduct(product);
@@ -454,7 +452,7 @@ const AdminDashboard: React.FC = () => {
           category: formData.category,
           variations: parsedVariations,
           price: undefined,
-          additionals: formData.dynamicAdditionals // Renomeado aqui
+          additionals: formData.dynamicAdditionals
         };
       } else {
         const priceValue = formData.price;
@@ -471,7 +469,7 @@ const AdminDashboard: React.FC = () => {
           image: finalImageUrl,
           category: formData.category,
           variations: undefined,
-          additionals: formData.dynamicAdditionals // Renomeado aqui
+          additionals: formData.dynamicAdditionals
         };
       }
 
@@ -871,7 +869,6 @@ const AdminDashboard: React.FC = () => {
                 </AddVariationButton>
               </VariationsEditor>
 
-              {/* NOVO: Seção de Adicionais (renomeado de 'Opcionais') */}
               <VariationsEditor>
                 <Label>Adicionais do Produto</Label>
                 {formData.dynamicAdditionals.map((additional, index) => (
