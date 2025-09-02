@@ -1021,9 +1021,15 @@ export const AdditionalsTable = styled.table`
 `;
 
 export const CheckboxGroup = styled.div`
-  display: flex;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(180px, 1fr)); /* 2 colunas iguais */
+  column-gap: 1rem; /* espaço entre colunas */
+  row-gap: 0.2rem;  /* espaço entre linhas */
+  align-items: start; /* alinha pelo topo */
+  /* display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1rem; */
 `;
 
 export const CheckboxLabel = styled.label`
