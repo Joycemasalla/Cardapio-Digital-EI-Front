@@ -216,7 +216,6 @@ export const CuttingOption = styled.label`
   }
 `;
 
-
 export const VariationsContainer = styled.div`
   display: flex;
   flex-wrap: wrap; 
@@ -352,7 +351,7 @@ export const AddButton = styled.button`
   }
 `;
 
-// Corrigido: Renomeado os styled components para 'adicionais'
+// CORRIGIDO: Renomeado os styled components para 'adicionais'
 export const AdditionalsContainer = styled.div`
   display: flex;
   flex-direction: column;

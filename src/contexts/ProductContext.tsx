@@ -1,13 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { FunctionComponent } from 'react';
 
-// NOVO: Tipo para os adicionais do produto (renomeado de 'ProductOptional')
+// CORRIGIDO: Tipo para os adicionais do produto (renomeado de 'ProductOptional')
 export type ProductAdditional = {
   name: string;
   price: number;
 };
 
-// src/contexts/ProductContext.tsx
 export type ProductVariation = {
   name: string;
   price: number;
@@ -22,7 +21,8 @@ export type Product = {
   image?: string;
   category: string;
   variations?: ProductVariation[];
-  additionals?: ProductAdditional[]; // NOVO: Adiciona a propriedade 'additionals'
+  // CORRIGIDO: Adiciona a propriedade 'additionals'
+  additionals?: ProductAdditional[]; 
 };
 
 type ProductContextType = {
