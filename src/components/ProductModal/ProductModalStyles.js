@@ -274,7 +274,7 @@ export const ProductActions = styled.div`
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.2rem;
   }
 `;
 

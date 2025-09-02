@@ -976,7 +976,7 @@ const AdminDashboard: React.FC = () => {
                         checked={formData.selectedAdditionalIds.includes(additional.id)}
                         onChange={() => handleAdditionalCheckboxChange(additional.id)}
                       />
-                      {additional.name} (+{formatCurrency(additional.price)})
+                      {additional.name} 
                     </CheckboxLabel>
                   ))}
                 </CheckboxGroup>
