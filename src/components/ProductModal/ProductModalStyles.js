@@ -257,11 +257,6 @@ export const VariationOption = styled.label`
     display: none;
   }
 
-  ${CardContainer}.list-view & {
-    padding: 0.15rem 0.4rem;
-    font-size: 0.65rem;
-    min-width: 20px;
-  }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     font-size: 0.94rem;
