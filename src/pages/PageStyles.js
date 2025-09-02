@@ -1,8 +1,7 @@
 import styled from 'styled-components';
 
-// Shared Styles (Mantidos)
 export const PageContainer = styled.div`
-  padding-bottom: 0.5rem; /* Mantém o padding inferior para evitar sobreposição com o footer */
+  padding-bottom: 0.5rem;
 `;
 
 export const FormGroup = styled.div`
@@ -91,7 +90,6 @@ export const ErrorMessage = styled.div`
   font-size: 0.9rem;
 `;
 
-// Menu Page Styles (Mantidos)
 export const HeroSection = styled.div`
   height: 300px;
   background-image: url('https://images.pexels.com/photos/1639562/pexels-photo-1639562.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2');
@@ -148,7 +146,6 @@ export const HeroSubtitle = styled.p`
   }
 `;
 
-// Admin Login Styles (Mantidos)
 export const AdminContainer = styled.div`
   display: flex;
   align-items: center;
@@ -204,20 +201,19 @@ export const AdminTitle = styled.h2`
   }
 `;
 
-// Admin Dashboard Styles (Ajustados para responsividade da tabela)
 export const AdminDashboardContainer = styled.div`
   display: flex;
   flex-direction: column;
   min-height: calc(100vh - 72px);
   background-color: ${({ theme }) => theme.colors.background};
-  position: relative; /* ADICIONADO: Para controle de posicionamento dos elementos filhos */
+  position: relative;
 `;
 
 export const AdminSidebar = styled.div`
-  width: 100%; /* No drawer mobile, ocupa a largura total */
+  width: 100%;
   padding: 2rem 1rem;
   background-color: ${({ theme }) => theme.colors.backgroundLight};
-  border-right: none; /* No PC, não haverá sidebar fixa */
+  border-right: none;
   
   h3 {
     color: ${({ theme }) => theme.colors.textSecondary};
@@ -225,7 +221,7 @@ export const AdminSidebar = styled.div`
     margin-bottom: 1rem;
     text-transform: uppercase;
     letter-spacing: 1px;
-    opacity: 1; /* Sempre visível no drawer */
+    opacity: 1;
   }
   
   ul {
@@ -241,7 +237,7 @@ export const AdminSidebar = styled.div`
     cursor: pointer;
     transition: ${({ theme }) => theme.transition};
     white-space: nowrap;  
-    text-align: left; /* Alinhamento padrão para lista */
+    text-align: left;
     
     &:hover {
       background-color: rgba(255, 255, 255, 0.05);
@@ -253,19 +249,18 @@ export const AdminSidebar = styled.div`
     }
   }
   
-  @media (min-width: ${({ theme }) => theme.breakpoints.md}) { /* Em telas maiores que mobile */
-    display: none; /* Esconde a AdminSidebar principal, que agora é só o conteúdo do drawer */
+  @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+    display: none;
   }
 `;
 
-// AdminContent agora ocupa a largura total no PC
 export const AdminContent = styled.div`
   flex: 1;
   padding: 2rem;
   position: relative;
   overflow-x: hidden;
-  margin-left: 0; /* NOVO: Sem margem esquerda, ocupa a largura total */
-  transition: none; /* Remove transição de margem, não é mais sidebar colapsável */
+  margin-left: 0;
+  transition: none;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     padding: 1rem;
@@ -280,11 +275,10 @@ export const AdminHeader = styled.div`
   height: 60px;
   
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-    justify-content: center; /* Centraliza o título */
-    padding: 0 4rem; /* ALTERADO: Aumenta padding para dar espaço aos botões */
+    justify-content: center;
+    padding: 0 4rem;
   }
 `;
-
 
 export const AdminControls = styled.div`
   display: flex;
@@ -316,12 +310,12 @@ export const AddButton = styled.button`
   }
 
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    width: auto; /* Permite que o botão se ajuste ao conteúdo */
-    padding: 0.6rem 0.8rem; /* Padding reduzido para mobile */
-    font-size: 0.8rem; /* Fonte menor */
-    gap: 0.3rem; /* Gap menor */
+    width: auto;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.8rem;
+    gap: 0.3rem;
 
-    svg { /* Ajusta o tamanho do ícone Plus */
+    svg {
         width: 14px;
         height: 14px;
     }
@@ -352,35 +346,35 @@ export const ProductsTable = styled.table`
     tbody {
       display: flex;  
       flex-direction: column;  
-      gap: 1rem; /* AJUSTADO: Reduz o espaço entre um card e outro (entre os <tr>) */
+      gap: 1rem;
       width: 100%;
     }
 
-    tr { /* Cada linha da tabela (<tr>) vira um card de produto individual */
+    tr {
       display: flex;
-      flex-direction: row; /* Alterado para row para layout horizontal */
-      align-items: center; /* Alinha itens ao centro verticalmente */
-      gap: 0.8rem; /* Espaçamento entre imagem e texto/ações */
-      padding: 1rem; /* AJUSTADO: Reduz o padding interno do card, tornando-o mais compacto */
+      flex-direction: row;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 1rem;
       background-color: ${({ theme }) => theme.colors.backgroundCard};
       border-radius: ${({ theme }) => theme.borderRadius.medium};
       box-shadow: ${({ theme }) => theme.shadows.light};
       border: 1px solid rgba(255, 255, 255, 0.1);
       width: 100%;  
       height: auto;  
-      min-height: unset; /* Garante que a altura não seja fixada e se ajuste ao conteúdo */
+      min-height: unset;
       position: relative;  
     }
 
-    td { /* Cada célula (<td>) dentro do card */
+    td {
       display: flex;  
-      flex-direction: column; /* Conteúdo da célula empilhado */
-      justify-content: center; /* Centraliza conteúdo verticalmente */
-      padding: 0; /* Zera o padding da célula, o espaçamento será controlado por margens e gaps */
+      flex-direction: column;
+      justify-content: center;
+      padding: 0;
       border: none;
-      font-size: 0.8rem;  
+      font-size: 0.8rem;
       color: ${({ theme }) => theme.colors.text};
-      white-space: normal;  
+      white-space: normal;
       overflow: visible; 
       text-overflow: clip; 
       flex-shrink: 0;  
@@ -390,73 +384,72 @@ export const ProductsTable = styled.table`
         display: none;
       }
 
-      &:nth-child(1) { /* Célula da Imagem */
-        width: 45px; /* AJUSTADO: Diminui ligeiramente o tamanho da imagem */
-        height: 45px; /* AJUSTADO: Diminui ligeiramente o tamanho da imagem */
+      &:nth-child(1) {
+        width: 45px;
+        height: 45px;
         min-width: 45px;  
-        overflow: hidden;  
+        overflow: hidden;
         border-radius: ${({ theme }) => theme.borderRadius.small};
-        margin-right: 0.6rem; /* AJUSTADO: Reduz a margem à direita da imagem */
-        display: flex; /* Garante que o conteúdo (imagem) seja centralizado se precisar */
+        margin-right: 0.6rem;
+        display: flex;
         justify-content: center;
         align-items: center;
       } 
 
-      &:nth-child(2) { /* Célula do Nome do Produto */
-        flex-grow: 1;  
+      &:nth-child(2) {
+        flex-grow: 1;
         min-width: 0;  
         font-weight: 600;
         color: ${({ theme }) => theme.colors.text};
-        font-size: 0.9rem; /* Mantém o tamanho da fonte para o nome para boa legibilidade */
+        font-size: 0.9rem;
         white-space: normal;
         overflow: hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
         -webkit-line-clamp: 2;  
         -webkit-box-orient: vertical;
-        padding-right: 0.4rem; /* Adiciona um pequeno padding à direita para o texto */
+        padding-right: 0.4rem;
       }
       
-      &:nth-child(3) { /* Categoria */
-        display: none;  
+      &:nth-child(3) {
+        display: none;
       }
 
-      &:nth-child(4) { /* Célula do Preço/Variações */
-        flex-direction: column;  
-        align-items: flex-end; /* Alinha as variações à direita */
-        font-size: 0.8rem; /* AJUSTADO: Reduz o tamanho da fonte para o texto "Preço/Variações" geral */
+      &:nth-child(4) {
+        flex-direction: column;
+        align-items: flex-end;
+        font-size: 0.8rem;
         font-weight: 600;
         color: ${({ theme }) => theme.colors.primary};
-        white-space: normal;  
-        overflow: visible;  
-        text-overflow: clip;  
-        margin-top: 0; /* AJUSTADO: Zera a margem do topo */
-        width: auto; /* Permite que a largura se ajuste ao conteúdo */
-        flex-shrink: 1; /* Permite que ele encolha se precisar */
-        padding-right: 0.4rem; /* Adiciona um pequeno padding à direita */
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        margin-top: 0;
+        width: auto;
+        flex-shrink: 1;
+        padding-right: 0.4rem;
         
-        div { /* Estilo para cada item de variação individual (ex: "Pequena: R$ X,XX") */
-          white-space: nowrap;  
-          font-size: 0.7rem; /* AJUSTADO: Reduz o tamanho da fonte para cada variação individual */
-          line-height: 1.2; /* AJUSTADO: Torna o espaçamento entre as linhas de variação mais compacto */
-          text-align: right; /* Alinha o texto da variação à direita */
+        div {
+          white-space: nowrap;
+          font-size: 0.7rem;
+          line-height: 1.2;
+          text-align: right;
         }
       }
 
-      &:last-child { /* Célula de Ações (botões de Editar/Excluir) */
-        flex-direction: row;  
-        justify-content: flex-end;  
-        padding-top: 0; /* AJUSTADO: Zera o padding do topo */
-        border-top: none; /* Remove a borda superior */
-        margin-top: 0; /* AJUSTADO: Zera a margem do topo */
-        gap: 0.4rem; /* AJUSTADO: Reduz o espaçamento entre os botões de ação */
-        width: auto; /* Largura automática */
-        min-width: unset;  
-        align-self: flex-end; /* Alinha-se ao final da linha flex */
+      &:last-child {
+        flex-direction: row;
+        justify-content: flex-end;
+        padding-top: 0;
+        border-top: none;
+        margin-top: 0;
+        gap: 0.4rem;
+        width: auto;
+        min-width: unset;
+        align-self: flex-end;
       }
     }
   }
-  /* Responsivo para tablets */
   @media (min-width: ${({ theme }) => theme.breakpoints.sm}) and (max-width: ${({ theme }) => theme.breakpoints.md}) {
     display: block;
     overflow-x: auto;
@@ -531,7 +524,7 @@ export const TableCell = styled.td`
 export const TableImage = styled.img`
   width: 60px;
   height: 60px;
-  object-fit: cover; /* CORRIGIDO: Volta para cover */
+  object-fit: cover;
   border-radius: ${({ theme }) => theme.borderRadius.small};
   flex-shrink: 0;
 
@@ -578,7 +571,6 @@ export const NoProducts = styled.div`
   }
   
   button {
-
     margin: 0 auto;
   }
 `;
@@ -593,12 +585,11 @@ export const ProductForm = styled.form`
   border-radius: ${({ theme }) => theme.borderRadius.medium};
   width: 90%;
   max-width: 500px;
-  z-index: 1200; /* ALTERADO: Aumentado para ficar acima do drawer */
+  z-index: 1200;
   box-shadow: ${({ theme }) => theme.shadows.strong};
   max-height: 90vh;
   overflow-y: auto;
   
-  /* ADICIONADO: Backdrop para o formulário */
   &::before {
     content: '';
     position: fixed;
@@ -652,7 +643,6 @@ export const CloseFormButton = styled.button`
   }
 `;
 
-// Estilos para o editor de variações (Mantidos)
 export const VariationsEditor = styled.div`
   display: flex;
   flex-direction: column;
@@ -716,25 +706,21 @@ export const AddVariationButton = styled.button`
   }
 `;
 
-// Estilos para o select customizado (copiados do CategoryQuickLinksStyles e exportados)
 export const CustomSelectContainer = styled.div`
   width: 100%;
   max-width: 280px;
   position: relative;
   text-align: left;
-
-  /* NOVO: Ajusta o flex-basis e min-width para melhor responsividade em grupos flex */
-  flex: 1; /* Permite que cresça em um grupo flex */
-  min-width: 150px; /* Largura mínima para ser clicável */
+  flex: 1;
+  min-width: 150px;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     max-width: 240px;
   }
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-    /* Em telas muito pequenas, garante que os selects ocupem a largura total */
-    flex-basis: 100%; /* Ocupa 100% da largura em uma linha */
-    max-width: 100%; /* Garante que não ultrapasse */
-    min-width: unset; /* Remove min-width para que flex-basis 100% funcione */
+    flex-basis: 100%;
+    max-width: 100%;
+    min-width: unset;
   }
 `;
 
@@ -791,7 +777,6 @@ export const ChevronIcon = styled.span`
   }
 `;
 
-// MODIFICADO: Remove max-height para evitar corte
 export const DropdownList = styled.ul`
   position: absolute;
   top: 100%;
@@ -810,23 +795,8 @@ export const DropdownList = styled.ul`
   margin: 0;
   max-height: 200px;
   overflow-y: auto;
-  z-index: 1000; /* ADICIONADO: Z-index para ficar acima de outros elementos */
+  z-index: 1000;
 `;
-
-// 9. ADIÇÃO DE OVERLAY PARA O FORMULÁRIO (novo componente)
-export const FormOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1150;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
 
 export const DropdownItem = styled.li`
   padding: 0.75rem 1rem;
@@ -854,7 +824,6 @@ export const DropdownItem = styled.li`
   }
 `;
 
-// AdminMenuToggleButton é o botão que abre o drawer (menu hambúrguer)
 export const AdminMenuToggleButton = styled.button`
   background: transparent;
   border: none;
@@ -867,7 +836,6 @@ export const AdminMenuToggleButton = styled.button`
   align-items: center;
   justify-content: center;
 
-  /* ADICIONADO: Posicionamento absoluto no mobile para evitar sobreposição */
   @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
     position: absolute;
     left: 1rem;
@@ -876,11 +844,10 @@ export const AdminMenuToggleButton = styled.button`
   }
   
   @media (min-width: ${({ theme }) => theme.breakpoints.md}) {  
-    display: none; /* Esconde em telas maiores */
+    display: none;
   }
 `;
 
-// Estilos para o Drawer lateral do admin (mobile)
 export const AdminMobileDrawer = styled.div`
   position: fixed;
   top: 0;
@@ -890,7 +857,7 @@ export const AdminMobileDrawer = styled.div`
   background-color: ${({ theme }) => theme.colors.backgroundLight};
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
   transition: left 0.3s ease-in-out;
-  z-index: 1100; /* Mantido abaixo do formulário */
+  z-index: 1100;
   padding: 2rem 1rem;
   display: flex;
   flex-direction: column;
@@ -934,7 +901,6 @@ export const AdminMobileDrawer = styled.div`
   }
 `;
 
-// Estilos para o overlay do drawer
 export const AdminDrawerOverlay = styled.div`
   display: ${({ $isOpen }) => ($isOpen ? 'block' : 'none')};
   position: fixed;
@@ -947,8 +913,6 @@ export const AdminDrawerOverlay = styled.div`
   transition: opacity 0.3s ease-in-out;
 `;
 
-
-// Estilos para o input de arquivo e upload
 export const InputFileContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -978,7 +942,6 @@ export const UploadButton = styled.label`
     background-color: ${({ theme }) => theme.colors.primaryDark};
   }
 `;
-// NOVO: Navegação superior do Admin (para PC)
 export const AdminNav = styled.nav`
   display: flex;
   align-items: center;
@@ -987,7 +950,6 @@ export const AdminNav = styled.nav`
   padding: 0.8rem 2rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   gap: 1.5rem;
-  /* ADICIONADO: Posição relativa para controle de z-index */
   position: relative;
   z-index: 10;
 
@@ -1028,10 +990,53 @@ export const AdminNavLink = styled.button`
   }
 
   &.active {
-    color: ${({ theme }) => theme.colors.primary}; /* Cor de destaque para o link ativo */
+    color: ${({ theme }) => theme.colors.primary};
     &:after {
-      width: 100%; /* Sublinhado completo para o link ativo */
+      width: 100%;
       background-color: ${({ theme }) => theme.colors.primary};
     }
   }
+`;
+
+// NOVOS: Estilos para o gerenciamento de adicionais
+export const AdditionalsListContainer = styled.div`
+  width: 100%;
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: ${({ theme }) => theme.colors.backgroundLight};
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  box-shadow: ${({ theme }) => theme.shadows.medium};
+`;
+
+export const AdditionalsTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+`;
+
+export const CheckboxGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+export const CheckboxLabel = styled.label`
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  color: ${({ theme }) => theme.colors.text};
+  cursor: pointer;
+  gap: 0.5rem;
+`;
+
+export const CheckboxInput = styled.input`
+  accent-color: ${({ theme }) => theme.colors.primary};
+  width: 16px;
+  height: 16px;
 `;

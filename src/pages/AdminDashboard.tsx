@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useProducts, Product, ProductVariation, ProductAdditional } from '../contexts/ProductContext';
 import { NumericFormat } from 'react-number-format';
 import { toast } from 'react-toastify';
-
+// NOVO: Importa o hook para o contexto de adicionais
+import { useAdditionals } from '../contexts/AdditionalContext';
 import { ChevronDown, Plus, Edit, Trash2, X, Menu, UploadCloud } from 'lucide-react';
 import {
   AdminDashboardContainer,
@@ -39,7 +40,13 @@ import {
   InputFileName,
   UploadButton,
   AdminNav,
-  AdminNavLink
+  AdminNavLink,
+  // NOVOS: Styled components para a tela de adicionais
+  AdditionalsListContainer,
+  AdditionalsTable,
+  CheckboxGroup,
+  CheckboxLabel,
+  CheckboxInput
 } from './PageStyles';
 import { FormGroup, Label, Input, Textarea, SubmitButton } from './PageStyles';
 import styled from 'styled-components';
@@ -127,62 +134,52 @@ interface ProductFormState {
   imageFile: File | null;
   category: string;
   dynamicVariations: ProductVariation[];
-  dynamicAdditionals: ProductAdditional[];
+  selectedAdditionalIds: string[]; // NOVO: Campo para armazenar IDs de adicionais
+}
+
+// NOVO: Interface para o estado do formulário de adicionais
+interface AdditionalFormState {
+  id: string;
+  name: string;
+  price: number;
 }
 
 const AdminDashboard: React.FC = () => {
   const { products, addProduct, updateProduct, deleteProduct, loading } = useProducts();
+  // NOVO: Adiciona a lista de adicionais do contexto
+  const { additionals, addAdditional, updateAdditional, deleteAdditional } = useAdditionals();
+
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [currentSection, setCurrentSection] = useState('products');
-  const navigate = useNavigate();
 
+  const [isAdditionalFormVisible, setIsAdditionalFormVisible] = useState(false); // NOVO: Estado para mostrar o form de adicionais
+  const [editingAdditional, setEditingAdditional] = useState<ProductAdditional | null>(null);
+  const [additionalFormData, setAdditionalFormData] = useState<AdditionalFormState>({ id: '', name: '', price: 0 });
+
+  const navigate = useNavigate();
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const categorySelectRef = useRef<HTMLDivElement>(null);
-
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
   const [selectedProductCategoryFilter, setSelectedProductCategoryFilter] = useState('Todos os Produtos');
-
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
 
   const customAdminCategoryOrder = [
-    'Pizzas',
-    'Pizzas Doces',
-    'Hambúrgueres Tradicionais',
-    'Hambúrgueres Artesanais',
-    'Combos',
-    'Churrasco',
-    'Porções',
-    'Chapas',
-    'Bebidas'
+    'Pizzas', 'Pizzas Doces', 'Hambúrgueres Tradicionais', 'Hambúrgueres Artesanais', 'Combos',
+    'Churrasco', 'Porções', 'Chapas', 'Bebidas'
   ];
 
   const allCategories = [
     'Todos os Produtos',
-    ...[
-      'Hambúrgueres Tradicionais',
-      'Hambúrgueres Artesanais',
-      'Porções',
-      'Pizzas',
-      'Pizzas Doces',
-      'Bebidas',
-      'Combos',
-      'Churrasco',
-      'Chapas'
+    ...['Hambúrgueres Tradicionais', 'Hambúrgueres Artesanais', 'Porções', 'Pizzas', 'Pizzas Doces',
+        'Bebidas', 'Combos', 'Churrasco', 'Chapas'
     ].sort((a, b) => {
       const indexA = customAdminCategoryOrder.indexOf(a);
       const indexB = customAdminCategoryOrder.indexOf(b);
-
-      if (indexA !== -1 && indexB !== -1) {
-        return indexA - indexB;
-      }
-      if (indexA !== -1) {
-        return -1;
-      }
-      if (indexB !== -1) {
-        return 1;
-      }
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
       return a.localeCompare(b);
     })
   ];
@@ -225,6 +222,7 @@ const AdminDashboard: React.FC = () => {
     };
   }, [isDrawerOpen, drawerRef]);
 
+  // NOVO: Adiciona o campo selectedAdditionalIds ao estado inicial do formulário
   const [formData, setFormData] = useState<ProductFormState>({
     id: '',
     name: '',
@@ -234,7 +232,7 @@ const AdminDashboard: React.FC = () => {
     imageFile: null,
     category: '',
     dynamicVariations: [],
-    dynamicAdditionals: [],
+    selectedAdditionalIds: [], // NOVO
   });
 
   useEffect(() => {
@@ -287,7 +285,6 @@ const AdminDashboard: React.FC = () => {
     setFormData({ ...formData, dynamicVariations: newVariations });
   };
 
-
   const addVariation = () => {
     setFormData(prevData => ({
       ...prevData,
@@ -300,25 +297,75 @@ const AdminDashboard: React.FC = () => {
     setFormData({ ...formData, dynamicVariations: newVariations });
   };
   
-  // CORRIGIDO: Funções para manipular a lista de adicionais
-  const handleAdditionalChange = (index: number, field: keyof ProductAdditional, value: string | number) => {
-    const newAdditionals = [...formData.dynamicAdditionals];
-    (newAdditionals[index] as any)[field] = value;
-    setFormData({ ...formData, dynamicAdditionals: newAdditionals });
-  };
-
-  const addAdditional = () => {
+  // NOVO: Funções para manipular a lista de adicionais
+  const handleAdditionalCheckboxChange = (additionalId: string) => {
     setFormData(prevData => ({
       ...prevData,
-      dynamicAdditionals: [...prevData.dynamicAdditionals, { name: '', price: 0 }],
+      selectedAdditionalIds: prevData.selectedAdditionalIds.includes(additionalId)
+        ? prevData.selectedAdditionalIds.filter(id => id !== additionalId)
+        : [...prevData.selectedAdditionalIds, additionalId],
+    }));
+  };
+  
+  // NOVO: Funções e estados para o formulário de adicionar/editar adicionais
+  const handleAdditionalFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setAdditionalFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+  
+  const handleAdditionalPriceChange = (values: { floatValue: number | undefined }) => {
+    setAdditionalFormData(prev => ({
+      ...prev,
+      price: values.floatValue !== undefined ? values.floatValue : 0,
     }));
   };
 
-  const removeAdditional = (index: number) => {
-    const newAdditionals = formData.dynamicAdditionals.filter((_, i) => i !== index);
-    setFormData({ ...formData, dynamicAdditionals: newAdditionals });
+  const handleAddAdditionalClick = () => {
+    setEditingAdditional(null);
+    setAdditionalFormData({ id: '', name: '', price: 0 });
+    setIsAdditionalFormVisible(true);
   };
   
+  const handleEditAdditionalClick = (additional: ProductAdditional) => {
+    setEditingAdditional(additional);
+    setAdditionalFormData({ id: additional.id, name: additional.name, price: additional.price });
+    setIsAdditionalFormVisible(true);
+  };
+  
+  const handleAdditionalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingAdditional) {
+        await updateAdditional(additionalFormData as ProductAdditional);
+        toast.success('Adicional atualizado com sucesso!');
+      } else {
+        await addAdditional(additionalFormData as Omit<ProductAdditional, 'id'>);
+        toast.success('Adicional adicionado com sucesso!');
+      }
+      setIsAdditionalFormVisible(false);
+      setEditingAdditional(null);
+      setAdditionalFormData({ id: '', name: '', price: 0 });
+    } catch (error) {
+      toast.error('Erro ao salvar adicional. Tente novamente.');
+      console.error(error);
+    }
+  };
+  
+  const handleDeleteAdditional = async (additionalId: string) => {
+    if (window.confirm('Tem certeza que deseja excluir este adicional?')) {
+      try {
+        await deleteAdditional(additionalId);
+        toast.success('Adicional excluído com sucesso!');
+      } catch (error) {
+        toast.error('Erro ao excluir adicional. Tente novamente.');
+      }
+    }
+  };
+  // FIM DAS NOVAS FUNÇÕES PARA ADICIONAIS
+
   const resetForm = () => {
     setFormData({
       id: '',
@@ -329,7 +376,7 @@ const AdminDashboard: React.FC = () => {
       imageFile: null,
       category: '',
       dynamicVariations: [],
-      dynamicAdditionals: [],
+      selectedAdditionalIds: [],
     });
     setEditingProduct(null);
   };
@@ -350,7 +397,7 @@ const AdminDashboard: React.FC = () => {
       ...product,
       price: product.price !== undefined ? product.price : 0,
       dynamicVariations: product.variations || [],
-      dynamicAdditionals: product.additionals || [],
+      selectedAdditionalIds: product.additionals ? product.additionals.map(a => a.id) : [],
       imageFile: null,
     });
     setEditingProduct(product);
@@ -452,7 +499,7 @@ const AdminDashboard: React.FC = () => {
           category: formData.category,
           variations: parsedVariations,
           price: undefined,
-          additionals: formData.dynamicAdditionals
+          additionals: formData.selectedAdditionalIds as unknown as ProductAdditional[], // NOVO: envia a lista de IDs
         };
       } else {
         const priceValue = formData.price;
@@ -469,7 +516,7 @@ const AdminDashboard: React.FC = () => {
           image: finalImageUrl,
           category: formData.category,
           variations: undefined,
-          additionals: formData.dynamicAdditionals
+          additionals: formData.selectedAdditionalIds as unknown as ProductAdditional[], // NOVO: envia a lista de IDs
         };
       }
 
@@ -502,6 +549,8 @@ const AdminDashboard: React.FC = () => {
     switch (currentSection) {
       case 'products':
         return `Gerenciar Produtos (${selectedProductCategoryFilter})`;
+      case 'additionals':
+        return 'Gerenciar Adicionais';
       case 'statistics':
         return 'Estatísticas do Cardápio';
       default:
@@ -554,6 +603,12 @@ const AdminDashboard: React.FC = () => {
               onClick={() => handleSectionChange('products')}
             >
               Produtos
+            </li>
+             <li
+              className={currentSection === 'additionals' ? 'active' : ''}
+              onClick={() => handleSectionChange('additionals')}
+            >
+              Adicionais
             </li>
             <li
               className={currentSection === 'statistics' ? 'active' : ''}
@@ -609,6 +664,12 @@ const AdminDashboard: React.FC = () => {
           Produtos
         </AdminNavLink>
         <AdminNavLink
+          className={currentSection === 'additionals' ? 'active' : ''}
+          onClick={() => handleSectionChange('additionals')}
+        >
+          Adicionais
+        </AdminNavLink>
+        <AdminNavLink
           className={currentSection === 'statistics' ? 'active' : ''}
           onClick={() => handleSectionChange('statistics')}
         >
@@ -634,6 +695,16 @@ const AdminDashboard: React.FC = () => {
                 <Plus size={16} />
                 <span style={{ display: window.innerWidth > 600 ? 'inline' : 'none' }}>
                   Adicionar Produto
+                </span>
+              </AddButton>
+            </AdminControls>
+          )}
+          {currentSection === 'additionals' && (
+            <AdminControls>
+              <AddButton onClick={handleAddAdditionalClick}>
+                <Plus size={16} />
+                <span style={{ display: window.innerWidth > 600 ? 'inline' : 'none' }}>
+                  Adicionar Adicional
                 </span>
               </AddButton>
             </AdminControls>
@@ -728,7 +799,38 @@ const AdminDashboard: React.FC = () => {
             )}
           </>
         )}
-
+        {currentSection === 'additionals' && (
+          <AdditionalsListContainer>
+            <AdditionalsTable>
+              <thead>
+                <TableRow>
+                  <TableHeader>Nome</TableHeader>
+                  <TableHeader>Preço</TableHeader>
+                  <TableHeader>Ações</TableHeader>
+                </TableRow>
+              </thead>
+              <tbody>
+                {additionals.map((additional) => (
+                  <TableRow key={additional.id}>
+                    <TableCell data-label="Nome">{additional.name}</TableCell>
+                    <TableCell data-label="Preço">{formatCurrency(additional.price)}</TableCell>
+                    <TableCell data-label="Ações" className="actions">
+                      <ActionButton onClick={() => handleEditAdditionalClick(additional)}>
+                        <Edit size={16} />
+                      </ActionButton>
+                      <ActionButton
+                        className="delete"
+                        onClick={() => handleDeleteAdditional(additional.id)}
+                      >
+                        <Trash2 size={16} />
+                      </ActionButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </tbody>
+            </AdditionalsTable>
+          </AdditionalsListContainer>
+        )}
         {currentSection === 'statistics' && (
           <StatsContainer>
             <StatCard>
@@ -754,7 +856,6 @@ const AdminDashboard: React.FC = () => {
             </StatCard>
           </StatsContainer>
         )}
-
         {showForm && (
           <>
             <AdminDrawerOverlay $isOpen={true} onClick={resetAllStates} />
@@ -770,7 +871,6 @@ const AdminDashboard: React.FC = () => {
                   <X size={24} />
                 </CloseFormButton>
               </div>
-
               <FormGroup>
                 <Label htmlFor="name">Nome do Produto</Label>
                 <Input
@@ -782,7 +882,6 @@ const AdminDashboard: React.FC = () => {
                   required
                 />
               </FormGroup>
-
               <FormGroup>
                 <SelectLabel htmlFor="category-select-admin">Categoria</SelectLabel>
                 <div ref={categorySelectRef} style={{ width: '100%', position: 'relative' }}>
@@ -797,7 +896,6 @@ const AdminDashboard: React.FC = () => {
                         <ChevronDown size={20} />
                       </ChevronIcon>
                     </SelectButton>
-
                     {isCategoryDropdownOpen && (
                       <DropdownList>
                         <DropdownItem
@@ -826,7 +924,6 @@ const AdminDashboard: React.FC = () => {
                   </CustomSelectContainer>
                 </div>
               </FormGroup>
-
               <VariationsEditor>
                 <Label>Variações do Produto</Label>
                 {formData.dynamicVariations.map((variation, index) => (
@@ -868,49 +965,22 @@ const AdminDashboard: React.FC = () => {
                   <Plus size={16} /> Adicionar Variação
                 </AddVariationButton>
               </VariationsEditor>
-
-              <VariationsEditor>
-                <Label>Adicionais do Produto</Label>
-                {formData.dynamicAdditionals.map((additional, index) => (
-                  <VariationItem key={index}>
-                    <Input
-                      className="variation-input"
-                      type="text"
-                      placeholder="Nome do Adicional (ex: Picles Extra)"
-                      value={additional.name}
-                      onChange={(e) => handleAdditionalChange(index, 'name', e.target.value)}
-                      required
-                    />
-                    <NumericFormat
-                      value={additional.price}
-                      onValueChange={(values) => {
-                        handleAdditionalChange(index, 'price', values.floatValue !== undefined ? values.floatValue : 0);
-                      }}
-                      thousandSeparator="."
-                      decimalSeparator=","
-                      prefix="R$ "
-                      decimalScale={2}
-                      fixedDecimalScale={true}
-                      allowNegative={false}
-                      placeholder="R$ 0,00"
-                      customInput={Input}
-                      className="variation-input"
-                      required
-                    />
-                    <ActionButton
-                      className="delete"
-                      type="button"
-                      onClick={() => removeAdditional(index)}
-                    >
-                      <Trash2 size={16} />
-                    </ActionButton>
-                  </VariationItem>
-                ))}
-                <AddVariationButton type="button" onClick={addAdditional} style={{ backgroundColor: '#25D366' }}>
-                  <Plus size={16} /> Adicionar Adicional
-                </AddVariationButton>
-              </VariationsEditor>
-
+              {/* NOVO: Lista de checkboxes para selecionar adicionais */}
+              <FormGroup>
+                <Label>Adicionais</Label>
+                <CheckboxGroup>
+                  {additionals.map(additional => (
+                    <CheckboxLabel key={additional.id}>
+                      <CheckboxInput
+                        type="checkbox"
+                        checked={formData.selectedAdditionalIds.includes(additional.id)}
+                        onChange={() => handleAdditionalCheckboxChange(additional.id)}
+                      />
+                      {additional.name} (+{formatCurrency(additional.price)})
+                    </CheckboxLabel>
+                  ))}
+                </CheckboxGroup>
+              </FormGroup>
               {formData.dynamicVariations.length === 0 && (
                 <FormGroup>
                   <Label htmlFor="price">Preço (R$)</Label>
@@ -933,7 +1003,6 @@ const AdminDashboard: React.FC = () => {
                   />
                 </FormGroup>
               )}
-
               <FormGroup>
                 <Label htmlFor="description">Descrição</Label>
                 <Textarea
@@ -944,7 +1013,6 @@ const AdminDashboard: React.FC = () => {
                   required
                 />
               </FormGroup>
-
               <FormGroup>
                 <Label htmlFor="image">URL da Imagem</Label>
                 <InputFileContainer>
@@ -972,12 +1040,55 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 )}
               </FormGroup>
-
               <SubmitButton type="submit">
                 {editingProduct ? 'Atualizar Produto' : 'Adicionar Produto'}
               </SubmitButton>
             </ProductForm>
           </>
+        )}
+        {isAdditionalFormVisible && (
+          <ProductForm onSubmit={handleAdditionalSubmit} style={{ zIndex: 1250 }}>
+            <div className="form-header">
+              <FormTitle>
+                {editingAdditional ? 'Editar Adicional' : 'Adicionar Adicional'}
+              </FormTitle>
+              <CloseFormButton onClick={() => setIsAdditionalFormVisible(false)}>
+                <X size={24} />
+              </CloseFormButton>
+            </div>
+            <FormGroup>
+              <Label htmlFor="additional-name">Nome do Adicional</Label>
+              <Input
+                type="text"
+                id="additional-name"
+                name="name"
+                value={additionalFormData.name}
+                onChange={handleAdditionalFormChange}
+                required
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label htmlFor="additional-price">Preço (R$)</Label>
+              <NumericFormat
+                value={additionalFormData.price}
+                onValueChange={handleAdditionalPriceChange}
+                thousandSeparator="."
+                decimalSeparator=","
+                prefix="R$ "
+                decimalScale={2}
+                fixedDecimalScale={true}
+                allowNegative={false}
+                placeholder="R$ 0,00"
+                customInput={Input}
+                id="additional-price"
+                name="price"
+                required
+              />
+            </FormGroup>
+            <SubmitButton type="submit">
+              {editingAdditional ? 'Atualizar Adicional' : 'Adicionar Adicional'}
+            </SubmitButton>
+          </ProductForm>
         )}
       </AdminContent>
     </AdminDashboardContainer>

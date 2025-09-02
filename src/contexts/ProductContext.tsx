@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { FunctionComponent } from 'react';
 
-// CORRIGIDO: Tipo para os adicionais do produto (renomeado de 'ProductOptional')
 export type ProductAdditional = {
+  id: string; // Adicionado ID para a referência
+  _id?: string;
   name: string;
   price: number;
 };
@@ -21,8 +22,7 @@ export type Product = {
   image?: string;
   category: string;
   variations?: ProductVariation[];
-  // CORRIGIDO: Adiciona a propriedade 'additionals'
-  additionals?: ProductAdditional[]; 
+  additionals?: ProductAdditional[]; // O array agora contém objetos de adicionais
 };
 
 type ProductContextType = {
