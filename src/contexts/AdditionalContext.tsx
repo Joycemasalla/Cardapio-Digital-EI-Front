@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { FunctionComponent } from 'react';
-import { ProductAdditional } from './ProductContext';
+
+// CORRIGIDO: Interface com id obrigatório
+export interface ProductAdditional {
+  id: string;
+  _id?: string;
+  name: string;
+  price: number;
+}
 
 type AdditionalContextType = {
   additionals: ProductAdditional[];
@@ -27,7 +34,11 @@ export const AdditionalProvider: FunctionComponent<{ children: ReactNode }> = ({
         throw new Error('Erro ao buscar adicionais');
       }
       const data: ProductAdditional[] = await response.json();
-      const mappedData = data.map(additional => ({ ...additional, id: additional._id || additional.id }));
+      // CORRIGIDO: Mapeia _id para id
+      const mappedData = data.map(additional => ({ 
+        ...additional, 
+        id: additional._id || additional.id 
+      }));
       setAdditionals(mappedData);
     } catch (error) {
       console.error("Falha ao carregar adicionais:", error);
@@ -47,8 +58,9 @@ export const AdditionalProvider: FunctionComponent<{ children: ReactNode }> = ({
       throw new Error('Erro ao adicionar adicional');
     }
     const newAdditional: ProductAdditional = await response.json();
-    setAdditionals(prev => [...prev, { ...newAdditional, id: newAdditional._id || newAdditional.id }]);
-    return newAdditional;
+    const mappedAdditional = { ...newAdditional, id: newAdditional._id || newAdditional.id };
+    setAdditionals(prev => [...prev, mappedAdditional]);
+    return mappedAdditional;
   };
   
   const updateAdditional = async (additional: ProductAdditional): Promise<ProductAdditional> => {
@@ -61,10 +73,11 @@ export const AdditionalProvider: FunctionComponent<{ children: ReactNode }> = ({
       throw new Error('Erro ao atualizar adicional');
     }
     const updatedAdditional: ProductAdditional = await response.json();
+    const mappedAdditional = { ...updatedAdditional, id: updatedAdditional._id || updatedAdditional.id };
     setAdditionals(prev =>
-      prev.map(a => (a.id === updatedAdditional.id ? { ...updatedAdditional, id: updatedAdditional._id || updatedAdditional.id } : a))
+      prev.map(a => (a.id === mappedAdditional.id ? mappedAdditional : a))
     );
-    return updatedAdditional;
+    return mappedAdditional;
   };
 
   const deleteAdditional = async (additionalId: string): Promise<void> => {

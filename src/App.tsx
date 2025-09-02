@@ -26,6 +26,7 @@ import GlobalStyles from './styles/GlobalStyles'; //
 import { ThemeProvider } from 'styled-components';
 import theme from './styles/theme'; //
 import Footer from './components/Footer/Footer';
+import { AdditionalProvider } from './contexts/AdditionalContext';
 
 
 function App() {
@@ -34,43 +35,46 @@ function App() {
       <GlobalStyles />
       <AuthProvider> {/* */}
         <ProductProvider> {/* */}
-          <CartProvider> {/* */}
-            <Router>
-              {/* O Header geralmente aparece em todas as páginas do cardápio */}
-              <Header /> {/* */}
+          <AdditionalProvider> {/* NOVO: Adicione este provider */}
 
-              {/* As rotas da sua aplicação */}
-              <Routes>
-                <Route path="/" element={<MenuPage />} /> {/* */}
-                <Route path="/categoria/:categoryName" element={<CategoryPage />} /> {/* */}
-                <Route path="/admin" element={<AdminLogin />} /> {/* */}
-                {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
+            <CartProvider> {/* */}
+              <Router>
+                {/* O Header geralmente aparece em todas as páginas do cardápio */}
+                <Header /> {/* */}
 
-                {/* <--- ALTERAÇÃO PRINCIPAL AQUI: Rota protegida para o Dashboard */}
-                <Route
-                  path="/admin/dashboard"
-                  element={
-                    <PrivateRoute allowedRoles={['admin']}> {/* Adapte o papel 'admin' conforme seu AuthContext */}
-                      <AdminDashboard /> {/* */}
-                    </PrivateRoute>
-                  }
-                />
-                {/* Adicione outras rotas conforme necessário */}
-              </Routes>
+                {/* As rotas da sua aplicação */}
+                <Routes>
+                  <Route path="/" element={<MenuPage />} /> {/* */}
+                  <Route path="/categoria/:categoryName" element={<CategoryPage />} /> {/* */}
+                  <Route path="/admin" element={<AdminLogin />} /> {/* */}
+                  {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
 
-              {/* Componentes fixos/flutuantes que devem aparecer em todas as páginas */}
-              <Cart /> {/* */}
-              <FloatingCartButton /> {/* */}
-              <BackToTopButton /> {/* */}
+                  {/* <--- ALTERAÇÃO PRINCIPAL AQUI: Rota protegida para o Dashboard */}
+                  <Route
+                    path="/admin/dashboard"
+                    element={
+                      <PrivateRoute allowedRoles={['admin']}> {/* Adapte o papel 'admin' conforme seu AuthContext */}
+                        <AdminDashboard /> {/* */}
+                      </PrivateRoute>
+                    }
+                  />
+                  {/* Adicione outras rotas conforme necessário */}
+                </Routes>
 
-              {/* NOVO: Adicione o botão do WhatsApp aqui */}
-              <WhatsAppButton /> {/* */}
+                {/* Componentes fixos/flutuantes que devem aparecer em todas as páginas */}
+                <Cart /> {/* */}
+                <FloatingCartButton /> {/* */}
+                <BackToTopButton /> {/* */}
 
-              {/* Container para as notificações (toasts) */}
-              <ToastContainer position="top-center" autoClose={1000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
-              <Footer />
-            </Router>
-          </CartProvider>
+                {/* NOVO: Adicione o botão do WhatsApp aqui */}
+                <WhatsAppButton /> {/* */}
+
+                {/* Container para as notificações (toasts) */}
+                <ToastContainer position="top-center" autoClose={1000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
+                <Footer />
+              </Router>
+            </CartProvider>
+          </AdditionalProvider>
         </ProductProvider>
       </AuthProvider>
     </ThemeProvider>
