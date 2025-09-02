@@ -1023,8 +1023,8 @@ export const AdditionalsTable = styled.table`
 export const CheckboxGroup = styled.div`
 
   display: grid;
-  grid-template-columns: repeat(2, minmax(180px, 1fr)); /* 2 colunas iguais */
-  column-gap: 1rem; /* espaço entre colunas */
+  grid-template-columns: repeat(2, minmax(150px, 1fr)); /* 2 colunas iguais */
+  column-gap: 0.7rem; /* espaço entre colunas */
   row-gap: 0.2rem;  /* espaço entre linhas */
   align-items: start; /* alinha pelo topo */
   /* display: flex;
