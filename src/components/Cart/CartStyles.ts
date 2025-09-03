@@ -1,20 +1,20 @@
-// src/components/Cart/CartStyles.ts
+// src/components/Cart/CartStyles.ts - ESTILOS MELHORADOS
 import styled from 'styled-components';
 import InputMask from 'react-input-mask';
 
 interface CartContainerProps {
-  $isOpen: boolean; // Alterado para transient prop
+  $isOpen: boolean;
 }
 
 interface StepIndicatorProps {
-  $active: boolean;    // Alterado para transient prop
-  $completed: boolean; // Alterado para transient prop
+  $active: boolean;
+  $completed: boolean;
 }
 
 export const CartContainer = styled.div<CartContainerProps>`
   position: fixed;
   top: 0;
-  right: ${({ $isOpen }) => ($isOpen ? '0' : '-100%')}; /* Usando $isOpen */
+  right: ${({ $isOpen }) => ($isOpen ? '0' : '-100%')};
   width: 100%;
   max-width: 480px;
   height: 100vh;
@@ -78,9 +78,153 @@ export const CartContent = styled.div`
 export const CartItemsList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
 `;
 
+// NOVOS COMPONENTES PARA LAYOUT MELHORADO
+export const ItemCard = styled.div`
+  background-color: ${({ theme }) => theme.colors.backgroundCard};
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid ${({ theme }) => theme.colors.backgroundLight};
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+`;
+
+export const ItemHeader = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+`;
+
+export const ItemImage = styled.img`
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid ${({ theme }) => theme.colors.backgroundLight};
+`;
+
+export const ItemContent = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+export const ItemMainInfo = styled.div`
+  flex: 1;
+`;
+
+export const ItemName = styled.h3`
+  font-size: 1rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  margin: 0 0 0.25rem 0;
+  line-height: 1.3;
+`;
+
+export const ItemVariation = styled.p`
+  font-size: 0.875rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin: 0 0 0.25rem 0;
+  font-weight: 500;
+`;
+
+export const ItemActions = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+`;
+
+export const QuantitySection = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+export const AdditionalsSection = styled.div`
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.backgroundLight};
+
+  h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: ${({ theme }) => theme.colors.text};
+    margin: 0 0 0.5rem 0;
+  }
+`;
+
+export const AdditionalsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+`;
+
+export const AdditionalItem = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8125rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  padding: 0.25rem 0.5rem;
+  background-color: ${({ theme }) => theme.colors.background};
+  border-radius: 6px;
+
+  span:first-child {
+    flex: 1;
+  }
+
+  span:last-child {
+    font-weight: 600;
+    color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+export const PriceLabel = styled.span`
+  font-size: 0.8125rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  flex: 1;
+`;
+
+export const PriceValue = styled.span`
+  font-size: 0.8125rem;
+  color: ${({ theme }) => theme.colors.text};
+  font-weight: 500;
+`;
+
+export const PriceBreakdown = styled.div`
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.backgroundLight};
+`;
+
+export const PriceRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.375rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &.total {
+    margin-top: 0.375rem;
+    padding-top: 0.375rem;
+    border-top: 1px solid ${({ theme }) => theme.colors.backgroundLight};
+    font-weight: 600;
+
+    ${PriceLabel}, ${PriceValue} {
+      font-weight: 600;
+      color: ${({ theme }) => theme.colors.primary};
+      font-size: 0.9375rem;
+    }
+  }
+`;
+
+// COMPONENTES EXISTENTES MANTIDOS
 export const CartItem = styled.div`
   padding: 1rem;
   border: 1px solid ${({ theme }) => theme.colors.backgroundCard};
@@ -100,11 +244,6 @@ export const ItemInfo = styled.div`
   align-items: flex-start;
 `;
 
-export const ItemName = styled.span`
-  font-weight: 500;
-  color: ${({ theme }) => theme.colors.text};
-`;
-
 export const ItemPrice = styled.span`
   color: ${({ theme }) => theme.colors.primary};
 `;
@@ -113,30 +252,38 @@ export const QuantityControl = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  border: 1px solid ${({ theme }) => theme.colors.backgroundLight};
+  border-radius: 8px;
+  padding: 0.25rem;
+  background-color: ${({ theme }) => theme.colors.background};
 `;
 
 export const QuantityButton = styled.button`
   background-color: ${({ theme }) => theme.colors.backgroundCard};
-  border: 1px solid ${({ theme }) => theme.colors.primary};
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
+  border: 1px solid ${({ theme }) => theme.colors.backgroundLight};
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   color: ${({ theme }) => theme.colors.primary};
+  transition: all 0.2s ease;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.primaryDark};
+    background-color: ${({ theme }) => theme.colors.primary};
     color: ${({ theme }) => theme.colors.background};
+    border-color: ${({ theme }) => theme.colors.primary};
   }
 `;
 
 export const QuantityDisplay = styled.span`
-  min-width: 24px;
+  min-width: 28px;
   text-align: center;
   color: ${({ theme }) => theme.colors.text};
+  font-weight: 600;
+  font-size: 0.9375rem;
 `;
 
 export const RemoveButton = styled.button`
@@ -144,13 +291,15 @@ export const RemoveButton = styled.button`
   border: none;
   color: ${({ theme }) => theme.colors.error};
   cursor: pointer;
-  padding: 0.25rem;
-  margin-left: auto;
+  padding: 0.5rem;
   display: flex;
   align-items: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 
   &:hover {
-    color: #cc0000;
+    background-color: rgba(220, 38, 38, 0.1);
+    color: #dc2626;
   }
 `;
 
@@ -293,7 +442,6 @@ export const Textarea = styled.textarea`
     border-color: ${({ theme }) => theme.colors.primary};
   }
 `;
-
 
 export const StyledInputMask = styled(InputMask)`
   background-color: ${({ theme }) => theme.colors.backgroundCard};
