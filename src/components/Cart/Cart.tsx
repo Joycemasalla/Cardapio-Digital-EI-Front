@@ -1,6 +1,6 @@
 // src/components/Cart/Cart.tsx
 import React, { useState, useEffect } from 'react';
-import { X, ShoppingCart, Send, Trash2, Copy } from 'lucide-react';
+import { X, ShoppingCart, Send, Trash2, Copy, AlertCircle } from 'lucide-react';
 import { useCart, CartItem } from '../../contexts/CartContext';
 import { toast } from 'react-toastify';
 import InputMask from 'react-input-mask';
@@ -472,45 +472,66 @@ const Cart: React.FC = () => {
               )}
 
               {customerInfo.paymentMethod === 'pix' && (
-                <FormGroup>
-                  <Label>Chave Pix</Label>
+                <>
+                  <FormGroup>
+                    <Label>Chave Pix</Label>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      background: '#1f1f1f',
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid #333',
+                      justifyContent: 'space-between',
+                      gap: '8px',
+                      color: '#fff'
+                    }}>
+                      <span style={{
+                        overflowWrap: 'anywhere',
+                        fontSize: '14px',
+                        flex: 1
+                      }}>
+                        seu-email@pix.com
+                      </span>
+                      
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigator.clipboard.writeText("seu-email@pix.com");
+                          toast.success("Chave Pix copiada com sucesso!");
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: '#4fd1c5',
+                        }}
+                        title="Copiar chave Pix"
+                      >
+                        <Copy />
+                      </button>
+                    </div>
+                  </FormGroup>
+
                   <div style={{
+                    background: '#2d3748',
+                    border: '1px solid #4a5568',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginTop: '16px',
+                    marginBottom: '16px',
                     display: 'flex',
                     alignItems: 'center',
-                    background: '#1f1f1f',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid #333',
-                    justifyContent: 'space-between',
                     gap: '8px',
-                    color: '#fff'
+                    color: '#e2e8f0'
                   }}>
-                    <span style={{
-                      overflowWrap: 'anywhere',
-                      fontSize: '14px',
-                      flex: 1
-                    }}>
-                      seu-email@pix.com
-                    </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        navigator.clipboard.writeText("seu-email@pix.com");
-                        toast.success("Chave Pix copiada com sucesso!");
-                      }}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: '#4fd1c5',
-                      }}
-                      title="Copiar chave Pix"
-                    >
-                      <Copy />
-                    </button>
+                    <AlertCircle size={20} style={{ color: '#4fd1c5', minWidth: '20px' }} />
+                    <div style={{ fontSize: '14px', lineHeight: '1.4' }}>
+                      <strong>Importante:</strong> Após realizar o pagamento, não se esqueça de enviar o comprovante do PIX via WhatsApp para confirmar seu pedido.
+                    </div>
                   </div>
-                </FormGroup>
+                </>
               )}
 
               <FormGroup>
