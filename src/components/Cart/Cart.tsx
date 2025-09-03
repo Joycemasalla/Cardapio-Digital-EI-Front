@@ -76,7 +76,7 @@ const Cart: React.FC = () => {
 
   const [activeStep, setActiveStep] = useState(0);
   const [deliveryOption, setDeliveryOption] = useState<'pickup' | 'local' | 'delivery'>('pickup');
-  
+
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     phone: '',
@@ -119,7 +119,7 @@ const Cart: React.FC = () => {
     const basePrice = item.selectedVariation?.price || item.price || 0;
     const additionalsPrice = item.selectedAdditionals?.reduce((sum, additional) => sum + additional.price, 0) || 0;
     const totalPrice = basePrice + additionalsPrice;
-    
+
     return {
       basePrice,
       additionalsPrice,
@@ -175,7 +175,7 @@ const Cart: React.FC = () => {
       setActiveStep(activeStep - 1);
     }
   };
-  
+
   const handleSubmitOrder = async () => {
     if (!customerInfo.name || !customerInfo.phone || (deliveryOption === 'delivery' && !customerInfo.address)) {
       toast.error('Por favor, preencha todos os dados necessários antes de finalizar o pedido.');
@@ -183,33 +183,40 @@ const Cart: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: customerInfo.name,
-          phone: customerInfo.phone,
-          address: customerInfo.address
-        }),
-      });
+      // Tenta salvar os dados do cliente, mas continua mesmo se falhar
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/users`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: customerInfo.name,
+            phone: customerInfo.phone,
+            address: customerInfo.address
+          }),
+        });
 
-      console.log('Status da resposta do servidor:', response.status);
-      console.log('Texto do status:', response.statusText);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Falha ao salvar dados do cliente. Status: ${response.status}. Mensagem: ${errorData.message}`);
+        console.log('Status da resposta do servidor:', response.status);
+        console.log('Texto do status:', response.statusText);
+
+        if (response.ok) {
+          console.log('Dados do cliente salvos com sucesso');
+        } else {
+          console.log('Falha ao salvar dados, mas continuando com o pedido');
+        }
+      } catch (apiError) {
+        console.log('API temporariamente indisponível, continuando com o pedido:', apiError);
+        // Continua o processo mesmo se a API falhar
       }
-      
+
       let message = `🍕 *NOVO PEDIDO - ESPAÇO IMPERIAL* 🍕\n\n`;
       message += `📋 *RESUMO DO PEDIDO*\n`;
       message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
 
       cartItems.forEach((item: CartItem, index: number) => {
         const { basePrice, additionalsPrice, totalPriceWithQuantity } = calculateItemPrices(item);
-        
+
         message += `📦 *Item ${index + 1}*\n`;
-        
+
         if (item.isHalfAndHalf && item.half1 && item.half2 && item.selectedVariation) {
           message += `🍕 Pizza Meio-a-Meio\n`;
           message += `   • ${item.half1.name}\n`;
@@ -221,11 +228,11 @@ const Cart: React.FC = () => {
         } else {
           message += `🍽️ ${item.name}\n`;
         }
-        
+
         if (item.cuttingStyle) {
           message += `✂️ Corte: ${item.cuttingStyle === 'normal' ? 'Normal (Fatias)' : 'Francesinha (Quadrados)'}\n`;
         }
-        
+
         message += `📊 Quantidade: ${item.quantity}x\n`;
         message += `💰 Preço base: ${formatCurrency(basePrice)} (cada)\n`;
 
@@ -236,7 +243,7 @@ const Cart: React.FC = () => {
           });
           message += `💰 Subtotal adicionais: ${formatCurrency(additionalsPrice * item.quantity)}\n`;
         }
-        
+
         message += `🏷️ *Total do item: ${formatCurrency(totalPriceWithQuantity)}*\n`;
         message += `\n`;
       });
@@ -282,9 +289,9 @@ const Cart: React.FC = () => {
 
       const encodedMessage = encodeURIComponent(message);
       window.open(`https://wa.me/5532988949994?text=${encodedMessage}`, '_blank');
-      
+
       localStorage.setItem('customerInfo', JSON.stringify({ ...customerInfo, deliveryOption }));
-      
+
       clearCart();
       toggleCart();
       toast.success('Pedido enviado com sucesso! Entraremos em contato via WhatsApp.');
@@ -334,12 +341,12 @@ const Cart: React.FC = () => {
                 <CartItemsList>
                   {cartItems.map((item: CartItem) => {
                     const { basePrice, additionalsPrice, totalPriceWithQuantity } = calculateItemPrices(item);
-                    
+
                     return (
                       <ItemCard key={item.id}>
                         <ItemHeader>
-                          <ItemImage 
-                            src={item.image || 'https://via.placeholder.com/60x60'} 
+                          <ItemImage
+                            src={item.image || 'https://via.placeholder.com/60x60'}
                             alt={item.name}
                           />
                           <ItemContent>
@@ -349,13 +356,13 @@ const Cart: React.FC = () => {
                                   ? `Pizza ${item.half1.name} / ${item.half2.name}`
                                   : item.name}
                               </ItemName>
-                              
+
                               {item.selectedVariation && (
                                 <ItemVariation>
                                   Tamanho: {item.selectedVariation.name}
                                 </ItemVariation>
                               )}
-                              
+
                               {item.cuttingStyle && (
                                 <ItemVariation>
                                   Corte: {item.cuttingStyle === 'normal' ? 'Normal' : 'Francesinha'}
@@ -366,20 +373,20 @@ const Cart: React.FC = () => {
                             <ItemActions>
                               <QuantitySection>
                                 <QuantityControl>
-                                  <QuantityButton 
+                                  <QuantityButton
                                     onClick={() => decrementQuantity(
-                                      item.id, 
-                                      item.selectedVariation?.name, 
+                                      item.id,
+                                      item.selectedVariation?.name,
                                       item.selectedAdditionals ? item.selectedAdditionals.map(a => a.name).sort().join(',') : ''
                                     )}
                                   >
                                     <Minus size={14} />
                                   </QuantityButton>
                                   <QuantityDisplay>{item.quantity}</QuantityDisplay>
-                                  <QuantityButton 
+                                  <QuantityButton
                                     onClick={() => incrementQuantity(
-                                      item.id, 
-                                      item.selectedVariation?.name, 
+                                      item.id,
+                                      item.selectedVariation?.name,
                                       item.selectedAdditionals ? item.selectedAdditionals.map(a => a.name).sort().join(',') : ''
                                     )}
                                   >
@@ -388,10 +395,10 @@ const Cart: React.FC = () => {
                                 </QuantityControl>
                               </QuantitySection>
 
-                              <RemoveButton 
+                              <RemoveButton
                                 onClick={() => removeFromCart(
-                                  item.id, 
-                                  item.selectedVariation?.name, 
+                                  item.id,
+                                  item.selectedVariation?.name,
                                   item.selectedAdditionals ? item.selectedAdditionals.map(a => a.name).sort().join(',') : ''
                                 )}
                               >
@@ -420,14 +427,14 @@ const Cart: React.FC = () => {
                             <PriceLabel>Preço base ({item.quantity}x {formatCurrency(basePrice)}):</PriceLabel>
                             <PriceValue>{formatCurrency(basePrice * item.quantity)}</PriceValue>
                           </PriceRow>
-                          
+
                           {additionalsPrice > 0 && (
                             <PriceRow>
                               <PriceLabel>Adicionais ({item.quantity}x {formatCurrency(additionalsPrice)}):</PriceLabel>
                               <PriceValue>{formatCurrency(additionalsPrice * item.quantity)}</PriceValue>
                             </PriceRow>
                           )}
-                          
+
                           <PriceRow className="total">
                             <PriceLabel>Total do item:</PriceLabel>
                             <PriceValue>{formatCurrency(totalPriceWithQuantity)}</PriceValue>
@@ -604,7 +611,7 @@ const Cart: React.FC = () => {
                       }}>
                         seu-email@pix.com
                       </span>
-                      
+
                       <button
                         type="button"
                         onClick={(e) => {
