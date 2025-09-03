@@ -208,7 +208,7 @@ const Cart: React.FC = () => {
         // Continua o processo mesmo se a API falhar
       }
 
-      let message = `🍕 *NOVO PEDIDO - ESPAÇO IMPERIAL* 🍕\n\n`;
+      let message = `🍕 *NOVO PEDIDO - ESPAÇO IMPERIAL* \n\n`;
       message += `📋 *RESUMO DO PEDIDO*\n`;
       message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
 
@@ -218,33 +218,33 @@ const Cart: React.FC = () => {
         message += `📦 *Item ${index + 1}*\n`;
 
         if (item.isHalfAndHalf && item.half1 && item.half2 && item.selectedVariation) {
-          message += `🍕 Pizza Meio-a-Meio\n`;
+          message += ` Pizza Meio-a-Meio\n`;
           message += `   • ${item.half1.name}\n`;
           message += `   • ${item.half2.name}\n`;
-          message += `📏 Tamanho: ${item.selectedVariation.name}\n`;
+          message += ` Tamanho: ${item.selectedVariation.name}\n`;
         } else if (item.selectedVariation) {
-          message += `🍕 ${item.name}\n`;
-          message += `📏 Tamanho: ${item.selectedVariation.name}\n`;
+          message += ` ${item.name}\n`;
+          message += ` Tamanho: ${item.selectedVariation.name}\n`;
         } else {
-          message += `🍽️ ${item.name}\n`;
+          message += ` ${item.name}\n`;
         }
 
         if (item.cuttingStyle) {
-          message += `✂️ Corte: ${item.cuttingStyle === 'normal' ? 'Normal (Fatias)' : 'Francesinha (Quadrados)'}\n`;
+          message += ` Corte: ${item.cuttingStyle === 'normal' ? 'Normal (Fatias)' : 'Francesinha (Quadrados)'}\n`;
         }
 
-        message += `📊 Quantidade: ${item.quantity}x\n`;
-        message += `💰 Preço base: ${formatCurrency(basePrice)} (cada)\n`;
+        message += ` Quantidade: ${item.quantity}x\n`;
+        message += ` Preço base: ${formatCurrency(basePrice)} (cada)\n`;
 
         if (item.selectedAdditionals && item.selectedAdditionals.length > 0) {
-          message += `➕ *Adicionais:*\n`;
+          message += ` *Adicionais:*\n`;
           item.selectedAdditionals.forEach(additional => {
             message += `   • ${additional.name}: ${formatCurrency(additional.price)}\n`;
           });
-          message += `💰 Subtotal adicionais: ${formatCurrency(additionalsPrice * item.quantity)}\n`;
+          message += ` Subtotal adicionais: ${formatCurrency(additionalsPrice * item.quantity)}\n`;
         }
 
-        message += `🏷️ *Total do item: ${formatCurrency(totalPriceWithQuantity)}*\n`;
+        message += ` *Total do item: ${formatCurrency(totalPriceWithQuantity)}*\n`;
         message += `\n`;
       });
 
@@ -254,25 +254,25 @@ const Cart: React.FC = () => {
       if (deliveryOption === 'delivery') {
         message += `Taxa de entrega: ${formatCurrency(2)}\n`;
       }
-      message += `🎯 *TOTAL GERAL: ${formatCurrency(finalTotal)}*\n\n`;
+      message += ` *TOTAL GERAL: ${formatCurrency(finalTotal)}*\n\n`;
 
-      message += `🚚 *ENTREGA*\n`;
-      const deliveryText = deliveryOption === 'pickup' ? '🏪 Retirada no Local' :
-        deliveryOption === 'local' ? '🪑 Consumo no Local' : '🏠 Entrega a Domicílio';
+      message += `🏍️ *ENTREGA*\n`;
+      const deliveryText = deliveryOption === 'pickup' ? ' Retirada no Local' :
+        deliveryOption === 'local' ? ' Consumo no Local' : ' Entrega a Domicílio';
       message += `${deliveryText}\n\n`;
 
       message += `👤 *DADOS DO CLIENTE*\n`;
       message += `Nome: ${customerInfo.name}\n`;
       if (customerInfo.phone) {
-        message += `📞 Telefone: ${customerInfo.phone}\n`;
+        message += ` Telefone: ${customerInfo.phone}\n`;
       }
       if (deliveryOption === 'delivery') {
-        message += `📍 Endereço: ${customerInfo.address}\n`;
+        message += ` Endereço: ${customerInfo.address}\n`;
       }
 
-      message += `\n💳 *PAGAMENTO*\n`;
-      const paymentText = customerInfo.paymentMethod === 'money' ? '💵 Dinheiro' :
-        customerInfo.paymentMethod === 'card' ? '💳 Cartão' : '📱 PIX';
+      message += `\n💵 *PAGAMENTO*\n`;
+      const paymentText = customerInfo.paymentMethod === 'money' ? ' Dinheiro' :
+        customerInfo.paymentMethod === 'card' ? ' Cartão' : ' PIX';
       message += `${paymentText}\n`;
 
       if (customerInfo.paymentMethod === 'money' && customerInfo.change) {
