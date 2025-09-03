@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, ShoppingCart, Send, Trash2, Copy, AlertCircle, Plus, Minus } from 'lucide-react';
 import { useCart, CartItem } from '../../contexts/CartContext';
+import { NumericFormat } from 'react-number-format'; // Adicione esta linha
 import { toast } from 'react-toastify';
 import InputMask from 'react-input-mask';
 
@@ -276,7 +277,10 @@ const Cart: React.FC = () => {
       message += `${paymentText}\n`;
 
       if (customerInfo.paymentMethod === 'money' && customerInfo.change) {
-        message += `💸 Troco para: ${formatCurrency(parseFloat(customerInfo.change))}\n`;
+        const changeValue = parseFloat(customerInfo.change.replace(/[R$\s]/g, '').replace(',', '.'));
+        if (!isNaN(changeValue)) {
+          message += `💸 Troco para: ${formatCurrency(changeValue)}\n`;
+        }
       }
 
       if (customerInfo.notes) {
