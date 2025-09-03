@@ -1,4 +1,4 @@
-// src/components/Cart/Cart.tsx
+// src/components/Cart/Cart.tsx - CORREÇÕES APLICADAS
 import React, { useState, useEffect } from 'react';
 import { X, ShoppingCart, Send, Trash2, Copy, AlertCircle } from 'lucide-react';
 import { useCart, CartItem } from '../../contexts/CartContext';
@@ -70,6 +70,7 @@ const Cart: React.FC = () => {
     notes: ''
   });
 
+  // ... useEffect hooks permanecem inalterados ...
   useEffect(() => {
     const savedInfo = localStorage.getItem('customerInfo');
     if (savedInfo) {
@@ -99,15 +100,25 @@ const Cart: React.FC = () => {
     }
   }, [customerInfo, deliveryOption]);
 
+  // 🔥 CORREÇÃO PRINCIPAL: Função para calcular preços separadamente
+  const calculateItemPrices = (item: CartItem) => {
+    const basePrice = item.selectedVariation?.price || item.price || 0;
+    const additionalsPrice = item.selectedAdditionals?.reduce((sum, additional) => sum + additional.price, 0) || 0;
+    const totalPrice = basePrice + additionalsPrice;
+    
+    return {
+      basePrice,
+      additionalsPrice,
+      totalPrice,
+      totalPriceWithQuantity: totalPrice * item.quantity
+    };
+  };
 
-  const totalAmount = cartItems.reduce(
-    (sum: number, item: CartItem) => {
-      const basePrice = item.selectedVariation?.price || item.price || 0;
-      const additionalsPrice = item.selectedAdditionals?.reduce((addSum, additional) => addSum + additional.price, 0) || 0;
-      return sum + (basePrice + additionalsPrice) * item.quantity;
-    },
-    0
-  );
+  // 🔥 CORREÇÃO: Cálculo do total usando a nova função
+  const totalAmount = cartItems.reduce((sum: number, item: CartItem) => {
+    const { totalPriceWithQuantity } = calculateItemPrices(item);
+    return sum + totalPriceWithQuantity;
+  }, 0);
 
   const deliveryFee = deliveryOption === 'delivery' ? 2 : 0;
   const finalTotal = totalAmount + deliveryFee;
@@ -138,7 +149,6 @@ const Cart: React.FC = () => {
         return;
       }
     }
-
 
     if (activeStep < steps.length - 1) {
       setActiveStep(activeStep + 1);
@@ -181,8 +191,12 @@ const Cart: React.FC = () => {
       let message = `*Novo Pedido - Espaço Imperial*\n\n`;
       message += `*Itens do Pedido:*\n`;
 
+      // 🔥 CORREÇÃO PRINCIPAL: Mensagem do WhatsApp com preços separados
       cartItems.forEach((item: CartItem) => {
+        const { basePrice, additionalsPrice, totalPriceWithQuantity } = calculateItemPrices(item);
+        
         let itemLine = `- ${item.quantity}x `;
+        
         if (item.isHalfAndHalf && item.half1 && item.half2 && item.selectedVariation) {
           itemLine += `Pizza ${item.half1.name} / ${item.half2.name} (${item.selectedVariation.name})`;
         } else if (item.selectedVariation) {
@@ -190,22 +204,31 @@ const Cart: React.FC = () => {
         } else {
           itemLine += `${item.name}`;
         }
+        
         if (item.cuttingStyle) {
           itemLine += ` (Corte: ${item.cuttingStyle === 'normal' ? 'Normal' : 'Francesinha'})`;
         }
-        itemLine += ` - ${formatCurrency((
-          (item.selectedVariation?.price || item.price || 0) + 
-          (item.selectedAdditionals?.reduce((addSum, add) => addSum + add.price, 0) || 0)
-        ) * item.quantity)}\n`;
+        
+        // 🔥 EXIBE APENAS O PREÇO BASE DO ITEM
+        itemLine += ` - ${formatCurrency(basePrice * item.quantity)}\n`;
         message += itemLine;
 
+        // 🔥 EXIBE OS ADICIONAIS SEPARADAMENTE COM SEU PREÇO
         if (item.selectedAdditionals && item.selectedAdditionals.length > 0) {
           const additionalsText = item.selectedAdditionals.map(add => `${add.name} (+${formatCurrency(add.price)})`).join(', ');
           message += `  - Adicionais: ${additionalsText}\n`;
+          message += `  - Subtotal Adicionais: ${formatCurrency(additionalsPrice * item.quantity)}\n`;
         }
+        
+        // 🔥 EXIBE O TOTAL DO ITEM (BASE + ADICIONAIS)
+        if (additionalsPrice > 0) {
+          message += `  - Total do Item: ${formatCurrency(totalPriceWithQuantity)}\n`;
+        }
+        
+        message += `\n`;
       });
 
-      message += `\n*Subtotal:* ${formatCurrency(totalAmount)}\n`;
+      message += `*Subtotal:* ${formatCurrency(totalAmount)}\n`;
       if (deliveryOption === 'delivery') {
         message += `*Taxa de Entrega:* ${formatCurrency(2)}\n`;
       }
@@ -288,43 +311,56 @@ const Cart: React.FC = () => {
             <>
               {cartItems.length > 0 ? (
                 <CartItemsList>
-                  {cartItems.map((item: CartItem) => (
-                    <StyledCartItem key={item.id}>
-                      <ItemDetails>
-                        <ItemInfo>
-                          <ItemName>
-                            {item.isHalfAndHalf && item.half1 && item.half2 && item.selectedVariation
-                              ? `Pizza ${item.half1.name} / ${item.half2.name} (${item.selectedVariation.name})`
-                              : item.selectedVariation
-                                ? `${item.name} (${item.selectedVariation.name})`
-                                : item.name}
-                            {item.cuttingStyle && ` (Corte: ${item.cuttingStyle === 'normal' ? 'Normal' : 'Francesinha'})`}
+                  {cartItems.map((item: CartItem) => {
+                    // 🔥 CORREÇÃO: Usar a nova função para calcular preços
+                    const { basePrice, additionalsPrice, totalPriceWithQuantity } = calculateItemPrices(item);
+                    
+                    return (
+                      <StyledCartItem key={item.id}>
+                        <ItemDetails>
+                          <ItemInfo>
+                            <ItemName>
+                              {item.isHalfAndHalf && item.half1 && item.half2 && item.selectedVariation
+                                ? `Pizza ${item.half1.name} / ${item.half2.name} (${item.selectedVariation.name})`
+                                : item.selectedVariation
+                                  ? `${item.name} (${item.selectedVariation.name})`
+                                  : item.name}
+                              {item.cuttingStyle && ` (Corte: ${item.cuttingStyle === 'normal' ? 'Normal' : 'Francesinha'})`}
+                              
+                              {/* 🔥 CORREÇÃO: Exibição detalhada dos adicionais */}
+                              {item.selectedAdditionals && item.selectedAdditionals.length > 0 && (
+                                <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#ccc' }}>
+                                  <div>Adicionais: {item.selectedAdditionals.map(add => `${add.name} (+${formatCurrency(add.price)})`).join(', ')}</div>
+                                  <div style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: '#999' }}>
+                                    Base: {formatCurrency(basePrice)} | Adicionais: {formatCurrency(additionalsPrice)}
+                                  </div>
+                                </div>
+                              )}
+                            </ItemName>
                             
-                            {item.selectedAdditionals && item.selectedAdditionals.length > 0 && (
-                              <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#ccc' }}>
-                                Adicionais: {item.selectedAdditionals.map(add => add.name).join(', ')}
-                              </div>
-                            )}
-                          </ItemName>
-                          <ItemPrice>
-                            {formatCurrency((
-                              (item.selectedVariation?.price || item.price || 0) + 
-                              (item.selectedAdditionals?.reduce((addSum, add) => addSum + add.price, 0) || 0)
-                            ) * item.quantity)}
-                          </ItemPrice>
-                        </ItemInfo>
+                            {/* 🔥 CORREÇÃO: Exibir preço total por quantidade */}
+                            <ItemPrice>
+                              {formatCurrency(totalPriceWithQuantity)}
+                              {additionalsPrice > 0 && (
+                                <div style={{ fontSize: '0.75rem', color: '#ccc', marginTop: '0.25rem' }}>
+                                  {formatCurrency(basePrice + additionalsPrice)} × {item.quantity}
+                                </div>
+                              )}
+                            </ItemPrice>
+                          </ItemInfo>
 
-                        <QuantityControl>
-                          <QuantityButton onClick={() => incrementQuantity(item.id, item.selectedVariation?.name, item.selectedAdditionals ? item.selectedAdditionals.map(a => a.name).sort().join(',') : '')}>-</QuantityButton>
-                          <QuantityDisplay>{item.quantity}</QuantityDisplay>
-                          <QuantityButton onClick={() => decrementQuantity(item.id, item.selectedVariation?.name, item.selectedAdditionals ? item.selectedAdditionals.map(a => a.name).sort().join(',') : '')}>+</QuantityButton>
-                          <RemoveButton onClick={() => removeFromCart(item.id, item.selectedVariation?.name, item.selectedAdditionals ? item.selectedAdditionals.map(a => a.name).sort().join(',') : '')}>
-                            <Trash2 size={16} />
-                          </RemoveButton>
-                        </QuantityControl>
-                      </ItemDetails>
-                    </StyledCartItem>
-                  ))}
+                          <QuantityControl>
+                            <QuantityButton onClick={() => decrementQuantity(item.id, item.selectedVariation?.name, item.selectedAdditionals ? item.selectedAdditionals.map(a => a.name).sort().join(',') : '')}>-</QuantityButton>
+                            <QuantityDisplay>{item.quantity}</QuantityDisplay>
+                            <QuantityButton onClick={() => incrementQuantity(item.id, item.selectedVariation?.name, item.selectedAdditionals ? item.selectedAdditionals.map(a => a.name).sort().join(',') : '')}>+</QuantityButton>
+                            <RemoveButton onClick={() => removeFromCart(item.id, item.selectedVariation?.name, item.selectedAdditionals ? item.selectedAdditionals.map(a => a.name).sort().join(',') : '')}>
+                              <Trash2 size={16} />
+                            </RemoveButton>
+                          </QuantityControl>
+                        </ItemDetails>
+                      </StyledCartItem>
+                    );
+                  })}
                 </CartItemsList>
               ) : (
                 <EmptyCart>
@@ -335,6 +371,7 @@ const Cart: React.FC = () => {
             </>
           )}
 
+          {/* Resto do componente permanece inalterado... */}
           {activeStep === 1 && (
             <DeliveryOptions>
               <DeliveryOption>
