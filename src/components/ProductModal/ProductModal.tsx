@@ -411,11 +411,11 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, onClose, initialMo
                 </AdditionalsContainer>
             )}
 
-            {!hasAvailableVariations && !isPizzaCategory && (
+            {/* {!hasAvailableVariations && !isPizzaCategory && (
               <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#c59d5f' }}>
                 R$ {product.price?.toFixed(2).replace('.', ',')}
               </p>
-            )}
+            )} */}
 
             <ProductActions>
               <QuantityControl>
