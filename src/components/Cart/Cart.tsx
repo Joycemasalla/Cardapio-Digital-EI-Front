@@ -64,6 +64,34 @@ import { formatCurrency } from '../../utils/formatCurrency';
 
 const API_BASE_URL = 'https://cardapio-digital-ei-back.vercel.app';
 
+
+const formatCurrencyInput = (value: string): string => {
+  // Remove tudo que não é número
+  const numericValue = value.replace(/[^\d]/g, '');
+
+  if (!numericValue) return '';
+
+  // Converte para centavos e depois para formato real
+  const cents = parseInt(numericValue, 10);
+  const reais = cents / 100;
+
+  // Formata com 2 casas decimais
+  return reais.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  });
+};
+
+const parseCurrencyInput = (value: string): number => {
+  // Remove R$, espaços e converte vírgula para ponto
+  const numericString = value
+    .replace(/R\$\s?/g, '')
+    .replace(/\./g, '')
+    .replace(',', '.');
+
+  return parseFloat(numericString) || 0;
+};
+
 const Cart: React.FC = () => {
   const {
     cartItems,
@@ -86,6 +114,18 @@ const Cart: React.FC = () => {
     change: '',
     notes: ''
   });
+
+
+  const handleChangeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    const formattedValue = formatCurrencyInput(value);
+
+    setCustomerInfo({
+      ...customerInfo,
+      change: formattedValue
+    });
+  };
+
 
   useEffect(() => {
     const savedInfo = localStorage.getItem('customerInfo');
@@ -117,8 +157,11 @@ const Cart: React.FC = () => {
   }, [customerInfo, deliveryOption]);
 
   const calculateItemPrices = (item: CartItem) => {
-    const basePrice = item.selectedVariation?.price || item.price || 0;
-    const additionalsPrice = item.selectedAdditionals?.reduce((sum, additional) => sum + additional.price, 0) || 0;
+    // CORREÇÃO: Garantir que todos os preços sejam números válidos
+    const basePrice = Number(item.selectedVariation?.price) || Number(item.price) || 0;
+    const additionalsPrice = item.selectedAdditionals?.reduce((sum, additional) => {
+      return sum + (Number(additional.price) || 0);
+    }, 0) || 0;
     const totalPrice = basePrice + additionalsPrice;
 
     return {
@@ -277,8 +320,9 @@ const Cart: React.FC = () => {
       message += `${paymentText}\n`;
 
       if (customerInfo.paymentMethod === 'money' && customerInfo.change) {
-        const changeValue = parseFloat(customerInfo.change.replace(/[R$\s]/g, '').replace(',', '.'));
-        if (!isNaN(changeValue)) {
+        // CORREÇÃO: Usar a função parseCurrencyInput para converter corretamente
+        const changeValue = parseCurrencyInput(customerInfo.change);
+        if (changeValue > 0) {
           message += `💸 Troco para: ${formatCurrency(changeValue)}\n`;
         }
       }
@@ -581,13 +625,12 @@ const Cart: React.FC = () => {
               {customerInfo.paymentMethod === 'money' && (
                 <FormGroup>
                   <Label htmlFor="change">Troco para</Label>
-                  <StyledInputMask
-                    mask="R$ 999,99"
-                    maskChar={null}
+                  <Input
+                    type="text"
                     id="change"
                     name="change"
                     value={customerInfo.change}
-                    onChange={handleInputChange}
+                    onChange={handleChangeInputChange}
                     placeholder="R$ 0,00"
                   />
                 </FormGroup>
