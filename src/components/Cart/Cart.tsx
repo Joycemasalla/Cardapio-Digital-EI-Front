@@ -1,8 +1,8 @@
-// src/components/Cart/Cart.tsx - LAYOUT MELHORADO
+// src/components/Cart/Cart.tsx - ARQUIVO COMPLETO COM CORREÇÕES
 import React, { useState, useEffect } from 'react';
 import { X, ShoppingCart, Send, Trash2, Copy, AlertCircle, Plus, Minus } from 'lucide-react';
 import { useCart, CartItem } from '../../contexts/CartContext';
-import { NumericFormat } from 'react-number-format'; // Adicione esta linha
+import { NumericFormat } from 'react-number-format';
 import { toast } from 'react-toastify';
 import InputMask from 'react-input-mask';
 
@@ -43,7 +43,6 @@ import {
   RadioInput,
   RadioLabel,
   StyledInputMask,
-  // Novos componentes para layout melhorado
   ItemCard,
   ItemHeader,
   ItemImage,
@@ -64,18 +63,15 @@ import { formatCurrency } from '../../utils/formatCurrency';
 
 const API_BASE_URL = 'https://cardapio-digital-ei-back.vercel.app';
 
-
+// CORREÇÃO: Funções para lidar com formatação de moeda
 const formatCurrencyInput = (value: string): string => {
-  // Remove tudo que não é número
   const numericValue = value.replace(/[^\d]/g, '');
-
+  
   if (!numericValue) return '';
-
-  // Converte para centavos e depois para formato real
+  
   const cents = parseInt(numericValue, 10);
   const reais = cents / 100;
-
-  // Formata com 2 casas decimais
+  
   return reais.toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL'
@@ -83,12 +79,11 @@ const formatCurrencyInput = (value: string): string => {
 };
 
 const parseCurrencyInput = (value: string): number => {
-  // Remove R$, espaços e converte vírgula para ponto
   const numericString = value
     .replace(/R\$\s?/g, '')
     .replace(/\./g, '')
     .replace(',', '.');
-
+  
   return parseFloat(numericString) || 0;
 };
 
@@ -114,18 +109,6 @@ const Cart: React.FC = () => {
     change: '',
     notes: ''
   });
-
-
-  const handleChangeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    const formattedValue = formatCurrencyInput(value);
-
-    setCustomerInfo({
-      ...customerInfo,
-      change: formattedValue
-    });
-  };
-
 
   useEffect(() => {
     const savedInfo = localStorage.getItem('customerInfo');
@@ -156,8 +139,8 @@ const Cart: React.FC = () => {
     }
   }, [customerInfo, deliveryOption]);
 
+  // CORREÇÃO: Função para calcular preços corretamente
   const calculateItemPrices = (item: CartItem) => {
-    // CORREÇÃO: Garantir que todos os preços sejam números válidos
     const basePrice = Number(item.selectedVariation?.price) || Number(item.price) || 0;
     const additionalsPrice = item.selectedAdditionals?.reduce((sum, additional) => {
       return sum + (Number(additional.price) || 0);
@@ -187,6 +170,17 @@ const Cart: React.FC = () => {
     setCustomerInfo({
       ...customerInfo,
       [name]: value
+    });
+  };
+
+  // CORREÇÃO: Nova função para lidar com o campo de troco
+  const handleChangeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    const formattedValue = formatCurrencyInput(value);
+    
+    setCustomerInfo({
+      ...customerInfo,
+      change: formattedValue
     });
   };
 
@@ -227,7 +221,6 @@ const Cart: React.FC = () => {
     }
 
     try {
-      // Tenta salvar os dados do cliente, mas continua mesmo se falhar
       try {
         const response = await fetch(`${API_BASE_URL}/api/users`, {
           method: 'POST',
@@ -249,7 +242,6 @@ const Cart: React.FC = () => {
         }
       } catch (apiError) {
         console.log('API temporariamente indisponível, continuando com o pedido:', apiError);
-        // Continua o processo mesmo se a API falhar
       }
 
       let message = `🍕 *NOVO PEDIDO - ESPAÇO IMPERIAL* \n\n`;
@@ -319,8 +311,8 @@ const Cart: React.FC = () => {
         customerInfo.paymentMethod === 'card' ? ' Cartão' : ' PIX';
       message += `${paymentText}\n`;
 
+      // CORREÇÃO: Processamento correto do valor do troco
       if (customerInfo.paymentMethod === 'money' && customerInfo.change) {
-        // CORREÇÃO: Usar a função parseCurrencyInput para converter corretamente
         const changeValue = parseCurrencyInput(customerInfo.change);
         if (changeValue > 0) {
           message += `💸 Troco para: ${formatCurrency(changeValue)}\n`;
@@ -463,7 +455,7 @@ const Cart: React.FC = () => {
                               {item.selectedAdditionals.map(additional => (
                                 <AdditionalItem key={additional.name}>
                                   <span>{additional.name}</span>
-                                  <span>+{formatCurrency(additional.price)}</span>
+                                  <span>+{formatCurrency(Number(additional.price) || 0)}</span>
                                 </AdditionalItem>
                               ))}
                             </AdditionalsList>
@@ -622,6 +614,7 @@ const Cart: React.FC = () => {
                 </DeliveryOption>
               </FormGroup>
 
+              {/* CORREÇÃO: Campo de troco reformulado */}
               {customerInfo.paymentMethod === 'money' && (
                 <FormGroup>
                   <Label htmlFor="change">Troco para</Label>
