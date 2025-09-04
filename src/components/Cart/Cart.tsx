@@ -244,7 +244,7 @@ const Cart: React.FC = () => {
         console.log('API temporariamente indisponível, continuando com o pedido:', apiError);
       }
 
-      let message = `🍕 *NOVO PEDIDO - ESPAÇO IMPERIAL* \n\n`;
+      let message = `🍕 *NOVO PEDIDO - ESPAÇO IMPERIAL* 🍕\n\n`;
       message += `📋 *RESUMO DO PEDIDO*\n`;
       message += `━━━━━━━━━━━━━━━━━━━━\n\n`;
 
